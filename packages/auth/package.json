@@ -1,0 +1,24 @@
+{
+  "name": "@zerodha-coin/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@zerodha-coin/db": "workspace:*",
+    "@zerodha-coin/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@zerodha-coin/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

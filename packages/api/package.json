@@ -1,0 +1,27 @@
+{
+  "name": "@zerodha-coin/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "@zerodha-coin/auth": "workspace:*",
+    "@zerodha-coin/db": "workspace:*",
+    "@zerodha-coin/env": "workspace:*",
+    "dotenv": "catalog:",
+    "next": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@zerodha-coin/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

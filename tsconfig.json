@@ -1,0 +1,3 @@
+{
+  "extends": "@zerodha-coin/config/tsconfig.base.json"
+}

@@ -1,0 +1,43 @@
+{
+  "name": "zerodha-coin",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "dev:web": "turbo run dev -F web",
+    "db:push": "turbo run db:push -F @zerodha-coin/db",
+    "db:studio": "turbo run db:studio -F @zerodha-coin/db",
+    "db:generate": "turbo run db:generate -F @zerodha-coin/db",
+    "db:migrate": "turbo run db:migrate -F @zerodha-coin/db",
+    "check": "oxlint && oxfmt --write",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@zerodha-coin/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@zerodha-coin/config": "workspace:*",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.2.0",
+    "oxfmt": "^0.61.0",
+    "oxlint": "^1.76.0",
+    "turbo": "^2.10.7",
+    "typescript": "catalog:"
+  },
+  "lint-staged": {
+    "*": [
+      "oxlint",
+      "oxfmt --write"
+    ]
+  },
+  "packageManager": "pnpm@11.17.0"
+}
