@@ -1,0 +1,38 @@
+---
+title: Technical architecture
+description: The technology choices and the reasons behind them.
+---
+
+## Application stack
+
+| Concern         | Decision                                              | Why it matters                                                                                                                             |
+| --------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Web application | Next.js 16 App Router and React 19                    | Server Components keep financial queries on the server while authenticated route handlers provide explicit mutation and import boundaries. |
+| Interface       | Tailwind CSS, shadcn/ui New York styling and Recharts | A consistent dashboard-01 visual system with accessible shared components and focused portfolio visualizations.                            |
+| Database        | Neon Postgres                                         | Durable relational storage, managed backups and connection pooling suitable for Vercel's serverless runtime.                               |
+| Data access     | Drizzle ORM with tracked SQL migrations               | Typed queries plus reviewable schema changes and database-enforced ownership relationships.                                                |
+| Authentication  | Better Auth                                           | Email/password authentication, database sessions, secure production cookies and database-backed rate limiting.                             |
+| Repository      | pnpm workspaces and Turborepo                         | Keeps the web app, API logic, authentication, database, environment validation, UI and documentation in independently checkable packages.  |
+| Documentation   | Fumadocs                                              | Versioned product and engineering documentation stored beside the implementation.                                                          |
+
+## Package boundaries
+
+```text
+apps/web        Authenticated Next.js product
+apps/fumadocs   Product and engineering handbook
+packages/api    Server-only queries, imports and mutations
+packages/auth   Better Auth configuration
+packages/db     Drizzle schema and SQL migrations
+packages/env    Runtime environment validation
+packages/ui     Shared shadcn/ui components and tokens
+```
+
+The portfolio query and mutation modules import `server-only`, preventing accidental use in client bundles. Browser components submit to authenticated route handlers, and those handlers derive the owner from the server session rather than accepting a user ID from the request.
+
+## Deliberate trade-offs
+
+- Postgres is the source of truth; no portfolio defaults or hardcoded user data are used as fallbacks.
+- Financial history is normalized into identities, dated snapshots, import batches and ledger entries. This costs more storage than overwriting values but preserves auditability.
+- Real estate has a dedicated model because its area, ownership and legal attributes do not fit a generic asset record cleanly.
+- Broker imports are provider-specific at the parsing boundary and normalized after parsing. Adding another broker should introduce a parser, not a second portfolio model.
+- Deployment migrations are separate from the web runtime. The application receives only a pooled connection string; a direct database credential is reserved for trusted migration execution.

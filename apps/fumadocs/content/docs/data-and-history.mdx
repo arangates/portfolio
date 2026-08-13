@@ -1,0 +1,44 @@
+---
+title: Data and history
+description: How the database preserves imported and manually entered financial history.
+---
+
+## Historical model
+
+Records that change over time are divided into two parts:
+
+1. An **identity record** stores stable attributes, such as a bank-account label, deposit institution, commodity name or property address.
+2. A **snapshot record** stores dated financial state, such as balance, principal, quantity, price or valuation.
+
+Editing an item updates appropriate identity metadata and inserts a new snapshot. Earlier snapshots remain available for analytics and audit. Archiving marks the identity inactive; it does not delete history.
+
+## Broker imports
+
+Each import creates an account-owned batch containing the source, file hash, statement date, status and row statistics. Raw source rows and normalized records are linked to that batch.
+
+### Zerodha
+
+A holdings workbook becomes a complete dated position snapshot. Re-uploading the identical file returns the existing batch because uniqueness is enforced by user, import type and file hash.
+
+### Degiro
+
+Transactions and Account exports become a chronological ledger. Stable row hashes and account-scoped entry keys prevent duplicates across overlapping exports. Holdings and moving-average cost are reconstructed from all retained buy and sell entries, rather than from only the newest file.
+
+## Ownership enforcement
+
+Ownership is enforced twice:
+
+- Application queries always filter by the authenticated session user.
+- Composite database foreign keys require child snapshots, batches and ledger rows to have the same `user_id` as their parent record.
+
+This prevents an application error from linking one user's snapshot or imported row to another user's portfolio object.
+
+## Calculation rules
+
+- Portfolio totals use the latest snapshot for each current record.
+- Ownership-based assets use attributable value: full market value multiplied by ownership share.
+- Multi-currency totals use stored dated FX rates. Missing conversions are disclosed and excluded.
+- Indian-equity performance uses values supplied by the latest Zerodha snapshot.
+- Global-equity open cost and realized results use moving-average cost. Estimated market value uses the most recent imported trade price.
+
+These calculations are informational. They are not a substitute for broker statements, audited accounting or tax records.

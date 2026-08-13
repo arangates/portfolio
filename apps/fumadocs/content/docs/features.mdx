@@ -1,0 +1,36 @@
+---
+title: Features
+description: The portfolio surfaces and workflows included in the current product.
+---
+
+## Portfolio overview
+
+The dashboard consolidates current assets into the user's base currency and shows net worth, liquidity, allocation, valuation coverage and Indian-equity performance. It surfaces missing FX rates instead of presenting incomplete totals as complete.
+
+## Cash and deposits
+
+- **INR and EUR accounts** are separate cash views. Only masked account identifiers and dated balance snapshots are stored.
+- **Fixed deposits** track principal, rate, term, compounding, status and maturity. Each update preserves the previous snapshot.
+
+EUR bank cash is intentionally separate from Degiro investments and broker activity.
+
+## Listed investments
+
+- **Indian equity** imports Zerodha holdings workbooks. Each unique upload creates an immutable portfolio snapshot with quantity, average price, market value and unrealized profit or loss.
+- **Global equity** imports Degiro Transactions and Account CSV exports. The application reconstructs open quantities, moving-average cost basis, realized results, dividends, fees and recent activity from the retained ledger.
+
+Global-equity valuations are based on the latest imported trade price and are explicitly labelled as estimates, not live quotes.
+
+## Physical and manual assets
+
+- **Commodities** track quantity, ownership share, custody location, unit price and valuation history.
+- **Real estate** tracks property identity, owner, type, location, area, ownership share, legal status, unit price and full-market valuation. Analytics use the value attributable to the user's ownership share.
+- **Manual assets** cover assets that do not have a dedicated model.
+
+## Data management
+
+- Import history with row counts, deduplication results and processing status.
+- Account-scoped JSON export containing current records and relevant history.
+- Archival that removes an item from current views without deleting its historical snapshots.
+- User preferences for base currency, locale and time zone.
+- Dated exchange rates for multi-currency aggregation.

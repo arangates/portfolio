@@ -2,6 +2,15 @@ import { RootProvider } from "fumadocs-ui/provider/next";
 
 import "./global.css";
 import { Inter } from "next/font/google";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Aranga Portfolio",
+    template: "%s · Aranga Portfolio",
+  },
+  description: "Product, architecture, data and deployment documentation for Aranga Portfolio.",
+};
 
 const inter = Inter({
   subsets: ["latin"],

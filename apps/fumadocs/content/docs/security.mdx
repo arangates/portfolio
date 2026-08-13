@@ -1,0 +1,34 @@
+---
+title: Security and privacy
+description: The controls protecting portfolio data and deployment secrets.
+---
+
+## User isolation
+
+Every portfolio table carries a required owner ID linked to the authentication user. Server-side queries, mutations, imports, exports and archival operations use the user ID from the verified session. The client cannot select or override the owner.
+
+## Authentication controls
+
+- Email/password authentication with a 12-character minimum password.
+- Database-backed sessions with secure cookies in production.
+- Database-backed authentication rate limiting.
+- Explicit canonical authentication URL and trusted browser origin.
+- Account deletion support through Better Auth.
+
+## Sensitive-data handling
+
+- Bank records accept only a safe label and optional last four digits—never full account numbers or credentials.
+- Broker files and personal workbook values are data, not source code, and must never be committed to Git.
+- Production secrets live in Vercel environment variables; local secrets live in ignored `.env` files.
+- The web runtime uses Neon's pooled `DATABASE_URL`. The direct connection credential is reserved for trusted migration execution and is not configured in the deployed application.
+- Private exports use authenticated, non-cacheable responses.
+
+## Operational rules
+
+1. Rotate a credential immediately if it appears in a screenshot, log, commit or chat.
+2. Use separate Neon branches and secrets for Preview and Production.
+3. Never point untrusted preview code at production portfolio data.
+4. Apply and review tracked migrations before deploying code that depends on them.
+5. Run dependency audit, type checks, linting and a production build before release.
+
+Security headers, upload size limits, validated input schemas and server-only data modules provide additional defence in depth. Database ownership constraints remain the final boundary for relational integrity.

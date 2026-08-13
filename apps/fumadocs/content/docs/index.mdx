@@ -1,13 +1,41 @@
 ---
-title: Hello World
-description: Your first document
+title: Overview
+description: The purpose, scope and operating principles of Aranga Portfolio.
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+Aranga Portfolio is a private, multi-currency portfolio application for consolidating cash, deposits, listed investments, commodities, real estate and other assets without losing historical records.
 
-## What is Next?
+## Product principles
+
+- **Account ownership is mandatory.** Every portfolio record belongs to one authenticated user; a new user begins with an empty portfolio.
+- **History is append-only.** A balance or valuation update creates a dated snapshot instead of replacing the previous value.
+- **Imports are repeatable.** Broker exports are retained and deduplicated so overlapping uploads do not duplicate activity or erase earlier data.
+- **Source data remains authoritative.** Calculations distinguish imported facts from estimates, such as a global-equity valuation based on the latest imported trade price.
+- **Secrets stay outside Git.** Credentials and personal source files are supplied through local or deployment environment variables.
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card
+    title="Features"
+    href="/docs/features"
+    description="Supported assets, analytics and workflows."
+  />
+  <Card
+    title="Technical architecture"
+    href="/docs/architecture"
+    description="The important technology and design decisions."
+  />
+  <Card
+    title="Data and history"
+    href="/docs/data-and-history"
+    description="How snapshots, ledgers and imports preserve records."
+  />
+  <Card
+    title="Security"
+    href="/docs/security"
+    description="User isolation and production safeguards."
+  />
 </Cards>
+
+## Current boundaries
+
+Aranga does not provide live market prices, trading, bank connectivity, tax calculations or investment advice. Global-equity market values are estimates from the latest imported Degiro trade price. Exchange-rate coverage is user-managed, and assets without a required FX rate are excluded from converted totals rather than silently assigned a rate.

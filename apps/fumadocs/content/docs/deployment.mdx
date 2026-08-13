@@ -1,0 +1,60 @@
+---
+title: Deployment and operations
+description: The production deployment contract for Vercel and Neon.
+---
+
+## Vercel project
+
+Import the GitHub repository as a Vercel project with:
+
+| Setting                           | Value                                                |
+| --------------------------------- | ---------------------------------------------------- |
+| Framework preset                  | Next.js                                              |
+| Root directory                    | `apps/web`                                           |
+| Install command                   | Automatically detected                               |
+| Output directory                  | Next.js default                                      |
+| Manual build command, if required | `cd ../.. && pnpm exec turbo run build --filter=web` |
+
+## Production environment
+
+Configure these variables for Production:
+
+| Variable             | Required value                                                  |
+| -------------------- | --------------------------------------------------------------- |
+| `DATABASE_URL`       | Neon pooled connection string; the hostname contains `-pooler`. |
+| `BETTER_AUTH_SECRET` | A high-entropy secret of at least 32 characters.                |
+| `BETTER_AUTH_URL`    | Exact HTTPS production origin with no trailing slash.           |
+| `CORS_ORIGIN`        | The same exact production origin.                               |
+
+Do not configure `DATABASE_URL_DIRECT` in the Vercel web application. Keep it in a trusted migration environment only.
+
+Generate an authentication secret locally:
+
+```bash
+openssl rand -base64 48
+```
+
+## Database releases
+
+Schema changes are stored in `packages/db/src/migrations`. Before deploying application code that requires a new schema, run from the repository root in a trusted environment:
+
+```bash
+pnpm db:migrate
+```
+
+The migration command prefers `DATABASE_URL_DIRECT` when available. Test migrations against a Neon branch before applying them to Production.
+
+## Release checks
+
+```bash
+pnpm check-types
+pnpm exec oxlint apps/web/src packages/api/src packages/auth/src packages/db/src
+pnpm --filter web build
+pnpm audit --prod
+```
+
+Environment-variable changes apply only to new Vercel deployments. Redeploy after changing the production domain, database credential, authentication secret or trusted origin.
+
+## Preview environments
+
+Preview should use a separate Neon branch and a separate authentication secret. Because the current authentication configuration expects one exact canonical origin, use a stable branch domain for authenticated previews. Do not reuse the production database connection for general pull-request previews.
