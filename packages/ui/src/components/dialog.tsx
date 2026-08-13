@@ -3,8 +3,8 @@
 import * as React from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 
-import { cn } from "@zerodha-coin/ui/lib/utils";
-import { Button } from "@zerodha-coin/ui/components/button";
+import { cn } from "@portfolio/ui/lib/utils";
+import { Button } from "@portfolio/ui/components/button";
 import { XIcon } from "lucide-react";
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {

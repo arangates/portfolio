@@ -7,19 +7,16 @@ import {
   PreferenceForm,
   SecurityForm,
 } from "@/components/settings-forms";
-import {
-  getLatestExchangeRates,
-  getPortfolioPreference,
-} from "@zerodha-coin/api/portfolio-queries";
-import { auth } from "@zerodha-coin/auth";
-import { Badge } from "@zerodha-coin/ui/components/badge";
+import { getLatestExchangeRates, getPortfolioPreference } from "@portfolio/api/portfolio-queries";
+import { auth } from "@portfolio/auth";
+import { Badge } from "@portfolio/ui/components/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@zerodha-coin/ui/components/card";
+} from "@portfolio/ui/components/card";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

@@ -7,8 +7,8 @@ import {
   saveManualAsset,
   savePortfolioPreference,
   type ArchiveKind,
-} from "@zerodha-coin/api/portfolio-mutations";
-import { auth } from "@zerodha-coin/auth";
+} from "@portfolio/api/portfolio-mutations";
+import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
 

@@ -1,4 +1,4 @@
-import { Button } from "@zerodha-coin/ui/components/button";
+import { Button } from "@portfolio/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +7,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@zerodha-coin/ui/components/dropdown-menu";
-import { Skeleton } from "@zerodha-coin/ui/components/skeleton";
+} from "@portfolio/ui/components/dropdown-menu";
+import { Skeleton } from "@portfolio/ui/components/skeleton";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 

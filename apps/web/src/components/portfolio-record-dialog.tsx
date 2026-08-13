@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@zerodha-coin/ui/components/button";
-import { Checkbox } from "@zerodha-coin/ui/components/checkbox";
+import { Button } from "@portfolio/ui/components/button";
+import { Checkbox } from "@portfolio/ui/components/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -10,17 +10,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@zerodha-coin/ui/components/dialog";
+} from "@portfolio/ui/components/dialog";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@zerodha-coin/ui/components/field";
-import { Input } from "@zerodha-coin/ui/components/input";
-import { Spinner } from "@zerodha-coin/ui/components/spinner";
-import { Textarea } from "@zerodha-coin/ui/components/textarea";
+} from "@portfolio/ui/components/field";
+import { Input } from "@portfolio/ui/components/input";
+import { Spinner } from "@portfolio/ui/components/spinner";
+import { Textarea } from "@portfolio/ui/components/textarea";
 import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

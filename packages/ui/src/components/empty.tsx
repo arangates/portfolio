@@ -1,4 +1,4 @@
-import { cn } from "@zerodha-coin/ui/lib/utils";
+import { cn } from "@portfolio/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 function Empty({ className, ...props }: React.ComponentProps<"div">) {

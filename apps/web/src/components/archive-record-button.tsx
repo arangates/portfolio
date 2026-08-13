@@ -11,8 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@zerodha-coin/ui/components/alert-dialog";
-import { Button } from "@zerodha-coin/ui/components/button";
+} from "@portfolio/ui/components/alert-dialog";
+import { Button } from "@portfolio/ui/components/button";
 import { ArchiveIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

@@ -1,5 +1,5 @@
 {
-  "name": "@zerodha-coin/api",
+  "name": "@portfolio/api",
   "type": "module",
   "exports": {
     ".": {
@@ -13,11 +13,11 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@portfolio/auth": "workspace:*",
+    "@portfolio/db": "workspace:*",
+    "@portfolio/env": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
-    "@zerodha-coin/auth": "workspace:*",
-    "@zerodha-coin/db": "workspace:*",
-    "@zerodha-coin/env": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.2",
     "exceljs": "^4.4.0",
@@ -27,8 +27,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@portfolio/config": "workspace:*",
     "@types/papaparse": "^5.5.2",
-    "@zerodha-coin/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

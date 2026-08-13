@@ -1,5 +1,5 @@
 {
-  "name": "@zerodha-coin/env",
+  "name": "@portfolio/env",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@portfolio/config": "workspace:*",
     "@types/node": "^22.20.1",
-    "@zerodha-coin/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

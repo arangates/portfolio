@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@zerodha-coin/ui/components/button";
-import { Input } from "@zerodha-coin/ui/components/input";
-import { Textarea } from "@zerodha-coin/ui/components/textarea";
-import { cn } from "@zerodha-coin/ui/lib/utils";
+import { Button } from "@portfolio/ui/components/button";
+import { Input } from "@portfolio/ui/components/input";
+import { Textarea } from "@portfolio/ui/components/textarea";
+import { cn } from "@portfolio/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 

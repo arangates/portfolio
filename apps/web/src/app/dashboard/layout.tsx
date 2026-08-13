@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { auth } from "@zerodha-coin/auth";
-import { SidebarInset, SidebarProvider } from "@zerodha-coin/ui/components/sidebar";
+import { auth } from "@portfolio/auth";
+import { SidebarInset, SidebarProvider } from "@portfolio/ui/components/sidebar";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

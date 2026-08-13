@@ -1,4 +1,4 @@
-import { auth } from "@zerodha-coin/auth";
+import { auth } from "@portfolio/auth";
 import type { NextRequest } from "next/server";
 
 export async function createContext(req: NextRequest) {

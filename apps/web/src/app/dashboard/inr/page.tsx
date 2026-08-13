@@ -5,9 +5,9 @@ import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { formatCurrency, formatPercent } from "@/lib/format";
-import { getBankAccounts } from "@zerodha-coin/api/portfolio-queries";
-import { auth } from "@zerodha-coin/auth";
-import { Badge } from "@zerodha-coin/ui/components/badge";
+import { getBankAccounts } from "@portfolio/api/portfolio-queries";
+import { auth } from "@portfolio/auth";
+import { Badge } from "@portfolio/ui/components/badge";
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@zerodha-coin/ui/components/table";
+} from "@portfolio/ui/components/table";
 import { BanknoteIcon, Building2Icon, LandmarkIcon, ShieldCheckIcon } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

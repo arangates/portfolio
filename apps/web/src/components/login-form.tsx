@@ -1,18 +1,18 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { Button } from "@zerodha-coin/ui/components/button";
-import { Card, CardContent } from "@zerodha-coin/ui/components/card";
+import { Button } from "@portfolio/ui/components/button";
+import { Card, CardContent } from "@portfolio/ui/components/card";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@zerodha-coin/ui/components/field";
-import { Input } from "@zerodha-coin/ui/components/input";
-import { Spinner } from "@zerodha-coin/ui/components/spinner";
-import { cn } from "@zerodha-coin/ui/lib/utils";
+} from "@portfolio/ui/components/field";
+import { Input } from "@portfolio/ui/components/input";
+import { Spinner } from "@portfolio/ui/components/spinner";
+import { cn } from "@portfolio/ui/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

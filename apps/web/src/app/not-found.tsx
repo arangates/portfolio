@@ -1,11 +1,11 @@
-import { Button } from "@zerodha-coin/ui/components/button";
+import { Button } from "@portfolio/ui/components/button";
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@zerodha-coin/ui/components/empty";
+} from "@portfolio/ui/components/empty";
 
 export default function NotFound() {
   return (

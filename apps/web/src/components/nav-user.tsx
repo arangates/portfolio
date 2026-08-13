@@ -1,7 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { Avatar, AvatarFallback, AvatarImage } from "@zerodha-coin/ui/components/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@portfolio/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,13 +10,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@zerodha-coin/ui/components/dropdown-menu";
+} from "@portfolio/ui/components/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@zerodha-coin/ui/components/sidebar";
+} from "@portfolio/ui/components/sidebar";
 import { CircleUserRoundIcon, EllipsisVerticalIcon, LogOutIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 

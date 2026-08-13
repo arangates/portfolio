@@ -8,9 +8,9 @@ import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
 import {
   getEquitySnapshotHistory,
   getLatestZerodhaPortfolio,
-} from "@zerodha-coin/api/portfolio-queries";
-import { auth } from "@zerodha-coin/auth";
-import { Badge } from "@zerodha-coin/ui/components/badge";
+} from "@portfolio/api/portfolio-queries";
+import { auth } from "@portfolio/auth";
+import { Badge } from "@portfolio/ui/components/badge";
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@zerodha-coin/ui/components/table";
+} from "@portfolio/ui/components/table";
 import { CircleDashedIcon, IndianRupeeIcon, LineChartIcon, TrendingUpIcon } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

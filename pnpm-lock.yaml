@@ -20,7 +20,7 @@ importers:
 
   .:
     dependencies:
-      '@zerodha-coin/env':
+      '@portfolio/env':
         specifier: workspace:*
         version: link:packages/env
       dotenv:
@@ -33,7 +33,7 @@ importers:
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
-      '@zerodha-coin/config':
+      '@portfolio/config':
         specifier: workspace:*
         version: link:packages/config
       husky:
@@ -130,19 +130,19 @@ importers:
       '@trpc/tanstack-react-query':
         specifier: ^11.18.0
         version: 11.18.0(@tanstack/react-query@5.101.4(react@19.2.8))(@trpc/client@11.18.0(@trpc/server@11.18.0(typescript@6.0.3))(typescript@6.0.3))(@trpc/server@11.18.0(typescript@6.0.3))(react@19.2.8)(typescript@6.0.3)
-      '@zerodha-coin/api':
+      '@portfolio/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@zerodha-coin/auth':
+      '@portfolio/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@zerodha-coin/db':
+      '@portfolio/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@zerodha-coin/env':
+      '@portfolio/env':
         specifier: workspace:*
         version: link:../../packages/env
-      '@zerodha-coin/ui':
+      '@portfolio/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       babel-plugin-react-compiler:
@@ -194,7 +194,7 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 19.2.4(@types/react@19.2.18)
-      '@zerodha-coin/config':
+      '@portfolio/config':
         specifier: workspace:*
         version: link:../../packages/config
       tailwindcss:
@@ -212,13 +212,13 @@ importers:
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.18.0(typescript@6.0.3)
-      '@zerodha-coin/auth':
+      '@portfolio/auth':
         specifier: workspace:*
         version: link:../auth
-      '@zerodha-coin/db':
+      '@portfolio/db':
         specifier: workspace:*
         version: link:../db
-      '@zerodha-coin/env':
+      '@portfolio/env':
         specifier: workspace:*
         version: link:../env
       dotenv:
@@ -246,7 +246,7 @@ importers:
       '@types/papaparse':
         specifier: ^5.5.2
         version: 5.5.2
-      '@zerodha-coin/config':
+      '@portfolio/config':
         specifier: workspace:*
         version: link:../config
       typescript:
@@ -255,10 +255,10 @@ importers:
 
   packages/auth:
     dependencies:
-      '@zerodha-coin/db':
+      '@portfolio/db':
         specifier: workspace:*
         version: link:../db
-      '@zerodha-coin/env':
+      '@portfolio/env':
         specifier: workspace:*
         version: link:../env
       better-auth:
@@ -271,7 +271,7 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@zerodha-coin/config':
+      '@portfolio/config':
         specifier: workspace:*
         version: link:../config
       typescript:
@@ -285,7 +285,7 @@ importers:
       '@neondatabase/serverless':
         specifier: ^1.1.0
         version: 1.1.0
-      '@zerodha-coin/env':
+      '@portfolio/env':
         specifier: workspace:*
         version: link:../env
       dotenv:
@@ -298,7 +298,7 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@zerodha-coin/config':
+      '@portfolio/config':
         specifier: workspace:*
         version: link:../config
       drizzle-kit:
@@ -326,7 +326,7 @@ importers:
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
-      '@zerodha-coin/config':
+      '@portfolio/config':
         specifier: workspace:*
         version: link:../config
       typescript:
@@ -402,7 +402,7 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 19.2.4(@types/react@19.2.18)
-      '@zerodha-coin/config':
+      '@portfolio/config':
         specifier: workspace:*
         version: link:../config
       tailwindcss:

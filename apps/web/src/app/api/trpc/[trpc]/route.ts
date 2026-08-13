@@ -1,6 +1,6 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { createContext } from "@zerodha-coin/api/context";
-import { appRouter } from "@zerodha-coin/api/routers/index";
+import { createContext } from "@portfolio/api/context";
+import { appRouter } from "@portfolio/api/routers/index";
 import { NextRequest } from "next/server";
 
 function handler(req: NextRequest) {

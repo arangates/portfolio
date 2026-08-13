@@ -1,8 +1,5 @@
-import {
-  getRecentPortfolioImports,
-  processPortfolioImport,
-} from "@zerodha-coin/api/portfolio-import";
-import { auth } from "@zerodha-coin/auth";
+import { getRecentPortfolioImports, processPortfolioImport } from "@portfolio/api/portfolio-import";
+import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
 

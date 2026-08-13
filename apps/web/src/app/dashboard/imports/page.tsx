@@ -2,9 +2,9 @@ import { PageHeader } from "@/components/page-header";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { TableCard } from "@/components/table-card";
 import { UploadDialog } from "@/components/upload-dialog";
-import { getRecentPortfolioImports } from "@zerodha-coin/api/portfolio-import";
-import { auth } from "@zerodha-coin/auth";
-import { Badge } from "@zerodha-coin/ui/components/badge";
+import { getRecentPortfolioImports } from "@portfolio/api/portfolio-import";
+import { auth } from "@portfolio/auth";
+import { Badge } from "@portfolio/ui/components/badge";
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@zerodha-coin/ui/components/table";
+} from "@portfolio/ui/components/table";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DatabaseIcon } from "lucide-react";

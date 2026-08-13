@@ -1,8 +1,8 @@
 "use client";
 
 import { formatCurrency } from "@/lib/format";
-import { Badge } from "@zerodha-coin/ui/components/badge";
-import { Label } from "@zerodha-coin/ui/components/label";
+import { Badge } from "@portfolio/ui/components/badge";
+import { Label } from "@portfolio/ui/components/label";
 import {
   Select,
   SelectContent,
@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@zerodha-coin/ui/components/select";
+} from "@portfolio/ui/components/select";
 import {
   Table,
   TableBody,
@@ -18,8 +18,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@zerodha-coin/ui/components/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@zerodha-coin/ui/components/tabs";
+} from "@portfolio/ui/components/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@portfolio/ui/components/tabs";
 import { useState } from "react";
 
 export type AssetRow = {

@@ -4,10 +4,10 @@ import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
-import { getCurrentFixedDeposits } from "@zerodha-coin/api/portfolio-queries";
-import { auth } from "@zerodha-coin/auth";
-import { Badge } from "@zerodha-coin/ui/components/badge";
-import { Progress } from "@zerodha-coin/ui/components/progress";
+import { getCurrentFixedDeposits } from "@portfolio/api/portfolio-queries";
+import { auth } from "@portfolio/auth";
+import { Badge } from "@portfolio/ui/components/badge";
+import { Progress } from "@portfolio/ui/components/progress";
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@zerodha-coin/ui/components/table";
+} from "@portfolio/ui/components/table";
 import { CalendarClockIcon, HistoryIcon, LandmarkIcon, PercentIcon } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";

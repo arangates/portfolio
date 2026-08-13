@@ -1,5 +1,5 @@
 {
-  "name": "@zerodha-coin/auth",
+  "name": "@portfolio/auth",
   "type": "module",
   "exports": {
     ".": {
@@ -13,14 +13,14 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@zerodha-coin/db": "workspace:*",
-    "@zerodha-coin/env": "workspace:*",
+    "@portfolio/db": "workspace:*",
+    "@portfolio/env": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@zerodha-coin/config": "workspace:*",
+    "@portfolio/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

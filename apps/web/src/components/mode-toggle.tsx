@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@zerodha-coin/ui/components/button";
+import { Button } from "@portfolio/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@zerodha-coin/ui/components/dropdown-menu";
+} from "@portfolio/ui/components/dropdown-menu";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import * as React from "react";

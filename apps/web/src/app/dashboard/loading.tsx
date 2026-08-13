@@ -1,4 +1,4 @@
-import { Skeleton } from "@zerodha-coin/ui/components/skeleton";
+import { Skeleton } from "@portfolio/ui/components/skeleton";
 
 export default function DashboardLoading() {
   return (

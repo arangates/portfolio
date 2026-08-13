@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@zerodha-coin/ui/lib/utils";
+import { cn } from "@portfolio/ui/lib/utils";
 import * as React from "react";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {

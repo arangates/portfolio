@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@zerodha-coin/ui/components/card";
+} from "@portfolio/ui/components/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -15,7 +15,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "@zerodha-coin/ui/components/chart";
+} from "@portfolio/ui/components/chart";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 const allocationConfig = {

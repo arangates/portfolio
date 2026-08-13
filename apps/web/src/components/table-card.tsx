@@ -4,7 +4,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@zerodha-coin/ui/components/card";
+} from "@portfolio/ui/components/card";
 
 export function TableCard({
   title,

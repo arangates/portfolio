@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@zerodha-coin/ui/components/button";
+import { Button } from "@portfolio/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -9,16 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@zerodha-coin/ui/components/dialog";
+} from "@portfolio/ui/components/dialog";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@zerodha-coin/ui/components/field";
-import { Input } from "@zerodha-coin/ui/components/input";
-import { Spinner } from "@zerodha-coin/ui/components/spinner";
+} from "@portfolio/ui/components/field";
+import { Input } from "@portfolio/ui/components/input";
+import { Spinner } from "@portfolio/ui/components/spinner";
 import { UploadIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";

@@ -1,5 +1,5 @@
-import { saveFixedDeposit } from "@zerodha-coin/api/portfolio-mutations";
-import { auth } from "@zerodha-coin/auth";
+import { saveFixedDeposit } from "@portfolio/api/portfolio-mutations";
+import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 
 export async function POST(request: Request) {

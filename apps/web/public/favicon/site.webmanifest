@@ -1,6 +1,6 @@
 {
-  "name": "zerodha-coin",
-  "short_name": "zerodha-coin",
+  "name": "portfolio",
+  "short_name": "portfolio",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

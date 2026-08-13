@@ -5,20 +5,20 @@ import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { useIsMobile } from "@zerodha-coin/ui/hooks/use-mobile";
-import { cn } from "@zerodha-coin/ui/lib/utils";
-import { Button } from "@zerodha-coin/ui/components/button";
-import { Input } from "@zerodha-coin/ui/components/input";
-import { Separator } from "@zerodha-coin/ui/components/separator";
+import { useIsMobile } from "@portfolio/ui/hooks/use-mobile";
+import { cn } from "@portfolio/ui/lib/utils";
+import { Button } from "@portfolio/ui/components/button";
+import { Input } from "@portfolio/ui/components/input";
+import { Separator } from "@portfolio/ui/components/separator";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@zerodha-coin/ui/components/sheet";
-import { Skeleton } from "@zerodha-coin/ui/components/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@zerodha-coin/ui/components/tooltip";
+} from "@portfolio/ui/components/sheet";
+import { Skeleton } from "@portfolio/ui/components/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@portfolio/ui/components/tooltip";
 import { PanelLeftIcon } from "lucide-react";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";

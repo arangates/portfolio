@@ -1,4 +1,4 @@
-import { getRecentPortfolioImports } from "@zerodha-coin/api/portfolio-import";
+import { getRecentPortfolioImports } from "@portfolio/api/portfolio-import";
 import {
   getBankAccounts,
   getCommodityHoldings,
@@ -9,8 +9,8 @@ import {
   getManualAssets,
   getPortfolioPreference,
   getRecentDegiroEntries,
-} from "@zerodha-coin/api/portfolio-queries";
-import { auth } from "@zerodha-coin/auth";
+} from "@portfolio/api/portfolio-queries";
+import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 
 export async function GET() {

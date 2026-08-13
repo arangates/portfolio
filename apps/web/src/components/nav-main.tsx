@@ -12,7 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@zerodha-coin/ui/components/sidebar";
+} from "@portfolio/ui/components/sidebar";
 
 export function NavMain({
   label,

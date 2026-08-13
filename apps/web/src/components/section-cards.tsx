@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 
-import { Badge } from "@zerodha-coin/ui/components/badge";
+import { Badge } from "@portfolio/ui/components/badge";
 import {
   Card,
   CardAction,
@@ -8,7 +8,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@zerodha-coin/ui/components/card";
+} from "@portfolio/ui/components/card";
 
 export type MetricCard = {
   label: string;

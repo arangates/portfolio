@@ -2,7 +2,7 @@
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Toaster } from "@zerodha-coin/ui/components/sonner";
+import { Toaster } from "@portfolio/ui/components/sonner";
 
 import { queryClient } from "@/utils/trpc";
 

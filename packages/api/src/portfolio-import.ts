@@ -8,7 +8,7 @@ import {
   ledgerEntry,
   portfolioSource,
   positionSnapshot,
-} from "@zerodha-coin/db";
+} from "@portfolio/db";
 import { and, desc, eq } from "drizzle-orm";
 import ExcelJS from "exceljs";
 import Papa from "papaparse";

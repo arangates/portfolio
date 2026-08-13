@@ -1,4 +1,4 @@
-import { cn } from "@zerodha-coin/ui/lib/utils";
+import { cn } from "@portfolio/ui/lib/utils";
 import * as React from "react";
 
 function Card({ className, ...props }: React.ComponentProps<"div">) {

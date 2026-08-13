@@ -1,5 +1,5 @@
 {
-  "extends": "@zerodha-coin/config/tsconfig.base.json",
+  "extends": "@portfolio/config/tsconfig.base.json",
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,

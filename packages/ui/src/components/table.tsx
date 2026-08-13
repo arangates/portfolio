@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { cn } from "@zerodha-coin/ui/lib/utils";
+import { cn } from "@portfolio/ui/lib/utils";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (

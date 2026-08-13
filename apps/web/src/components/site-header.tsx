@@ -2,8 +2,8 @@
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
-import { Separator } from "@zerodha-coin/ui/components/separator";
-import { SidebarTrigger } from "@zerodha-coin/ui/components/sidebar";
+import { Separator } from "@portfolio/ui/components/separator";
+import { SidebarTrigger } from "@portfolio/ui/components/sidebar";
 import { usePathname } from "next/navigation";
 
 const titles: Record<string, string> = {

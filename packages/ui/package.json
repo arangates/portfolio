@@ -1,5 +1,5 @@
 {
-  "name": "@zerodha-coin/ui",
+  "name": "@portfolio/ui",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -35,10 +35,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@portfolio/config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@zerodha-coin/config": "workspace:*",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }

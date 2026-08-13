@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@zerodha-coin/ui/components/button";
+import { Button } from "@portfolio/ui/components/button";
 import {
   Card,
   CardContent,
@@ -8,7 +8,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@zerodha-coin/ui/components/card";
+} from "@portfolio/ui/components/card";
 import { RotateCcwIcon } from "lucide-react";
 import { useEffect } from "react";
 

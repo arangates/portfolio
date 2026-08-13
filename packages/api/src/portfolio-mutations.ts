@@ -13,7 +13,7 @@ import {
   manualAsset,
   manualAssetSnapshot,
   portfolioPreference,
-} from "@zerodha-coin/db";
+} from "@portfolio/db";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 

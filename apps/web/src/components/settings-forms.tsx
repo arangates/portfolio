@@ -1,7 +1,7 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { Button } from "@zerodha-coin/ui/components/button";
+import { Button } from "@portfolio/ui/components/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@zerodha-coin/ui/components/alert-dialog";
+} from "@portfolio/ui/components/alert-dialog";
 import {
   Card,
   CardContent,
@@ -20,10 +20,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@zerodha-coin/ui/components/card";
-import { Field, FieldGroup, FieldLabel } from "@zerodha-coin/ui/components/field";
-import { Input } from "@zerodha-coin/ui/components/input";
-import { Spinner } from "@zerodha-coin/ui/components/spinner";
+} from "@portfolio/ui/components/card";
+import { Field, FieldGroup, FieldLabel } from "@portfolio/ui/components/field";
+import { Input } from "@portfolio/ui/components/input";
+import { Spinner } from "@portfolio/ui/components/spinner";
 import { DownloadIcon, SaveIcon, ShieldCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

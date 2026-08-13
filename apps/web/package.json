@@ -9,17 +9,17 @@
     "start": "next start"
   },
   "dependencies": {
+    "@portfolio/api": "workspace:*",
+    "@portfolio/auth": "workspace:*",
+    "@portfolio/db": "workspace:*",
+    "@portfolio/env": "workspace:*",
+    "@portfolio/ui": "workspace:*",
     "@swc/helpers": "^0.5.23",
     "@tanstack/react-form": "^1.33.2",
     "@tanstack/react-query": "^5.101.4",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "^11.18.0",
-    "@zerodha-coin/api": "workspace:*",
-    "@zerodha-coin/auth": "workspace:*",
-    "@zerodha-coin/db": "workspace:*",
-    "@zerodha-coin/env": "workspace:*",
-    "@zerodha-coin/ui": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
@@ -33,12 +33,12 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@portfolio/config": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@tanstack/react-query-devtools": "^5.101.4",
     "@types/node": "^20.19.43",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@zerodha-coin/config": "workspace:*",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }

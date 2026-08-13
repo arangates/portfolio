@@ -5,7 +5,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@zerodha-coin/ui/components/empty";
+} from "@portfolio/ui/components/empty";
 import type { LucideIcon } from "lucide-react";
 
 export function EmptyDataState({

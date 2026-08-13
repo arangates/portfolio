@@ -12,11 +12,11 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@zerodha-coin/ui/components",
-    "utils": "@zerodha-coin/ui/lib/utils",
-    "hooks": "@zerodha-coin/ui/hooks",
-    "lib": "@zerodha-coin/ui/lib",
-    "ui": "@zerodha-coin/ui/components"
+    "components": "@portfolio/ui/components",
+    "utils": "@portfolio/ui/lib/utils",
+    "hooks": "@portfolio/ui/hooks",
+    "lib": "@portfolio/ui/lib",
+    "ui": "@portfolio/ui/components"
   },
   "menuColor": "default",
   "menuAccent": "subtle",

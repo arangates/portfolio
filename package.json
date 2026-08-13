@@ -1,5 +1,5 @@
 {
-  "name": "zerodha-coin",
+  "name": "portfolio",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -11,21 +11,21 @@
     "build": "turbo run build",
     "check-types": "turbo run check-types",
     "dev:web": "turbo run dev -F web",
-    "db:push": "turbo run db:push -F @zerodha-coin/db",
-    "db:studio": "turbo run db:studio -F @zerodha-coin/db",
-    "db:generate": "turbo run db:generate -F @zerodha-coin/db",
-    "db:migrate": "turbo run db:migrate -F @zerodha-coin/db",
+    "db:push": "turbo run db:push -F @portfolio/db",
+    "db:studio": "turbo run db:studio -F @portfolio/db",
+    "db:generate": "turbo run db:generate -F @portfolio/db",
+    "db:migrate": "turbo run db:migrate -F @portfolio/db",
     "check": "oxlint && oxfmt --write",
     "prepare": "husky"
   },
   "dependencies": {
-    "@zerodha-coin/env": "workspace:*",
+    "@portfolio/env": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@portfolio/config": "workspace:*",
     "@types/node": "^22.20.1",
-    "@zerodha-coin/config": "workspace:*",
     "husky": "^9.1.7",
     "lint-staged": "^17.2.0",
     "oxfmt": "^0.61.0",

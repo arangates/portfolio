@@ -1,5 +1,5 @@
 {
-  "name": "@zerodha-coin/db",
+  "name": "@portfolio/db",
   "type": "module",
   "exports": {
     ".": {
@@ -18,13 +18,13 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
-    "@zerodha-coin/env": "workspace:*",
+    "@portfolio/env": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.2",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@zerodha-coin/config": "workspace:*",
+    "@portfolio/config": "workspace:*",
     "drizzle-kit": "^0.31.10",
     "typescript": "catalog:"
   }

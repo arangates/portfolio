@@ -1,11 +1,11 @@
 {
-  "extends": "@zerodha-coin/config/tsconfig.base.json",
+  "extends": "@portfolio/config/tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": [],
     "paths": {
-      "@zerodha-coin/ui/*": ["./src/*"]
+      "@portfolio/ui/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

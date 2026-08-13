@@ -1,6 +1,6 @@
-import { createDb } from "@zerodha-coin/db";
-import * as schema from "@zerodha-coin/db/schema/auth";
-import { env } from "@zerodha-coin/env/server";
+import { createDb } from "@portfolio/db";
+import * as schema from "@portfolio/db/schema/auth";
+import { env } from "@portfolio/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";

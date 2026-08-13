@@ -16,7 +16,7 @@ import {
   manualAssetSnapshot,
   portfolioPreference,
   positionSnapshot,
-} from "@zerodha-coin/db";
+} from "@portfolio/db";
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 
 function latestBy<T>(rows: T[], key: (row: T) => string) {
