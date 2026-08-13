@@ -4,6 +4,9 @@ packages:
 allowBuilds:
   esbuild: true
   sharp: true
+overrides:
+  "@esbuild-kit/core-utils>esbuild": 0.25.12
+  "exceljs>uuid": 11.1.1
 catalog:
   dotenv: ^17.4.2
   zod: ^4.4.3

@@ -6,6 +6,7 @@ import {
   saveFixedDeposit,
   saveManualAsset,
   savePortfolioPreference,
+  saveRealEstate,
   type ArchiveKind,
 } from "@portfolio/api/portfolio-mutations";
 import { auth } from "@portfolio/auth";
@@ -18,13 +19,20 @@ const saveRequest = z.object({
     "fixed_deposit",
     "commodity",
     "manual_asset",
+    "real_estate",
     "preference",
     "exchange_rate",
   ]),
   data: z.unknown(),
 });
 
-const archiveKind = z.enum(["bank_account", "fixed_deposit", "commodity", "manual_asset"]);
+const archiveKind = z.enum([
+  "bank_account",
+  "fixed_deposit",
+  "commodity",
+  "manual_asset",
+  "real_estate",
+]);
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -41,9 +49,11 @@ export async function POST(request: Request) {
             ? await saveCommodity(session.user.id, input.data)
             : input.kind === "manual_asset"
               ? await saveManualAsset(session.user.id, input.data)
-              : input.kind === "preference"
-                ? await savePortfolioPreference(session.user.id, input.data)
-                : await saveExchangeRate(session.user.id, input.data);
+              : input.kind === "real_estate"
+                ? await saveRealEstate(session.user.id, input.data)
+                : input.kind === "preference"
+                  ? await savePortfolioPreference(session.user.id, input.data)
+                  : await saveExchangeRate(session.user.id, input.data);
     return Response.json(result, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not save record";

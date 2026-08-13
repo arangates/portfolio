@@ -2,9 +2,11 @@
 
 import {
   BanknoteIcon,
+  Building2Icon,
   CoinsIcon,
   DatabaseIcon,
   EuroIcon,
+  Globe2Icon,
   LandmarkIcon,
   LayoutDashboardIcon,
   TrendingUpIcon,
@@ -43,6 +45,8 @@ const navigation = [
     label: "Investments",
     items: [
       { title: "Indian equity", url: "/dashboard/indian-equity", icon: TrendingUpIcon },
+      { title: "Global equity", url: "/dashboard/global-equity", icon: Globe2Icon },
+      { title: "Real estate", url: "/dashboard/real-estate", icon: Building2Icon },
       { title: "Commodities", url: "/dashboard/commodities", icon: CoinsIcon },
     ],
   },

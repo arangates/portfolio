@@ -13,6 +13,8 @@ import {
   manualAsset,
   manualAssetSnapshot,
   portfolioPreference,
+  realEstateProperty,
+  realEstateSnapshot,
 } from "@portfolio/db";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -85,6 +87,26 @@ export const manualAssetInput = z.object({
   currency,
   ownershipShare: z.coerce.number().positive().max(100),
   asOf: date.optional(),
+});
+
+export const realEstateInput = z.object({
+  id: z.uuid().optional(),
+  name: z.string().trim().min(2).max(120),
+  owner: z.string().trim().min(2).max(120),
+  propertyType: z.string().trim().min(2).max(60),
+  location: z.string().trim().max(160).optional(),
+  areaCents: z.coerce.number().nonnegative().max(1_000_000_000),
+  areaSquareFeet: z.coerce.number().nonnegative().max(100_000_000_000),
+  ownershipShare: z.coerce.number().min(0).max(100),
+  legalStatus: z.enum(["unknown", "pending", "verified"]),
+  pricePerSquareFoot: z.coerce.number().nonnegative().max(1_000_000_000),
+  marketValue: z.preprocess(
+    (value) => (value === "" || value === null ? undefined : value),
+    z.coerce.number().nonnegative().max(1_000_000_000_000_000).optional(),
+  ),
+  currency,
+  asOf: date.optional(),
+  notes: z.string().trim().max(500).optional(),
 });
 
 export const preferenceInput = z.object({
@@ -336,6 +358,72 @@ export async function saveManualAsset(userId: string, raw: unknown) {
   return { id: asset.id };
 }
 
+export async function saveRealEstate(userId: string, raw: unknown) {
+  const input = realEstateInput.parse(raw);
+  let property: typeof realEstateProperty.$inferSelect | undefined;
+  if (input.id) {
+    [property] = await db
+      .update(realEstateProperty)
+      .set({
+        name: input.name,
+        owner: input.owner,
+        propertyType: input.propertyType,
+        location: input.location || null,
+        notes: input.notes || null,
+      })
+      .where(and(eq(realEstateProperty.id, input.id), eq(realEstateProperty.userId, userId)))
+      .returning();
+  } else {
+    [property] = await db
+      .insert(realEstateProperty)
+      .values({
+        userId,
+        name: input.name,
+        owner: input.owner,
+        propertyType: input.propertyType,
+        location: input.location || null,
+        notes: input.notes || null,
+      })
+      .onConflictDoUpdate({
+        target: [
+          realEstateProperty.userId,
+          realEstateProperty.name,
+          realEstateProperty.owner,
+          realEstateProperty.location,
+        ],
+        set: {
+          propertyType: input.propertyType,
+          notes: input.notes || null,
+          archivedAt: null,
+        },
+      })
+      .returning();
+  }
+  if (!property) throw new Error(input.id ? "Property not found" : "Could not save property");
+
+  const calculatedMarketValue = input.areaSquareFeet * input.pricePerSquareFoot;
+  await db.insert(realEstateSnapshot).values({
+    userId,
+    propertyId: property.id,
+    asOf: asOfDate(input.asOf),
+    areaCents: input.areaCents.toString(),
+    areaSquareFeet: input.areaSquareFeet.toString(),
+    ownershipShare: (input.ownershipShare / 100).toString(),
+    legalStatus: input.legalStatus,
+    pricePerSquareFoot: input.pricePerSquareFoot.toString(),
+    marketValue: (input.marketValue ?? calculatedMarketValue).toString(),
+    currency: input.currency,
+  });
+  await recordAuditEvent({
+    userId,
+    action: input.id ? "updated" : "created",
+    entityType: "real_estate",
+    entityId: property.id,
+    metadata: { currency: input.currency, propertyType: input.propertyType },
+  });
+  return { id: property.id };
+}
+
 export async function savePortfolioPreference(userId: string, raw: unknown) {
   const input = preferenceInput.parse(raw);
   await db
@@ -378,6 +466,7 @@ const archiveKinds = {
   fixed_deposit: fixedDeposit,
   commodity: commodityHolding,
   manual_asset: manualAsset,
+  real_estate: realEstateProperty,
 } as const;
 
 export type ArchiveKind = keyof typeof archiveKinds;
@@ -409,13 +498,21 @@ export async function archivePortfolioRecord(userId: string, kind: ArchiveKind, 
         .where(and(eq(commodityHolding.id, id), eq(commodityHolding.userId, userId)))
         .returning({ id: commodityHolding.id })
     ).map((row) => row.id);
-  } else {
+  } else if (kind === "manual_asset") {
     [archivedId] = (
       await db
         .update(manualAsset)
         .set({ archivedAt: now })
         .where(and(eq(manualAsset.id, id), eq(manualAsset.userId, userId)))
         .returning({ id: manualAsset.id })
+    ).map((row) => row.id);
+  } else {
+    [archivedId] = (
+      await db
+        .update(realEstateProperty)
+        .set({ archivedAt: now })
+        .where(and(eq(realEstateProperty.id, id), eq(realEstateProperty.userId, userId)))
+        .returning({ id: realEstateProperty.id })
     ).map((row) => row.id);
   }
   if (!archivedId) throw new Error("Record not found");

@@ -11,20 +11,17 @@ import {
 import {
   type ChartConfig,
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@portfolio/ui/components/chart";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 const allocationConfig = {
-  value: { label: "Value", color: "var(--chart-1)" },
+  value: { label: "Attributable value", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
 const historyConfig = {
-  marketValue: { label: "Market value", color: "var(--chart-1)" },
-  investedValue: { label: "Invested value", color: "var(--chart-2)" },
+  value: { label: "Attributable value", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
 function compactNumber(value: number, currency: string) {
@@ -36,27 +33,21 @@ function compactNumber(value: number, currency: string) {
   }).format(value);
 }
 
-export function PortfolioCharts({
+export function RealEstateCharts({
   allocation,
-  equityHistory,
+  history,
   currency,
-  allocationTitle = "Asset allocation",
-  historyTitle = "Indian equity history",
-  historyDescription = "Invested value versus market value across archived uploads.",
 }: {
   allocation: Array<{ category: string; value: number }>;
-  equityHistory: Array<{ date: string; investedValue: number; marketValue: number }>;
+  history: Array<{ date: string; value: number }>;
   currency: string;
-  allocationTitle?: string;
-  historyTitle?: string;
-  historyDescription?: string;
 }) {
   return (
     <div className="grid gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <Card>
         <CardHeader>
-          <CardTitle>{allocationTitle}</CardTitle>
-          <CardDescription>Current value by asset category in {currency}.</CardDescription>
+          <CardTitle>Property allocation</CardTitle>
+          <CardDescription>Attributable value by property type.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={allocationConfig} className="h-[300px] w-full">
@@ -67,7 +58,7 @@ export function PortfolioCharts({
                 type="category"
                 tickLine={false}
                 axisLine={false}
-                width={120}
+                width={100}
               />
               <XAxis
                 type="number"
@@ -91,16 +82,16 @@ export function PortfolioCharts({
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>{historyTitle}</CardTitle>
-          <CardDescription>{historyDescription}</CardDescription>
+          <CardTitle>Valuation history</CardTitle>
+          <CardDescription>Portfolio value after each dated property snapshot.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={historyConfig} className="h-[300px] w-full">
-            <AreaChart accessibilityLayer data={equityHistory} margin={{ left: 8, right: 8 }}>
+            <AreaChart accessibilityLayer data={history} margin={{ left: 8, right: 8 }}>
               <defs>
-                <linearGradient id="fill-market" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-marketValue)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--color-marketValue)" stopOpacity={0.05} />
+                <linearGradient id="fill-property-value" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid vertical={false} />
@@ -118,18 +109,11 @@ export function PortfolioCharts({
                   />
                 }
               />
-              <ChartLegend content={<ChartLegendContent />} />
               <Area
-                dataKey="marketValue"
+                dataKey="value"
                 type="monotone"
-                fill="url(#fill-market)"
-                stroke="var(--color-marketValue)"
-              />
-              <Area
-                dataKey="investedValue"
-                type="monotone"
-                fill="transparent"
-                stroke="var(--color-investedValue)"
+                fill="url(#fill-property-value)"
+                stroke="var(--color-value)"
               />
             </AreaChart>
           </ChartContainer>

@@ -5,8 +5,9 @@ A private, multi-currency portfolio SaaS built with Next.js 16, Better Auth, Dri
 ## What it provides
 
 - Strict per-user ownership for imports, instruments, positions, ledgers, bank accounts, deposits, commodities, manual assets, snapshots, FX rates and audit events.
-- Immutable historical snapshots for holdings, balances, deposits, commodities and manual valuations.
+- Immutable historical snapshots for holdings, balances, deposits, commodities, real estate and manual valuations.
 - Idempotent Zerodha XLSX and Degiro CSV imports with archived source rows and SHA-256 deduplication.
+- Separate cash and investment surfaces: INR/EUR bank accounts, Indian equity and Global equity.
 - Generic CRUD and archival workflows; archived records retain their history.
 - Multi-currency net worth with user-managed, dated exchange rates.
 - Allocation, liquidity, equity history, concentration, fee, dividend and maturity analytics.
@@ -64,11 +65,11 @@ pnpm build
 ## Deploying to Vercel
 
 1. Push the repository to GitHub.
-2. Import it in Vercel and set the project root to `apps/web`.
-3. Add all environment variables from `apps/web/.env.example` for Production and Preview.
-4. Set `BETTER_AUTH_URL` and `CORS_ORIGIN` to the exact deployed HTTPS origin.
-5. Run `pnpm db:migrate` against the target Neon branch before serving the new release.
-6. Build with `pnpm build` from the selected app root.
+2. Import it in Vercel. Select `apps/web` as the Root Directory and keep the detected Next.js preset.
+3. Keep Vercel's automatically detected install and output settings. If a manual build command is required, use `cd ../.. && pnpm exec turbo run build --filter=web`.
+4. Add `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` and `CORS_ORIGIN` to Production and Preview. Set the two URL variables to the exact HTTPS origin for that environment. Keep `DATABASE_URL_DIRECT` outside the deployed app unless a trusted migration job specifically needs it.
+5. Run `pnpm db:migrate` from the repository root against the target Neon branch before the first deployment containing a new migration.
+6. Deploy. Subsequent pushes to the production branch create production deployments; other branches create previews.
 
 For preview deployments, use a separate Neon branch and corresponding Vercel environment variables. Do not point untrusted preview code at production data.
 

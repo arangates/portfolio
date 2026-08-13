@@ -26,7 +26,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export type PortfolioRecordKind = "bank_account" | "fixed_deposit" | "commodity" | "manual_asset";
+export type PortfolioRecordKind =
+  | "bank_account"
+  | "fixed_deposit"
+  | "commodity"
+  | "manual_asset"
+  | "real_estate";
 
 type Values = Record<string, string | number | boolean | null | undefined>;
 
@@ -189,6 +194,74 @@ function RecordFields({ kind, values }: { kind: PortfolioRecordKind; values: Val
     );
   }
 
+  if (kind === "real_estate") {
+    return (
+      <>
+        <TextField values={values} name="name" label="Property name" />
+        <TextField values={values} name="owner" label="Owner" />
+        <TextField values={values} name="propertyType" label="Property type" placeholder="Land" />
+        <TextField values={values} name="location" label="Location" required={false} />
+        <TextField
+          values={values}
+          name="areaCents"
+          label="Area (cents)"
+          type="number"
+          min="0"
+          step="any"
+        />
+        <TextField
+          values={values}
+          name="areaSquareFeet"
+          label="Area (sq. ft.)"
+          type="number"
+          min="0"
+          step="any"
+        />
+        <TextField
+          values={values}
+          name="ownershipShare"
+          label="Ownership share (%)"
+          type="number"
+          min="0"
+          max="100"
+          step="any"
+        />
+        <Field>
+          <FieldLabel htmlFor="legalStatus">Legal status</FieldLabel>
+          <select
+            id="legalStatus"
+            name="legalStatus"
+            defaultValue={value(values, "legalStatus", "unknown")}
+            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30"
+          >
+            <option value="unknown">Unknown</option>
+            <option value="pending">Pending review</option>
+            <option value="verified">Verified</option>
+          </select>
+        </Field>
+        <TextField
+          values={values}
+          name="pricePerSquareFoot"
+          label="Price per sq. ft."
+          type="number"
+          min="0"
+          step="any"
+        />
+        <TextField
+          values={values}
+          name="marketValue"
+          label="Full property market value"
+          type="number"
+          required={false}
+          min="0"
+          step="any"
+          description="Optional override. If empty, area × price per sq. ft. is used."
+        />
+        <CommonCurrencyFields values={values} />
+      </>
+    );
+  }
+
   return (
     <>
       <TextField values={values} name="name" label="Asset name" />
@@ -240,6 +313,10 @@ const copy: Record<PortfolioRecordKind, { title: string; description: string }> 
   manual_asset: {
     title: "Manual asset",
     description: "Track real estate, vehicles or any asset not covered by an import.",
+  },
+  real_estate: {
+    title: "Real estate property",
+    description: "Append a dated property valuation while retaining every earlier snapshot.",
   },
 };
 

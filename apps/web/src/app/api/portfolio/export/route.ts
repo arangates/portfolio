@@ -4,11 +4,14 @@ import {
   getCommodityHoldings,
   getCurrentFixedDeposits,
   getEquitySnapshotHistory,
+  getGlobalEquityPortfolio,
   getLatestExchangeRates,
   getLatestZerodhaPortfolio,
   getManualAssets,
   getPortfolioPreference,
   getRecentDegiroEntries,
+  getRealEstateHistory,
+  getRealEstatePortfolio,
 } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
@@ -27,7 +30,10 @@ export async function GET() {
     manualAssets,
     indianEquity,
     indianEquityHistory,
+    globalEquity,
     degiroLedger,
+    realEstate,
+    realEstateHistory,
     imports,
   ] = await Promise.all([
     getPortfolioPreference(userId),
@@ -38,7 +44,10 @@ export async function GET() {
     getManualAssets(userId),
     getLatestZerodhaPortfolio(userId),
     getEquitySnapshotHistory(userId),
+    getGlobalEquityPortfolio(userId),
     getRecentDegiroEntries(userId, 100),
+    getRealEstatePortfolio(userId),
+    getRealEstateHistory(userId),
     getRecentPortfolioImports(userId),
   ]);
 
@@ -54,7 +63,10 @@ export async function GET() {
       manualAssets,
       indianEquity,
       indianEquityHistory,
+      globalEquity,
       degiroLedger,
+      realEstate,
+      realEstateHistory,
       imports,
     },
     null,

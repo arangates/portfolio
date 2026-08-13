@@ -506,7 +506,7 @@ async function importDegiro(userId: string, file: PortfolioImportFile) {
           userId,
           isin,
           name: product,
-          assetClass: "European equity",
+          assetClass: "Global equity",
           currency: "EUR",
         });
         const quantity = numberValue(row.values[quantityIndex]);

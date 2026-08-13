@@ -430,6 +430,64 @@ export const manualAssetSnapshot = pgTable(
   ],
 );
 
+export const realEstateProperty = pgTable(
+  "real_estate_property",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    owner: text("owner").notNull(),
+    propertyType: text("property_type").notNull(),
+    location: text("location"),
+    notes: text("notes"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("real_estate_property_user_type_idx").on(table.userId, table.propertyType),
+    uniqueIndex("real_estate_property_user_identity_uidx").on(
+      table.userId,
+      table.name,
+      table.owner,
+      table.location,
+    ),
+    uniqueIndex("real_estate_property_id_user_uidx").on(table.id, table.userId),
+  ],
+);
+
+export const realEstateSnapshot = pgTable(
+  "real_estate_snapshot",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    propertyId: uuid("property_id")
+      .notNull()
+      .references(() => realEstateProperty.id, { onDelete: "cascade" }),
+    asOf: timestamp("as_of", { withTimezone: true }).defaultNow().notNull(),
+    areaCents: numeric("area_cents", { precision: 30, scale: 8 }).notNull(),
+    areaSquareFeet: numeric("area_square_feet", { precision: 30, scale: 8 }).notNull(),
+    ownershipShare: numeric("ownership_share", { precision: 12, scale: 8 }).notNull(),
+    legalStatus: text("legal_status").default("unknown").notNull(),
+    pricePerSquareFoot: numeric("price_per_square_foot", { precision: 30, scale: 8 }).notNull(),
+    marketValue: numeric("market_value", { precision: 30, scale: 8 }).notNull(),
+    currency: text("currency").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("real_estate_snapshot_property_asof_uidx").on(table.propertyId, table.asOf),
+    index("real_estate_snapshot_user_asof_idx").on(table.userId, table.asOf),
+    foreignKey({
+      columns: [table.propertyId, table.userId],
+      foreignColumns: [realEstateProperty.id, realEstateProperty.userId],
+      name: "real_estate_snapshot_owner_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
 export const portfolioPreference = pgTable("portfolio_preference", {
   userId: text("user_id")
     .primaryKey()

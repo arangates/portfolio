@@ -16,6 +16,8 @@ import {
   manualAssetSnapshot,
   portfolioPreference,
   positionSnapshot,
+  realEstateProperty,
+  realEstateSnapshot,
 } from "@portfolio/db";
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 
@@ -234,6 +236,121 @@ export async function getDegiroAnalytics(userId: string) {
   };
 }
 
+export async function getGlobalEquityPortfolio(userId: string) {
+  const rows = await db
+    .select({
+      instrumentId: instrument.id,
+      name: instrument.name,
+      isin: instrument.isin,
+      category: instrument.assetClass,
+      occurredAt: ledgerEntry.occurredAt,
+      quantity: ledgerEntry.quantity,
+      price: ledgerEntry.price,
+      grossAmount: ledgerEntry.grossAmount,
+      fees: ledgerEntry.fees,
+      netAmount: ledgerEntry.netAmount,
+    })
+    .from(ledgerEntry)
+    .innerJoin(
+      importBatch,
+      and(
+        eq(ledgerEntry.batchId, importBatch.id),
+        eq(importBatch.userId, userId),
+        eq(importBatch.status, "completed"),
+      ),
+    )
+    .innerJoin(
+      instrument,
+      and(eq(ledgerEntry.instrumentId, instrument.id), eq(instrument.userId, userId)),
+    )
+    .where(and(eq(ledgerEntry.userId, userId), sql`${ledgerEntry.entryType} in ('buy', 'sell')`))
+    .orderBy(asc(ledgerEntry.occurredAt), asc(ledgerEntry.createdAt));
+
+  type Position = {
+    instrumentId: string;
+    name: string;
+    isin: string;
+    category: string;
+    quantity: number;
+    costBasis: number;
+    latestPrice: number;
+    realizedPnl: number;
+    lastTradeAt: Date;
+  };
+  const positions = new Map<string, Position>();
+  const historyByMonth = new Map<
+    string,
+    { date: string; investedValue: number; marketValue: number }
+  >();
+
+  for (const row of rows) {
+    const quantity = Number(row.quantity ?? 0);
+    if (!Number.isFinite(quantity) || quantity === 0) continue;
+    const gross = Math.abs(Number(row.grossAmount ?? 0));
+    const net = Math.abs(Number(row.netAmount ?? 0));
+    const fees = Math.abs(Number(row.fees ?? 0));
+    const effectivePrice =
+      gross > 0 ? gross / Math.abs(quantity) : Math.abs(Number(row.price ?? 0));
+    const current = positions.get(row.instrumentId) ?? {
+      instrumentId: row.instrumentId,
+      name: row.name,
+      isin: row.isin,
+      category: row.category,
+      quantity: 0,
+      costBasis: 0,
+      latestPrice: effectivePrice,
+      realizedPnl: 0,
+      lastTradeAt: row.occurredAt,
+    };
+
+    if (quantity > 0) {
+      current.quantity += quantity;
+      current.costBasis += net > 0 ? net : gross + fees;
+    } else {
+      const soldQuantity = Math.min(Math.abs(quantity), Math.max(current.quantity, 0));
+      const averageCost = current.quantity > 0 ? current.costBasis / current.quantity : 0;
+      const proceeds = net > 0 ? net : Math.max(gross - fees, 0);
+      current.realizedPnl += proceeds - averageCost * soldQuantity;
+      current.quantity += quantity;
+      current.costBasis = Math.max(current.costBasis - averageCost * soldQuantity, 0);
+      if (Math.abs(current.quantity) < 0.00000001) current.quantity = 0;
+    }
+    current.latestPrice = effectivePrice;
+    current.lastTradeAt = row.occurredAt;
+    positions.set(row.instrumentId, current);
+
+    const date = row.occurredAt.toISOString().slice(0, 10);
+    historyByMonth.set(date.slice(0, 7), {
+      date,
+      investedValue: [...positions.values()].reduce(
+        (sum, position) => sum + Math.max(position.costBasis, 0),
+        0,
+      ),
+      marketValue: [...positions.values()].reduce(
+        (sum, position) => sum + Math.max(position.quantity, 0) * position.latestPrice,
+        0,
+      ),
+    });
+  }
+
+  const holdings = [...positions.values()]
+    .filter((position) => position.quantity > 0.00000001)
+    .map((position) => ({
+      ...position,
+      averagePrice: position.quantity > 0 ? position.costBasis / position.quantity : 0,
+      marketValue: position.quantity * position.latestPrice,
+      unrealizedPnl: position.quantity * position.latestPrice - position.costBasis,
+    }))
+    .sort((left, right) => right.marketValue - left.marketValue);
+
+  return {
+    holdings,
+    history: [...historyByMonth.values()],
+    realizedPnl: [...positions.values()].reduce((sum, position) => sum + position.realizedPnl, 0),
+    lastTradeAt: rows.at(-1)?.occurredAt ?? null,
+  };
+}
+
 export async function getBankAccounts(userId: string, currency?: string) {
   const conditions = [eq(bankAccount.userId, userId), isNull(bankAccount.archivedAt)];
   if (currency) conditions.push(eq(bankAccount.currency, currency));
@@ -371,6 +488,89 @@ export async function getManualAssets(userId: string) {
   }));
 }
 
+export async function getRealEstatePortfolio(userId: string) {
+  const rows = await db
+    .select({
+      id: realEstateProperty.id,
+      name: realEstateProperty.name,
+      owner: realEstateProperty.owner,
+      propertyType: realEstateProperty.propertyType,
+      location: realEstateProperty.location,
+      notes: realEstateProperty.notes,
+      areaCents: realEstateSnapshot.areaCents,
+      areaSquareFeet: realEstateSnapshot.areaSquareFeet,
+      ownershipShare: realEstateSnapshot.ownershipShare,
+      legalStatus: realEstateSnapshot.legalStatus,
+      pricePerSquareFoot: realEstateSnapshot.pricePerSquareFoot,
+      marketValue: realEstateSnapshot.marketValue,
+      currency: realEstateSnapshot.currency,
+      asOf: realEstateSnapshot.asOf,
+    })
+    .from(realEstateProperty)
+    .innerJoin(
+      realEstateSnapshot,
+      and(
+        eq(realEstateProperty.id, realEstateSnapshot.propertyId),
+        eq(realEstateSnapshot.userId, userId),
+      ),
+    )
+    .where(and(eq(realEstateProperty.userId, userId), isNull(realEstateProperty.archivedAt)))
+    .orderBy(desc(realEstateSnapshot.asOf));
+
+  return latestBy(rows, (row) => row.id).map((row) => {
+    const ownershipShare = Number(row.ownershipShare);
+    const marketValue = Number(row.marketValue);
+    return {
+      ...row,
+      areaCents: Number(row.areaCents),
+      areaSquareFeet: Number(row.areaSquareFeet),
+      ownershipShare,
+      pricePerSquareFoot: Number(row.pricePerSquareFoot),
+      marketValue,
+      ownedValue: marketValue * ownershipShare,
+    };
+  });
+}
+
+export async function getRealEstateHistory(userId: string) {
+  const rows = await db
+    .select({
+      propertyId: realEstateProperty.id,
+      asOf: realEstateSnapshot.asOf,
+      marketValue: realEstateSnapshot.marketValue,
+      ownershipShare: realEstateSnapshot.ownershipShare,
+      currency: realEstateSnapshot.currency,
+    })
+    .from(realEstateSnapshot)
+    .innerJoin(
+      realEstateProperty,
+      and(
+        eq(realEstateSnapshot.propertyId, realEstateProperty.id),
+        eq(realEstateProperty.userId, userId),
+      ),
+    )
+    .where(and(eq(realEstateSnapshot.userId, userId), isNull(realEstateProperty.archivedAt)))
+    .orderBy(asc(realEstateSnapshot.asOf));
+
+  const latest = new Map<string, { ownedValue: number; currency: string }>();
+  const history = new Map<string, { date: string; value: number; currency: string }>();
+  for (const row of rows) {
+    latest.set(row.propertyId, {
+      ownedValue: Number(row.marketValue) * Number(row.ownershipShare),
+      currency: row.currency,
+    });
+    const date = row.asOf.toISOString().slice(0, 10);
+    history.set(`${date}:${row.currency}`, {
+      date,
+      currency: row.currency,
+      value: [...latest.values()]
+        .filter((snapshot) => snapshot.currency === row.currency)
+        .reduce((sum, snapshot) => sum + snapshot.ownedValue, 0),
+    });
+  }
+  return [...history.values()];
+}
+
 export type PortfolioAsset = {
   key: string;
   name: string;
@@ -385,17 +585,29 @@ export type PortfolioAsset = {
 };
 
 export async function getPortfolioOverview(userId: string) {
-  const [preference, rates, equity, equityHistory, accounts, deposits, commodities, manualAssets] =
-    await Promise.all([
-      getPortfolioPreference(userId),
-      getLatestExchangeRates(userId),
-      getLatestZerodhaPortfolio(userId),
-      getEquitySnapshotHistory(userId),
-      getBankAccounts(userId),
-      getCurrentFixedDeposits(userId),
-      getCommodityHoldings(userId),
-      getManualAssets(userId),
-    ]);
+  const [
+    preference,
+    rates,
+    equity,
+    equityHistory,
+    globalEquity,
+    accounts,
+    deposits,
+    commodities,
+    realEstate,
+    manualAssets,
+  ] = await Promise.all([
+    getPortfolioPreference(userId),
+    getLatestExchangeRates(userId),
+    getLatestZerodhaPortfolio(userId),
+    getEquitySnapshotHistory(userId),
+    getGlobalEquityPortfolio(userId),
+    getBankAccounts(userId),
+    getCurrentFixedDeposits(userId),
+    getCommodityHoldings(userId),
+    getRealEstatePortfolio(userId),
+    getManualAssets(userId),
+  ]);
 
   const rateMap = new Map(
     rates
@@ -422,6 +634,22 @@ export async function getPortfolioOverview(userId: string) {
       risk: "High",
       location: "Zerodha",
       asOf: equity.statementDate ?? equity.createdAt,
+    });
+  }
+
+  if (globalEquity.holdings.length > 0) {
+    const marketValue = globalEquity.holdings.reduce((sum, item) => sum + item.marketValue, 0);
+    assets.push({
+      key: "degiro-equity",
+      name: "Global equity",
+      category: "Marketable securities",
+      nativeValue: marketValue,
+      currency: "EUR",
+      baseValue: convert(marketValue, "EUR"),
+      isLiquid: true,
+      risk: "High",
+      location: "Degiro",
+      asOf: globalEquity.lastTradeAt,
     });
   }
 
@@ -470,7 +698,23 @@ export async function getPortfolioOverview(userId: string) {
     });
   }
 
+  for (const property of realEstate) {
+    assets.push({
+      key: `real-estate-${property.id}`,
+      name: property.name,
+      category: "Real estate",
+      nativeValue: property.ownedValue,
+      currency: property.currency,
+      baseValue: convert(property.ownedValue, property.currency),
+      isLiquid: false,
+      risk: "Moderate",
+      location: property.location ?? "—",
+      asOf: property.asOf,
+    });
+  }
+
   for (const asset of manualAssets) {
+    if (realEstate.length > 0 && asset.assetType.toLowerCase().includes("real estate")) continue;
     assets.push({
       key: `manual-${asset.id}`,
       name: asset.name,
