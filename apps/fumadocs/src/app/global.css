@@ -2,6 +2,32 @@
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
+@theme {
+  --color-selvam: #1cb981;
+  --color-selvam-soft: #a7f3d0;
+  --color-selvam-warm: #f6b76e;
+  --animate-aurora: aurora 14s ease-in-out infinite alternate;
+
+  @keyframes aurora {
+    0% {
+      transform: translate3d(-3%, -2%, 0) scale(1);
+    }
+    100% {
+      transform: translate3d(4%, 3%, 0) scale(1.08);
+    }
+  }
+}
+
+:root {
+  --color-fd-primary: #087c5b;
+  --color-fd-primary-foreground: #ffffff;
+}
+
+.dark {
+  --color-fd-primary: #67e8b8;
+  --color-fd-primary-foreground: #052e24;
+}
+
 html {
   scrollbar-gutter: stable;
 }
@@ -9,4 +35,81 @@ html {
 html > body[data-scroll-locked] {
   margin-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
+}
+
+body {
+  background: var(--color-fd-background);
+  font-family: var(--font-sans), sans-serif;
+}
+
+code,
+pre {
+  font-family: var(--font-mono), monospace;
+}
+
+.landing-shell {
+  overflow: clip;
+}
+
+.landing-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-fd-border) 55%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-fd-border) 55%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, black 18%, transparent 88%);
+}
+
+.landing-dots {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--color-fd-foreground) 18%, transparent) 0.7px,
+    transparent 0.7px
+  );
+  background-size: 10px 10px;
+}
+
+.aurora {
+  animation: var(--animate-aurora);
+  background:
+    radial-gradient(
+      circle at 76% 18%,
+      color-mix(in srgb, #f59e0b 38%, transparent),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 85% 72%,
+      color-mix(in srgb, #10b981 42%, transparent),
+      transparent 33%
+    ),
+    radial-gradient(
+      circle at 30% 85%,
+      color-mix(in srgb, #22c55e 22%, transparent),
+      transparent 30%
+    );
+  filter: blur(10px) saturate(120%);
+}
+
+.preview-line {
+  stroke-dasharray: 9 7;
+  animation: preview-dash 16s linear infinite;
+}
+
+@keyframes preview-dash {
+  to {
+    stroke-dashoffset: -220;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora,
+  .preview-line {
+    animation: none;
+  }
 }

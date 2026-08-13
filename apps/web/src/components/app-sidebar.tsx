@@ -77,7 +77,7 @@ export function AppSidebar({
               <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <WalletCardsIcon />
               </span>
-              <span className="text-base font-semibold">Aranga</span>
+              <span className="text-base font-semibold">Selvam</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

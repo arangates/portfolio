@@ -1,6 +1,6 @@
-# Aranga Portfolio documentation
+# Selvam documentation
 
-This Fumadocs application contains the versioned product and engineering handbook for Aranga Portfolio.
+This Fumadocs application contains the versioned product and engineering handbook for Selvam.
 
 The content intentionally covers only durable decisions:
 

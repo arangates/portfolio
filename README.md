@@ -1,4 +1,4 @@
-# Aranga Portfolio
+# Selvam
 
 A private, multi-currency portfolio SaaS built with Next.js 16, Better Auth, Drizzle, Neon Postgres, shadcn/ui and Turborepo.
 
@@ -53,6 +53,14 @@ pnpm db:migrate
 ```
 
 Use `db:push` only for disposable local development. Production and preview environments should use migrations. Test migrations on a Neon branch before applying them to production.
+
+To return a database to an empty, signup-ready state without removing its schema, first inspect the target:
+
+```bash
+pnpm db:reset-data
+```
+
+The command is dry-run by default and prints the exact guarded execution command. Read the Fumadocs page `Resetting application data` before using it against valuable data.
 
 ## Verification
 

@@ -1,4 +1,13 @@
 {
-  "title": "Aranga Portfolio",
-  "pages": ["index", "features", "architecture", "data-and-history", "security", "deployment"]
+  "title": "Selvam",
+  "pages": [
+    "index",
+    "features",
+    "architecture",
+    "data-and-history",
+    "security",
+    "authentication",
+    "database-reset",
+    "deployment"
+  ]
 }

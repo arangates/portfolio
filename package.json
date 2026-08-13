@@ -1,5 +1,5 @@
 {
-  "name": "portfolio",
+  "name": "selvam",
   "private": true,
   "workspaces": [
     "apps/*",
@@ -15,6 +15,7 @@
     "db:studio": "turbo run db:studio -F @portfolio/db",
     "db:generate": "turbo run db:generate -F @portfolio/db",
     "db:migrate": "turbo run db:migrate -F @portfolio/db",
+    "db:reset-data": "pnpm --filter @portfolio/db db:reset-data",
     "check": "oxlint && oxfmt --write",
     "prepare": "husky"
   },

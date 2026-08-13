@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { GoogleSignInButton } from "@/components/google-sign-in-button";
 
 const signupSchema = z
   .object({
@@ -33,7 +34,12 @@ const signupSchema = z
     path: ["confirmPassword"],
   });
 
-export function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
+export function SignupForm({
+  className,
+  googleEnabled,
+  oauthFailed = false,
+  ...props
+}: React.ComponentProps<"div"> & { googleEnabled: boolean; oauthFailed?: boolean }) {
   const router = useRouter();
   const form = useForm({
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
@@ -74,6 +80,24 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
                   Start a private portfolio workspace owned by you.
                 </p>
               </div>
+              {oauthFailed ? (
+                <div
+                  role="alert"
+                  className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+                >
+                  Google sign-up was not completed. Please try again.
+                </div>
+              ) : null}
+              {googleEnabled ? (
+                <>
+                  <GoogleSignInButton errorCallbackURL="/signup?oauth=failed" />
+                  <div className="relative text-center text-xs after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                    <span className="relative z-10 bg-card px-2 text-muted-foreground">
+                      Or create an account with email
+                    </span>
+                  </div>
+                </>
+              ) : null}
               <form.Field name="name">
                 {(field) => (
                   <Field data-invalid={field.state.meta.errors.length > 0}>

@@ -19,14 +19,18 @@ Import the GitHub repository as a Vercel project with:
 
 Configure these variables for Production:
 
-| Variable             | Required value                                                  |
-| -------------------- | --------------------------------------------------------------- |
-| `DATABASE_URL`       | Neon pooled connection string; the hostname contains `-pooler`. |
-| `BETTER_AUTH_SECRET` | A high-entropy secret of at least 32 characters.                |
-| `BETTER_AUTH_URL`    | Exact HTTPS production origin with no trailing slash.           |
-| `CORS_ORIGIN`        | The same exact production origin.                               |
+| Variable               | Required value                                                  |
+| ---------------------- | --------------------------------------------------------------- |
+| `DATABASE_URL`         | Neon pooled connection string; the hostname contains `-pooler`. |
+| `BETTER_AUTH_SECRET`   | A high-entropy secret of at least 32 characters.                |
+| `BETTER_AUTH_URL`      | Exact HTTPS production origin with no trailing slash.           |
+| `CORS_ORIGIN`          | The same exact production origin.                               |
+| `GOOGLE_CLIENT_ID`     | Client ID from the Google Web application OAuth client.         |
+| `GOOGLE_CLIENT_SECRET` | Client secret from the same Google OAuth client.                |
 
 Do not configure `DATABASE_URL_DIRECT` in the Vercel web application. Keep it in a trusted migration environment only.
+
+For the current Vercel domain, both `BETTER_AUTH_URL` and `CORS_ORIGIN` are `https://netherlandian.vercel.app`. The Google client must allow `https://netherlandian.vercel.app` as an origin and `https://netherlandian.vercel.app/api/auth/callback/google` as a redirect URI. See [Authentication](/docs/authentication) for the complete Google setup.
 
 Generate an authentication secret locally:
 
@@ -44,6 +48,8 @@ pnpm db:migrate
 
 The migration command prefers `DATABASE_URL_DIRECT` when available. Test migrations against a Neon branch before applying them to Production.
 
+To remove all application data while preserving the schema, follow [Resetting application data](/docs/database-reset). Always run its dry-run inspection first.
+
 ## Release checks
 
 ```bash
@@ -53,7 +59,7 @@ pnpm --filter web build
 pnpm audit --prod
 ```
 
-Environment-variable changes apply only to new Vercel deployments. Redeploy after changing the production domain, database credential, authentication secret or trusted origin.
+Environment-variable changes apply only to new Vercel deployments. Redeploy after changing the production domain, database credential, authentication secret, Google credentials or trusted origin.
 
 ## Preview environments
 

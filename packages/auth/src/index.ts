@@ -5,10 +5,17 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
+export const googleAuthEnabled = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
+
 export function createAuth() {
+  if (Boolean(env.GOOGLE_CLIENT_ID) !== Boolean(env.GOOGLE_CLIENT_SECRET)) {
+    throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be configured together");
+  }
+
   const db = createDb();
 
   return betterAuth({
+    appName: "Selvam",
     database: drizzleAdapter(db, {
       provider: "pg",
 
@@ -21,7 +28,8 @@ export function createAuth() {
       maxPasswordLength: 128,
     },
     session: {
-      expiresIn: 60 * 60 * 24 * 14,
+      // A persistent rolling session: active users remain signed in across browser restarts.
+      expiresIn: 60 * 60 * 24 * 365,
       updateAge: 60 * 60 * 24,
       freshAge: 60 * 30,
       cookieCache: {
@@ -32,6 +40,14 @@ export function createAuth() {
     user: {
       deleteUser: { enabled: true },
     },
+    socialProviders: googleAuthEnabled
+      ? {
+          google: {
+            clientId: env.GOOGLE_CLIENT_ID!,
+            clientSecret: env.GOOGLE_CLIENT_SECRET!,
+          },
+        }
+      : {},
     rateLimit: {
       enabled: true,
       window: 60,

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aranga Portfolio",
+  title: "Selvam",
   description: "A private multi-currency portfolio and wealth tracker",
 };
 

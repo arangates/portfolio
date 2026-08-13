@@ -9,8 +9,8 @@ Every portfolio table carries a required owner ID linked to the authentication u
 
 ## Authentication controls
 
-- Email/password authentication with a 12-character minimum password.
-- Database-backed sessions with secure cookies in production.
+- Google OAuth and email/password authentication with a 12-character minimum password.
+- One-year rolling, database-backed sessions with secure cookies in production.
 - Database-backed authentication rate limiting.
 - Explicit canonical authentication URL and trusted browser origin.
 - Account deletion support through Better Auth.
@@ -20,6 +20,7 @@ Every portfolio table carries a required owner ID linked to the authentication u
 - Bank records accept only a safe label and optional last four digits—never full account numbers or credentials.
 - Broker files and personal workbook values are data, not source code, and must never be committed to Git.
 - Production secrets live in Vercel environment variables; local secrets live in ignored `.env` files.
+- Google OAuth client secrets are server-only and never exposed through `NEXT_PUBLIC_` variables.
 - The web runtime uses Neon's pooled `DATABASE_URL`. The direct connection credential is reserved for trusted migration execution and is not configured in the deployed application.
 - Private exports use authenticated, non-cacheable responses.
 

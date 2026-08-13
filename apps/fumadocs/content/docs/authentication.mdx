@@ -1,0 +1,35 @@
+---
+title: Authentication
+description: Google sign-in, email authentication and persistent session behavior.
+---
+
+## Sign-in methods
+
+Selvam uses Better Auth with two sign-in paths:
+
+- Google OAuth, enabled only when both Google credentials are configured.
+- Email and password, with a 12-character minimum password.
+
+Both paths create the same account-owned database session. A new Google user is created on the first successful sign-in; a returning user is taken directly to the dashboard.
+
+## Google OAuth client
+
+In Google Auth Platform, create an OAuth client with application type **Web application**. For the current production deployment, configure:
+
+| Field                        | Value                                                       |
+| ---------------------------- | ----------------------------------------------------------- |
+| Name                         | `selvam-webapp`                                             |
+| Authorized JavaScript origin | `https://netherlandian.vercel.app`                          |
+| Authorized redirect URI      | `https://netherlandian.vercel.app/api/auth/callback/google` |
+
+Do not use `/login` as the origin and do not add a trailing slash. For local development, optionally add `http://localhost:3001` and `http://localhost:3001/api/auth/callback/google` as a second origin and redirect URI.
+
+Copy the generated values to local `.env` or Vercel environment variables as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Never commit or paste the secret into source code.
+
+If the Google consent screen is in **Testing**, add each permitted Google account as a test user. Production access requires a published consent screen configured for the intended audience.
+
+## Persistent sessions
+
+Sessions are stored in Postgres and use a persistent secure cookie in production. The session lifetime is one year and rolls forward after a day of activity. This keeps an active user signed in across tabs, browser restarts and deployments until they explicitly sign out.
+
+A session can still end for security or browser reasons: the user clears cookies, the session is revoked, the authentication secret is rotated, or the account remains inactive for one year.

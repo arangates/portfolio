@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Aranga Portfolio",
-    short_name: "Aranga",
+    name: "Selvam",
+    short_name: "Selvam",
     description: "A private multi-currency portfolio tracker",
     start_url: "/dashboard",
     display: "standalone",

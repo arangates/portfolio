@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      DATABASE_URL: postgresql://user:password@localhost:5432/aranga
-      DATABASE_URL_DIRECT: postgresql://user:password@localhost:5432/aranga
+      DATABASE_URL: postgresql://user:password@localhost:5432/selvam
+      DATABASE_URL_DIRECT: postgresql://user:password@localhost:5432/selvam
       BETTER_AUTH_SECRET: ci-only-secret-with-more-than-32-characters
       BETTER_AUTH_URL: http://localhost:3001
       CORS_ORIGIN: http://localhost:3001

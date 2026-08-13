@@ -68,7 +68,7 @@ export default async function RealEstatePage() {
             <EmptyDataState
               icon={Building2Icon}
               title="No properties"
-              description="Add a property to start a valuation history based on the Real Estate structure in Aranga."
+              description="Add a property to start a durable valuation history in Selvam."
               action={<PortfolioRecordDialog kind="real_estate" values={{ currency: "INR" }} />}
             />
           </div>

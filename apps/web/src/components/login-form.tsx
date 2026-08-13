@@ -20,8 +20,14 @@ import { toast } from "sonner";
 import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
+import { GoogleSignInButton } from "@/components/google-sign-in-button";
 
-export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+export function LoginForm({
+  className,
+  googleEnabled,
+  oauthFailed = false,
+  ...props
+}: React.ComponentProps<"div"> & { googleEnabled: boolean; oauthFailed?: boolean }) {
   const router = useRouter();
   const form = useForm({
     defaultValues: { email: "", password: "" },
@@ -32,16 +38,19 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }),
     },
     onSubmit: async ({ value }) => {
-      await authClient.signIn.email(value, {
-        onSuccess: () => {
-          toast.success("Welcome back");
-          router.replace("/dashboard");
-          router.refresh();
+      await authClient.signIn.email(
+        { ...value, rememberMe: true },
+        {
+          onSuccess: () => {
+            toast.success("Welcome back");
+            router.replace("/dashboard");
+            router.refresh();
+          },
+          onError: ({ error }) => {
+            toast.error(error.message || "Unable to sign in");
+          },
         },
-        onError: ({ error }) => {
-          toast.error(error.message || "Unable to sign in");
-        },
-      });
+      );
     },
   });
 
@@ -61,9 +70,27 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
                 <p className="text-balance text-muted-foreground">
-                  Sign in to your private Aranga portfolio.
+                  Sign in to your private Selvam portfolio.
                 </p>
               </div>
+              {oauthFailed ? (
+                <div
+                  role="alert"
+                  className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+                >
+                  Google sign-in was not completed. Please try again.
+                </div>
+              ) : null}
+              {googleEnabled ? (
+                <>
+                  <GoogleSignInButton label="Sign in with Google" />
+                  <div className="relative text-center text-xs after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+                    <span className="relative z-10 bg-card px-2 text-muted-foreground">
+                      Or continue with email
+                    </span>
+                  </div>
+                </>
+              ) : null}
               <form.Field name="email">
                 {(field) => (
                   <Field data-invalid={field.state.meta.errors.length > 0}>

@@ -11,7 +11,7 @@ description: The technology choices and the reasons behind them.
 | Interface       | Tailwind CSS, shadcn/ui New York styling and Recharts | A consistent dashboard-01 visual system with accessible shared components and focused portfolio visualizations.                            |
 | Database        | Neon Postgres                                         | Durable relational storage, managed backups and connection pooling suitable for Vercel's serverless runtime.                               |
 | Data access     | Drizzle ORM with tracked SQL migrations               | Typed queries plus reviewable schema changes and database-enforced ownership relationships.                                                |
-| Authentication  | Better Auth                                           | Email/password authentication, database sessions, secure production cookies and database-backed rate limiting.                             |
+| Authentication  | Better Auth                                           | Google OAuth, email/password authentication, rolling database sessions, secure production cookies and database-backed rate limiting.       |
 | Repository      | pnpm workspaces and Turborepo                         | Keeps the web app, API logic, authentication, database, environment validation, UI and documentation in independently checkable packages.  |
 | Documentation   | Fumadocs                                              | Versioned product and engineering documentation stored beside the implementation.                                                          |
 
@@ -28,6 +28,8 @@ packages/ui     Shared shadcn/ui components and tokens
 ```
 
 The portfolio query and mutation modules import `server-only`, preventing accidental use in client bundles. Browser components submit to authenticated route handlers, and those handlers derive the owner from the server session rather than accepting a user ID from the request.
+
+The application can be published as source code. Personal workbooks, broker exports, environment files and portfolio values are intentionally excluded from the repository.
 
 ## Deliberate trade-offs
 

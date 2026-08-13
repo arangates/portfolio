@@ -1,0 +1,69 @@
+---
+title: Resetting application data
+description: Safely return a database to an empty, signup-ready state without removing its schema.
+---
+
+The repository includes a guarded reset command for removing test or disposable portfolio data. It erases every table in the Postgres `public` schema, including users, sessions, imports, ledgers, snapshots, assets, audit events, verification records and rate limits.
+
+The command preserves the Drizzle migration table in the separate `drizzle` schema. Tables, indexes, constraints and applied migration records remain intact, so the application is immediately ready for a new signup.
+
+<Callout type="warning" title="This operation is destructive">
+  Application data cannot be recovered through Selvam after the reset. Create a Neon restore point
+  or branch first when recovery may be required. Never run the execute command against a database
+  whose target host you have not verified.
+</Callout>
+
+## 1. Inspect the target
+
+From the repository root, run the command without destructive flags:
+
+```bash
+pnpm db:reset-data
+```
+
+The dry run prints:
+
+- the sanitized Neon hostname and database name;
+- the number of applied migrations;
+- every non-empty application table and its row count;
+- the exact `--expect-host` value required for execution.
+
+No rows are changed during a dry run. Confirm that the displayed host is the intended Neon branch before continuing.
+
+## 2. Preserve a recovery point when needed
+
+For production or valuable data, create a Neon branch or verify that a suitable restore point exists. The reset command does not create a backup automatically.
+
+## 3. Execute the reset
+
+Copy the hostname printed by the dry run and execute:
+
+```bash
+pnpm db:reset-data -- \
+  --execute \
+  --confirm=RESET_ALL_APPLICATION_DATA \
+  --expect-host=YOUR_EXACT_NEON_HOST
+```
+
+All three destructive arguments are required. A missing confirmation, altered phrase or hostname mismatch stops the command before truncation.
+
+The script prefers `DATABASE_URL_DIRECT` and falls back to `DATABASE_URL`. Both are loaded from `apps/web/.env` during local operation.
+
+## 4. Verify the result
+
+After truncation, the command recounts every `public` table and verifies that:
+
+- all application tables contain zero rows;
+- the Drizzle migration count is unchanged.
+
+It exits with an error if either check fails. A successful reset reports `"verified": true` and `"totalRows": 0`.
+
+Existing sessions become invalid because all users and sessions are removed. Open `/signup` to create the first clean account.
+
+## What the command does not do
+
+- It does not drop or recreate the database.
+- It does not remove tables, constraints, indexes or migrations.
+- It does not change Neon credentials or Vercel environment variables.
+- It does not delete source files from a local computer.
+- It does not provide application-level recovery.
