@@ -1,0 +1,75 @@
+import { PageHeader } from "@/components/page-header";
+import {
+  AccountForm,
+  DataControls,
+  DeleteAccountCard,
+  ExchangeRateForm,
+  PreferenceForm,
+  SecurityForm,
+} from "@/components/settings-forms";
+import {
+  getLatestExchangeRates,
+  getPortfolioPreference,
+} from "@zerodha-coin/api/portfolio-queries";
+import { auth } from "@zerodha-coin/auth";
+import { Badge } from "@zerodha-coin/ui/components/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@zerodha-coin/ui/components/card";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+
+export default async function SettingsPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) redirect("/login");
+  const [preference, rates] = await Promise.all([
+    getPortfolioPreference(session.user.id),
+    getLatestExchangeRates(session.user.id),
+  ]);
+  return (
+    <div className="@container/main flex flex-1 flex-col gap-2">
+      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+        <PageHeader
+          title="Settings & data"
+          description="Manage your account profile, portfolio presentation, stored FX assumptions and private data export."
+        />
+        <div className="grid gap-4 px-4 xl:grid-cols-2 lg:px-6">
+          <AccountForm name={session.user.name} email={session.user.email} />
+          <PreferenceForm preference={preference} />
+          <ExchangeRateForm baseCurrency={preference.baseCurrency} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Latest stored rates</CardTitle>
+              <CardDescription>Rates used to calculate base-currency totals.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {rates.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No conversion rates stored. Same-currency assets still calculate normally.
+                </p>
+              ) : (
+                rates.map((rate) => (
+                  <div key={rate.id} className="flex items-center justify-between gap-4 text-sm">
+                    <span>
+                      {rate.baseCurrency} / {rate.quoteCurrency}
+                    </span>
+                    <Badge variant="outline">
+                      {rate.rate.toLocaleString("en", { maximumFractionDigits: 6 })}
+                    </Badge>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+          <DataControls />
+          <SecurityForm />
+          <DeleteAccountCard />
+        </div>
+      </div>
+    </div>
+  );
+}

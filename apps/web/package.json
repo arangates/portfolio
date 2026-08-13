@@ -17,6 +17,7 @@
     "@trpc/tanstack-react-query": "^11.18.0",
     "@zerodha-coin/api": "workspace:*",
     "@zerodha-coin/auth": "workspace:*",
+    "@zerodha-coin/db": "workspace:*",
     "@zerodha-coin/env": "workspace:*",
     "@zerodha-coin/ui": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
@@ -27,6 +28,7 @@
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "recharts": "3.8.0",
     "sonner": "catalog:",
     "zod": "catalog:"
   },

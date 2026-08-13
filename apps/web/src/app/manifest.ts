@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "zerodha-coin",
-    short_name: "zerodha-coin",
-    description: "my pwa app",
-    start_url: "/new",
+    name: "Aranga Portfolio",
+    short_name: "Aranga",
+    description: "A private multi-currency portfolio tracker",
+    start_url: "/dashboard",
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#000000",

@@ -1,104 +1,86 @@
-# zerodha-coin
+# Aranga Portfolio
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Self, TRPC, and more.
+A private, multi-currency portfolio SaaS built with Next.js 16, Better Auth, Drizzle, Neon Postgres, shadcn/ui and Turborepo.
 
-## Features
+## What it provides
 
-- **TypeScript** - For type safety and improved developer experience
-- **Next.js** - Full-stack React framework
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **tRPC** - End-to-end type-safe APIs
-- **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
-- **Husky** - Git hooks for code quality
-- **Oxlint** - Oxlint + Oxfmt (linting & formatting)
-- **PWA** - Progressive Web App support
-- **Turborepo** - Optimized monorepo build system
+- Strict per-user ownership for imports, instruments, positions, ledgers, bank accounts, deposits, commodities, manual assets, snapshots, FX rates and audit events.
+- Immutable historical snapshots for holdings, balances, deposits, commodities and manual valuations.
+- Idempotent Zerodha XLSX and Degiro CSV imports with archived source rows and SHA-256 deduplication.
+- Generic CRUD and archival workflows; archived records retain their history.
+- Multi-currency net worth with user-managed, dated exchange rates.
+- Allocation, liquidity, equity history, concentration, fee, dividend and maturity analytics.
+- Private JSON data export, profile/security controls and account deletion.
+- Production security headers, server-only data access, validated mutations, masked financial identifiers and upload limits.
 
-## Getting Started
+No personal spreadsheet, broker export, credentials or portfolio values are stored in this repository.
 
-First, install the dependencies:
+## Local setup
+
+Requirements: Node.js 20+, pnpm 11+, and a Neon Postgres database.
 
 ```bash
 pnpm install
+cp apps/web/.env.example apps/web/.env
+pnpm db:migrate
+pnpm dev:web
 ```
 
-## Database Setup
+Open <http://localhost:3001>.
 
-This project uses PostgreSQL with Drizzle ORM.
+Use a pooled Neon connection for `DATABASE_URL` and a direct connection for `DATABASE_URL_DIRECT`. Migrations automatically prefer the direct URL.
 
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/web/.env` file with your PostgreSQL connection details.
+## Environment variables
 
-3. Apply the schema to your database:
+| Variable              | Purpose                                 |
+| --------------------- | --------------------------------------- |
+| `DATABASE_URL`        | Pooled application connection           |
+| `DATABASE_URL_DIRECT` | Direct migration connection             |
+| `BETTER_AUTH_SECRET`  | Random secret of at least 32 characters |
+| `BETTER_AUTH_URL`     | Canonical application URL               |
+| `CORS_ORIGIN`         | Trusted browser origin                  |
+
+Generate an authentication secret with `openssl rand -base64 32`. Never commit a real `.env` file.
+
+## Database workflow
+
+Schema changes are tracked in `packages/db/src/migrations`.
 
 ```bash
-pnpm run db:push
+pnpm db:generate
+pnpm db:migrate
 ```
 
-Then, run the development server:
+Use `db:push` only for disposable local development. Production and preview environments should use migrations. Test migrations on a Neon branch before applying them to production.
+
+## Verification
 
 ```bash
-pnpm run dev
+pnpm check-types
+pnpm exec oxlint apps/web/src packages/api/src packages/auth/src packages/db/src
+pnpm build
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
+## Deploying to Vercel
 
-## UI Customization
+1. Push the repository to GitHub.
+2. Import it in Vercel and set the project root to `apps/web`.
+3. Add all environment variables from `apps/web/.env.example` for Production and Preview.
+4. Set `BETTER_AUTH_URL` and `CORS_ORIGIN` to the exact deployed HTTPS origin.
+5. Run `pnpm db:migrate` against the target Neon branch before serving the new release.
+6. Build with `pnpm build` from the selected app root.
 
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
+For preview deployments, use a separate Neon branch and corresponding Vercel environment variables. Do not point untrusted preview code at production data.
 
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
+## Repository structure
 
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
+```text
+apps/web        Next.js application and authenticated route handlers
+packages/api    Server-only portfolio data access, imports and mutations
+packages/auth   Better Auth configuration
+packages/db     Drizzle schema and tracked migrations
+packages/env    Validated environment variables
+packages/ui     Shared shadcn/ui components and design tokens
 ```
 
-Import shared components like this:
-
-```tsx
-import { Button } from "@zerodha-coin/ui/components/button";
-```
-
-### Add app-specific blocks
-
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Git Hooks and Formatting
-
-- Initialize hooks: `pnpm run prepare`
-- Run checks: `pnpm run check`
-
-## Project Structure
-
-```
-zerodha-coin/
-├── apps/
-│   └── web/         # Fullstack application (Next.js)
-├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
-```
-
-## Available Scripts
-
-- `pnpm run dev`: Start all applications in development mode
-- `pnpm run build`: Build all applications
-- `pnpm run dev:web`: Start only the web application
-- `pnpm run check-types`: Check TypeScript types across all apps
-- `pnpm run db:push`: Push schema changes to database
-- `pnpm run db:generate`: Generate database client/types
-- `pnpm run db:migrate`: Run database migrations
-- `pnpm run db:studio`: Open database studio UI
-- `pnpm run check`: Run Oxlint and Oxfmt
-- `cd apps/web && pnpm run generate-pwa-assets`: Generate PWA assets
+Financial analytics are informational and should not be treated as investment or tax advice.

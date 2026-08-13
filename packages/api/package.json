@@ -9,7 +9,9 @@
       "default": "./src/*.ts"
     }
   },
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
   "dependencies": {
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
@@ -17,10 +19,15 @@
     "@zerodha-coin/db": "workspace:*",
     "@zerodha-coin/env": "workspace:*",
     "dotenv": "catalog:",
+    "drizzle-orm": "^0.45.2",
+    "exceljs": "^4.4.0",
     "next": "catalog:",
+    "papaparse": "^5.5.4",
+    "server-only": "^0.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/papaparse": "^5.5.2",
     "@zerodha-coin/config": "workspace:*",
     "typescript": "catalog:"
   }

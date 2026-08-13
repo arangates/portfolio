@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" role="img" aria-labelledby="title description">
+  <title id="title">Portfolio analytics</title>
+  <desc id="description">Abstract portfolio allocation and growth charts</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111827"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#60a5fa" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#60a5fa" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="1100" fill="url(#background)"/>
+  <circle cx="770" cy="120" r="260" fill="#1d4ed8" opacity=".22"/>
+  <circle cx="100" cy="1040" r="290" fill="#0f766e" opacity=".18"/>
+  <g fill="none" stroke="#94a3b8" stroke-opacity=".16">
+    <path d="M90 230H810M90 360H810M90 490H810M90 620H810M90 750H810M90 880H810"/>
+    <path d="M180 160V930M310 160V930M440 160V930M570 160V930M700 160V930"/>
+  </g>
+  <g transform="translate(100 115)">
+    <rect width="700" height="120" rx="26" fill="#ffffff" fill-opacity=".08" stroke="#ffffff" stroke-opacity=".12"/>
+    <circle cx="66" cy="60" r="27" fill="#60a5fa"/>
+    <path d="M54 63l9 9 18-24" fill="none" stroke="#eff6ff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="116" y="34" width="180" height="16" rx="8" fill="#f8fafc" fill-opacity=".9"/>
+    <rect x="116" y="67" width="265" height="12" rx="6" fill="#cbd5e1" fill-opacity=".45"/>
+    <rect x="535" y="38" width="110" height="44" rx="16" fill="#2563eb"/>
+  </g>
+  <path d="M90 790C165 760 196 690 263 704S369 765 437 660s116-75 167-145 105-72 206-204v569H90Z" fill="url(#area)"/>
+  <path d="M90 790C165 760 196 690 263 704S369 765 437 660s116-75 167-145 105-72 206-204" fill="none" stroke="#60a5fa" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#93c5fd">
+    <circle cx="263" cy="704" r="11"/><circle cx="437" cy="660" r="11"/><circle cx="604" cy="515" r="11"/><circle cx="810" cy="311" r="11"/>
+  </g>
+  <g transform="translate(95 855)">
+    <rect width="710" height="145" rx="28" fill="#ffffff" fill-opacity=".08" stroke="#ffffff" stroke-opacity=".12"/>
+    <rect x="35" y="40" width="85" height="65" rx="16" fill="#2563eb"/>
+    <rect x="148" y="64" width="85" height="41" rx="16" fill="#0d9488"/>
+    <rect x="261" y="24" width="85" height="81" rx="16" fill="#7c3aed"/>
+    <rect x="374" y="52" width="85" height="53" rx="16" fill="#d97706"/>
+    <rect x="487" y="72" width="85" height="33" rx="16" fill="#be123c"/>
+    <rect x="600" y="45" width="75" height="60" rx="16" fill="#4f46e5"/>
+  </g>
+</svg>
