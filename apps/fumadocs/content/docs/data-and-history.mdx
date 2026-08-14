@@ -24,6 +24,28 @@ A holdings workbook becomes a complete dated position snapshot. Re-uploading the
 
 Transactions and Account exports become a chronological ledger. Stable row hashes and account-scoped entry keys prevent duplicates across overlapping exports. Holdings and moving-average cost are reconstructed from all retained buy and sell entries, rather than from only the newest file.
 
+## Salary PDF imports
+
+Salary imports use a separate account-owned model: a file fingerprint records processing provenance, a payslip record stores normalized monthly totals, and line items preserve the financial breakdown. Exact file duplicates are ignored. If payroll issues a changed PDF for the same month, both revisions remain in history and the latest successful revision drives current analytics.
+
+The browser queues each selected PDF as an individual authenticated request. This allows a 50-file selection without creating one oversized Vercel request, and makes partial failures retryable without reprocessing successful files.
+
+## One-time legacy workbook migration
+
+The repository includes a guarded local command for migrating cash accounts, fixed deposits, commodities, real estate, manual assets and a dated FX rate from the supported legacy workbook layout. It is intentionally separate from the browser importer because the workbook may contain credentials alongside portfolio data.
+
+Run a dry-run first:
+
+```bash
+pnpm db:import-legacy-workbook -- \
+  --email=user@example.com \
+  --file=/absolute/path/to/workbook.xlsx
+```
+
+The dry-run reconciles category totals, displays the exact database host and changes no rows. Execution additionally requires `--execute`, the same email in `--confirm-email`, and the exact `--expect-host` value printed by the dry-run.
+
+The migration is idempotent for the same user, workbook and as-of date. It stores masked account suffixes and financial records, but never stores the raw workbook, passwords, PINs, login IDs, full account numbers, CIFs or card data. Existing broker imports remain authoritative and are not duplicated from derived workbook tabs.
+
 ## Ownership enforcement
 
 Ownership is enforced twice:

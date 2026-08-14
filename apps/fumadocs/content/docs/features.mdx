@@ -27,10 +27,18 @@ Global-equity valuations are based on the latest imported trade price and are ex
 - **Real estate** tracks property identity, owner, type, location, area, ownership share, legal status, unit price and full-market valuation. Analytics use the value attributable to the user's ownership share.
 - **Manual assets** cover assets that do not have a dedicated model.
 
+## Salary intelligence
+
+- Bulk PDF selection supports up to 50 payslips and processes each file independently for reliable Vercel uploads.
+- SHA-256 fingerprints prevent an identical payslip from being imported twice. Revised statements for the same month remain auditable while current analytics use the newest revision.
+- Monthly earnings separate base salary, bonuses and special payments, taxable wage, wage tax, pension, social insurance, 30% ruling adjustments, reimbursements and deposited net pay.
+- Reconciliation checks compare net-wage components and bank-transfer totals with the payable amount. A statement that does not reconcile is retained with a review warning rather than silently treated as verified.
+- Trend charts, annual totals, typical monthly take-home and missing-period detection make incomplete salary history visible.
+
 ## Data management
 
 - Import history with row counts, deduplication results and processing status.
-- Account-scoped JSON export containing current records and relevant history.
+- Account-scoped JSON export containing portfolio and salary records with relevant history.
 - Archival that removes an item from current views without deleting its historical snapshots.
 - User preferences for base currency, locale and time zone.
 - Dated exchange rates for multi-currency aggregation.

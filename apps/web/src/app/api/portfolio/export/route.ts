@@ -14,6 +14,7 @@ import {
   getRealEstatePortfolio,
 } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
+import { getSalaryExport } from "@portfolio/api/salary-queries";
 import { headers } from "next/headers";
 
 export async function GET() {
@@ -35,6 +36,7 @@ export async function GET() {
     realEstate,
     realEstateHistory,
     imports,
+    salary,
   ] = await Promise.all([
     getPortfolioPreference(userId),
     getLatestExchangeRates(userId),
@@ -49,6 +51,7 @@ export async function GET() {
     getRealEstatePortfolio(userId),
     getRealEstateHistory(userId),
     getRecentPortfolioImports(userId),
+    getSalaryExport(userId),
   ]);
 
   const body = JSON.stringify(
@@ -68,6 +71,7 @@ export async function GET() {
       realEstate,
       realEstateHistory,
       imports,
+      salary,
     },
     null,
     2,

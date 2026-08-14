@@ -16,11 +16,11 @@ Both paths create the same account-owned database session. A new Google user is 
 
 In Google Auth Platform, create an OAuth client with application type **Web application**. For the current production deployment, configure:
 
-| Field                        | Value                                                       |
-| ---------------------------- | ----------------------------------------------------------- |
-| Name                         | `selvam-webapp`                                             |
-| Authorized JavaScript origin | `https://netherlandian.vercel.app`                          |
-| Authorized redirect URI      | `https://netherlandian.vercel.app/api/auth/callback/google` |
+| Field                        | Value                                                  |
+| ---------------------------- | ------------------------------------------------------ |
+| Name                         | `selvam-webapp`                                        |
+| Authorized JavaScript origin | `https://myselvam.vercel.app`                          |
+| Authorized redirect URI      | `https://myselvam.vercel.app/api/auth/callback/google` |
 
 Do not use `/login` as the origin and do not add a trailing slash. For local development, optionally add `http://localhost:3001` and `http://localhost:3001/api/auth/callback/google` as a second origin and redirect URI.
 
