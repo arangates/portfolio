@@ -187,12 +187,21 @@ export async function saveBankAccount(userId: string, raw: unknown) {
   }
   if (!account) throw new Error(input.id ? "Account not found" : "Could not save account");
 
-  await db.insert(bankBalanceSnapshot).values({
-    userId,
-    accountId: account.id,
-    amount: input.amount.toString(),
-    asOf: asOfDate(input.asOf),
-  });
+  const snapshotAsOf = asOfDate(input.asOf);
+  await db
+    .insert(bankBalanceSnapshot)
+    .values({
+      userId,
+      accountId: account.id,
+      amount: input.amount.toString(),
+      asOf: snapshotAsOf,
+    })
+    .onConflictDoUpdate({
+      target: [bankBalanceSnapshot.accountId, bankBalanceSnapshot.asOf],
+      set: {
+        amount: input.amount.toString(),
+      },
+    });
   await recordAuditEvent({
     userId,
     action: input.id ? "updated" : "created",
