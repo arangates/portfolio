@@ -5,7 +5,7 @@ description: The controls protecting portfolio data and deployment secrets.
 
 ## User isolation
 
-Every portfolio table carries a required owner ID linked to the authentication user. Server-side queries, mutations, imports, exports and archival operations use the user ID from the verified session. The client cannot select or override the owner.
+Every portfolio, salary and FIRE table carries a required owner ID linked to the authentication user. Server-side queries, mutations, imports, exports and archival operations use the user ID from the verified session. The client cannot select or override the owner.
 
 ## Authentication controls
 
@@ -20,6 +20,7 @@ Every portfolio table carries a required owner ID linked to the authentication u
 - Bank records accept only a safe label and optional last four digits—never full account numbers or credentials.
 - Salary PDFs are parsed in memory. The database stores a file hash and normalized financial rows, but not the PDF, extracted text, home address, birth date, payroll number or bank account.
 - Broker files and personal workbook values are data, not source code, and must never be committed to Git.
+- Family names, dates of birth, income, expenses and retirement assumptions are private account data. They are stored only in Postgres and never embedded as product defaults or source code.
 - Production secrets live in Vercel environment variables; local secrets live in ignored `.env` files.
 - Google OAuth client secrets are server-only and never exposed through `NEXT_PUBLIC_` variables.
 - The web runtime uses Neon's pooled `DATABASE_URL`. The direct connection credential is reserved for trusted migration execution and is not configured in the deployed application.

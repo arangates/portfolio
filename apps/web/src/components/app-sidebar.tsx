@@ -7,6 +7,7 @@ import {
   DatabaseIcon,
   HandCoinsIcon,
   EuroIcon,
+  FlameIcon,
   Globe2Icon,
   LandmarkIcon,
   LayoutDashboardIcon,
@@ -54,6 +55,10 @@ const navigation = [
   {
     label: "Income",
     items: [{ title: "Salary", url: "/dashboard/salary", icon: HandCoinsIcon }],
+  },
+  {
+    label: "Planning",
+    items: [{ title: "FIRE planner", url: "/dashboard/fire", icon: FlameIcon }],
   },
   {
     label: "Data",

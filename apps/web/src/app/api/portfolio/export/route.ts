@@ -1,4 +1,5 @@
 import { getRecentPortfolioImports } from "@portfolio/api/portfolio-import";
+import { getFireExport } from "@portfolio/api/fire-queries";
 import {
   getBankAccounts,
   getCommodityHoldings,
@@ -37,6 +38,7 @@ export async function GET() {
     realEstateHistory,
     imports,
     salary,
+    fire,
   ] = await Promise.all([
     getPortfolioPreference(userId),
     getLatestExchangeRates(userId),
@@ -52,6 +54,7 @@ export async function GET() {
     getRealEstateHistory(userId),
     getRecentPortfolioImports(userId),
     getSalaryExport(userId),
+    getFireExport(userId),
   ]);
 
   const body = JSON.stringify(
@@ -72,6 +75,7 @@ export async function GET() {
       realEstateHistory,
       imports,
       salary,
+      fire,
     },
     null,
     2,

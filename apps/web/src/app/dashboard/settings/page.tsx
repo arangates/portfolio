@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/page-header";
+import { FireSettingsCard } from "@/components/fire-settings-card";
 import {
   AccountForm,
   DataControls,
@@ -8,6 +9,7 @@ import {
   SecurityForm,
 } from "@/components/settings-forms";
 import { getLatestExchangeRates, getPortfolioPreference } from "@portfolio/api/portfolio-queries";
+import { getFireSettings } from "@portfolio/api/fire-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
 import {
@@ -23,9 +25,10 @@ import { redirect } from "next/navigation";
 export default async function SettingsPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
-  const [preference, rates] = await Promise.all([
+  const [preference, rates, fireSettings] = await Promise.all([
     getPortfolioPreference(session.user.id),
     getLatestExchangeRates(session.user.id),
+    getFireSettings(session.user.id),
   ]);
   return (
     <div className="@container/main flex flex-1 flex-col gap-2">
@@ -37,6 +40,7 @@ export default async function SettingsPage() {
         <div className="grid gap-4 px-4 xl:grid-cols-2 lg:px-6">
           <AccountForm name={session.user.name} email={session.user.email} />
           <PreferenceForm preference={preference} />
+          <FireSettingsCard settings={fireSettings} baseCurrency={preference.baseCurrency} />
           <ExchangeRateForm baseCurrency={preference.baseCurrency} />
           <Card>
             <CardHeader>

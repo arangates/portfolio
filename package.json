@@ -17,6 +17,7 @@
     "db:migrate": "turbo run db:migrate -F @portfolio/db",
     "db:reset-data": "pnpm --filter @portfolio/db db:reset-data",
     "db:import-legacy-workbook": "pnpm --filter @portfolio/db db:import-legacy-workbook",
+    "db:import-fire-workbook": "pnpm --filter @portfolio/db db:import-fire-workbook",
     "check": "oxlint && oxfmt --write",
     "prepare": "husky"
   },
