@@ -362,6 +362,7 @@ export async function getBankAccounts(userId: string, currency?: string) {
       name: bankAccount.name,
       accountType: bankAccount.accountType,
       accountLast4: bankAccount.accountLast4,
+      minimumBalance: bankAccount.minimumBalance,
       currency: bankAccount.currency,
       notes: bankAccount.notes,
       amount: bankBalanceSnapshot.amount,
@@ -380,6 +381,7 @@ export async function getBankAccounts(userId: string, currency?: string) {
 
   return latestBy(rows, (row) => row.id).map((row) => ({
     ...row,
+    minimumBalance: row.minimumBalance == null ? null : Number(row.minimumBalance),
     amount: Number(row.amount ?? 0),
   }));
 }

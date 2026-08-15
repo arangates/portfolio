@@ -101,6 +101,7 @@ export default async function InrPage() {
                       <TableHead>Name</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Account</TableHead>
+                      <TableHead className="text-right">Minimum</TableHead>
                       <TableHead className="text-right">Balance</TableHead>
                       <TableHead className="w-24">
                         <span className="sr-only">Actions</span>
@@ -119,7 +120,20 @@ export default async function InrPage() {
                           {account.accountLast4 ? `•••• ${account.accountLast4}` : "—"}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
+                          {typeof account.minimumBalance === "number" &&
+                          !Number.isNaN(account.minimumBalance)
+                            ? formatCurrency(account.minimumBalance, "INR")
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
                           {formatCurrency(account.amount, "INR")}
+                          {typeof account.minimumBalance === "number" &&
+                          !Number.isNaN(account.minimumBalance) &&
+                          account.amount < account.minimumBalance ? (
+                            <div className="mt-2">
+                              <Badge variant="destructive">Below minimum</Badge>
+                            </div>
+                          ) : null}
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-end gap-1">

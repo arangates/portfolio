@@ -37,6 +37,7 @@ export const bankAccountInput = z.object({
   name: z.string().trim().min(2).max(80),
   accountType: z.string().trim().min(2).max(60),
   accountLast4: optionalLast4,
+  minimumBalance: z.coerce.number().nonnegative().max(1_000_000_000_000).optional(),
   currency,
   amount: z.coerce.number().finite().min(-1_000_000_000_000).max(1_000_000_000_000),
   asOf: date.optional(),
@@ -152,6 +153,7 @@ export async function saveBankAccount(userId: string, raw: unknown) {
         name: input.name,
         accountType: input.accountType,
         accountLast4: input.accountLast4 || null,
+        minimumBalance: input.minimumBalance == null ? null : input.minimumBalance.toString(),
         currency: input.currency,
         notes: input.notes || null,
       })
@@ -166,6 +168,7 @@ export async function saveBankAccount(userId: string, raw: unknown) {
         name: input.name,
         accountType: input.accountType,
         accountLast4: input.accountLast4 || null,
+        minimumBalance: input.minimumBalance == null ? null : input.minimumBalance.toString(),
         currency: input.currency,
         notes: input.notes || null,
       })
@@ -179,6 +182,7 @@ export async function saveBankAccount(userId: string, raw: unknown) {
         set: {
           accountType: input.accountType,
           accountLast4: input.accountLast4 || null,
+          minimumBalance: input.minimumBalance == null ? null : input.minimumBalance.toString(),
           notes: input.notes || null,
           archivedAt: null,
         },

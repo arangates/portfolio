@@ -114,6 +114,16 @@ function RecordFields({ kind, values }: { kind: PortfolioRecordKind; values: Val
           placeholder="1234"
           description="Never enter a full account number or login credential."
         />
+        <TextField
+          values={values}
+          name="minimumBalance"
+          label="Minimum account balance"
+          type="number"
+          required={false}
+          min="0"
+          step="any"
+          description="Optional minimum balance required to maintain this account."
+        />
         <TextField values={values} name="amount" label="Current balance" type="number" step="any" />
         <CommonCurrencyFields values={values} />
       </>

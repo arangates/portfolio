@@ -237,6 +237,7 @@ export const bankAccount = pgTable(
     name: text("name").notNull(),
     accountType: text("account_type").notNull(),
     accountLast4: text("account_last4"),
+    minimumBalance: numeric("minimum_balance", { precision: 30, scale: 8 }),
     currency: text("currency").notNull(),
     notes: text("notes"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
