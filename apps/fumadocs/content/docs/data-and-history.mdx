@@ -20,6 +20,10 @@ Each import creates an account-owned batch containing the source, file hash, sta
 
 A holdings workbook becomes a complete dated position snapshot. Re-uploading the identical file returns the existing batch because uniqueness is enforced by user, import type and file hash.
 
+Annual tradebooks become a chronological, account-owned transaction ledger. Exact files are detected by fingerprint; overlapping exports with different workbook metadata are deduplicated again using stable trade identity. Each file keeps its own import counts, while analytics use each unique trade once.
+
+Holdings remain authoritative for current value and unrealized profit. Tradebooks are authoritative for purchases, redemptions and contribution history. Performance metrics requiring complete acquisition history are suppressed when a sale would make reconstructed units negative.
+
 ### Degiro
 
 Transactions and Account exports become a chronological ledger. Stable row hashes and account-scoped entry keys prevent duplicates across overlapping exports. Holdings and moving-average cost are reconstructed from all retained buy and sell entries, rather than from only the newest file.
@@ -109,6 +113,7 @@ This prevents an application error from linking one user's snapshot or imported 
 - Physical commodities are excluded from FIRE liquidity by default. An eligible item contributes at most its attributable liquidation value and can never cause its parent holding to be counted twice.
 - Household totals calculate refunds separately and subtract them once at household level before computing a per-adult share.
 - Indian-equity performance uses values supplied by the latest Zerodha snapshot.
+- Zerodha tradebook cash flows use quantity multiplied by execution price. They exclude taxes, exit loads and charges because those fields are absent from the tradebook export.
 - Global-equity open cost and realized results use moving-average cost. Estimated market value uses the most recent imported trade price.
 
 These calculations are informational. They are not a substitute for broker statements, audited accounting or tax records.

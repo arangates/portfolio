@@ -3,7 +3,7 @@ import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
 
-const kindSchema = z.enum(["zerodha_holdings", "degiro"]);
+const kindSchema = z.enum(["zerodha_holdings", "zerodha_tradebook", "degiro"]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export async function GET() {
@@ -23,7 +23,8 @@ export async function POST(request: Request) {
     if (files.length === 0) {
       return Response.json({ error: "Select at least one file" }, { status: 400 });
     }
-    if (files.length > (kind === "zerodha_holdings" ? 1 : 2)) {
+    const maxFiles = kind === "zerodha_holdings" ? 1 : kind === "zerodha_tradebook" ? 10 : 2;
+    if (files.length > maxFiles) {
       return Response.json({ error: "Too many files selected" }, { status: 400 });
     }
     for (const file of files) {
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
       }
       const lowerName = file.name.toLowerCase();
       const validExtension =
-        kind === "zerodha_holdings" ? lowerName.endsWith(".xlsx") : lowerName.endsWith(".csv");
+        kind === "degiro" ? lowerName.endsWith(".csv") : lowerName.endsWith(".xlsx");
       const hasControlCharacters = [...file.name].some((character) => character.charCodeAt(0) < 32);
       if (!validExtension || hasControlCharacters) {
         return Response.json({ error: `Unsupported file: ${file.name}` }, { status: 415 });

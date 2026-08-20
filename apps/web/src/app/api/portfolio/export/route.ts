@@ -18,6 +18,7 @@ import {
 } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { getSalaryExport } from "@portfolio/api/salary-queries";
+import { getZerodhaTradebookExport } from "@portfolio/api/zerodha-tradebook-queries";
 import { headers } from "next/headers";
 
 export async function GET() {
@@ -35,6 +36,7 @@ export async function GET() {
     manualAssets,
     indianEquity,
     indianEquityHistory,
+    zerodhaTradebook,
     globalEquity,
     degiroLedger,
     realEstate,
@@ -53,6 +55,7 @@ export async function GET() {
     getManualAssets(userId),
     getLatestZerodhaPortfolio(userId),
     getEquitySnapshotHistory(userId),
+    getZerodhaTradebookExport(userId),
     getGlobalEquityPortfolio(userId),
     getRecentDegiroEntries(userId, 100),
     getRealEstatePortfolio(userId),
@@ -76,6 +79,7 @@ export async function GET() {
       manualAssets,
       indianEquity,
       indianEquityHistory,
+      zerodhaTradebook,
       globalEquity,
       degiroLedger,
       realEstate,

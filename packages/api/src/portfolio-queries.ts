@@ -15,6 +15,7 @@ import {
   manualAsset,
   manualAssetSnapshot,
   portfolioPreference,
+  portfolioSource,
   positionSnapshot,
   realEstateProperty,
   realEstateSnapshot,
@@ -172,6 +173,14 @@ export async function getRecentDegiroEntries(userId: string, limit = 25) {
     })
     .from(ledgerEntry)
     .innerJoin(
+      portfolioSource,
+      and(
+        eq(ledgerEntry.sourceId, portfolioSource.id),
+        eq(portfolioSource.userId, userId),
+        eq(portfolioSource.provider, "degiro"),
+      ),
+    )
+    .innerJoin(
       importBatch,
       and(
         eq(ledgerEntry.batchId, importBatch.id),
@@ -198,6 +207,14 @@ export async function getDegiroAnalytics(userId: string) {
     })
     .from(ledgerEntry)
     .innerJoin(
+      portfolioSource,
+      and(
+        eq(ledgerEntry.sourceId, portfolioSource.id),
+        eq(portfolioSource.userId, userId),
+        eq(portfolioSource.provider, "degiro"),
+      ),
+    )
+    .innerJoin(
       importBatch,
       and(
         eq(ledgerEntry.batchId, importBatch.id),
@@ -214,6 +231,14 @@ export async function getDegiroAnalytics(userId: string) {
       occurredAt: ledgerEntry.occurredAt,
     })
     .from(ledgerEntry)
+    .innerJoin(
+      portfolioSource,
+      and(
+        eq(ledgerEntry.sourceId, portfolioSource.id),
+        eq(portfolioSource.userId, userId),
+        eq(portfolioSource.provider, "degiro"),
+      ),
+    )
     .innerJoin(
       importBatch,
       and(
@@ -253,6 +278,14 @@ export async function getGlobalEquityPortfolio(userId: string) {
       netAmount: ledgerEntry.netAmount,
     })
     .from(ledgerEntry)
+    .innerJoin(
+      portfolioSource,
+      and(
+        eq(ledgerEntry.sourceId, portfolioSource.id),
+        eq(portfolioSource.userId, userId),
+        eq(portfolioSource.provider, "degiro"),
+      ),
+    )
     .innerJoin(
       importBatch,
       and(

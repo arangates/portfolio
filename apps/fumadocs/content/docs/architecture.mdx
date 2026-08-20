@@ -39,6 +39,7 @@ The application can be published as source code. Personal workbooks, broker expo
 - Commodity valuation and physical inventory use separate linked models: the holding owns the declared total, while item snapshots preserve provenance and reconciliation detail without duplicating portfolio value.
 - Household planning has a dedicated model because recurring costs, refunds, contract terms and one-time purchases have different history and calculation rules.
 - Broker imports are provider-specific at the parsing boundary and normalized after parsing. Adding another broker should introduce a parser, not a second portfolio model.
+- Broker-ledger queries are provider-scoped. Zerodha tradebook entries cannot enter Degiro holdings or analytics even though both use the shared normalized ledger.
 - Payslip parsing is adapter-based and currently verifies the supplied euHReka layout. Unsupported layouts fail explicitly instead of guessing financial values.
 - FIRE calculations are implemented as a pure, deterministic engine. Database queries normalize every included amount into the user's base currency before calling it, and missing FX rates are disclosed rather than replaced with guessed values.
 - The expected annual path and Monte Carlo range are deliberately separate. Reproducible seeded simulations make results testable while still communicating sequence-of-returns and inflation risk.

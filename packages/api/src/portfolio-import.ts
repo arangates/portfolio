@@ -13,7 +13,7 @@ import { and, desc, eq } from "drizzle-orm";
 import ExcelJS from "exceljs";
 import Papa from "papaparse";
 
-export type PortfolioImportKind = "zerodha_holdings" | "degiro";
+export type PortfolioImportKind = "zerodha_holdings" | "zerodha_tradebook" | "degiro";
 
 export type PortfolioImportFile = {
   name: string;
@@ -121,6 +121,24 @@ function parseStatementDate(value: string) {
   const european = value.match(/\b(\d{2})-(\d{2})-(20\d{2})\b/);
   if (european) return `${european[3]}-${european[2]}-${european[1]}`;
   return null;
+}
+
+function parseIsoDate(value: unknown) {
+  const text = stringValue(value).trim();
+  const match = text.match(/^(20\d{2})-(\d{2})-(\d{2})(?:[T\s](\d{1,2}):(\d{2}))?/);
+  if (!match) return null;
+  const [, year, month, day, hour = "12", minute = "0"] = match;
+  const parsed = new Date(
+    Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute)),
+  );
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function parseStatementPeriod(value: string) {
+  const dates = [...value.matchAll(/\b(20\d{2})-(\d{2})-(\d{2})\b/g)].map(
+    ([, year, month, day]) => `${year}-${month}-${day}`,
+  );
+  return { from: dates[0] ?? null, to: dates[1] ?? dates[0] ?? null };
 }
 
 async function ensureSource(
@@ -420,6 +438,203 @@ async function importZerodha(userId: string, file: PortfolioImportFile) {
   }
 }
 
+async function importZerodhaTradebook(userId: string, file: PortfolioImportFile) {
+  const kind = "zerodha_tradebook";
+  const fileHash = hash(file.bytes);
+  const duplicate = await findDuplicateBatch(userId, kind, fileHash);
+  if (duplicate) {
+    return {
+      batchId: duplicate.id,
+      fileName: duplicate.fileName,
+      kind,
+      duplicate: true,
+      rowCount: duplicate.rowCount,
+      insertedRows: duplicate.insertedRows,
+      skippedRows: duplicate.skippedRows,
+    } satisfies PortfolioImportResult;
+  }
+
+  const source = await ensureSource(userId, "zerodha", "Zerodha Console", "INR");
+  const batch = await createBatch(userId, source.id, kind, file, fileHash);
+
+  try {
+    if (file.bytes[0] !== 0x50 || file.bytes[1] !== 0x4b) {
+      throw new Error("The selected file is not a valid XLSX workbook");
+    }
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(
+      file.bytes.slice().buffer as unknown as Parameters<typeof workbook.xlsx.load>[0],
+    );
+
+    const rawRows: RawRow[] = [];
+    const entries: Array<typeof ledgerEntry.$inferInsert> = [];
+    const instrumentCache = new Map<string, typeof instrument.$inferSelect>();
+    let coverageFrom: string | null = null;
+    let coverageTo: string | null = null;
+
+    for (const worksheet of workbook.worksheets) {
+      let headerRowNumber = 0;
+      worksheet.eachRow((row, rowNumber) => {
+        const labels = Array.from({ length: row.cellCount }, (_, index) =>
+          stringValue(row.getCell(index + 1).value),
+        );
+        const required = ["Symbol", "ISIN", "Trade Date", "Trade Type", "Quantity", "Price"];
+        if (required.every((label) => labels.includes(label))) headerRowNumber = rowNumber;
+      });
+      if (!headerRowNumber) continue;
+
+      const preamble = Array.from({ length: Math.min(headerRowNumber, 15) }, (_, index) => {
+        const row = worksheet.getRow(index + 1);
+        return Array.from({ length: row.cellCount }, (__, cellIndex) =>
+          stringValue(row.getCell(cellIndex + 1).value),
+        ).join(" ");
+      }).join(" ");
+      const period = parseStatementPeriod(preamble);
+      if (period.from && (!coverageFrom || period.from < coverageFrom)) coverageFrom = period.from;
+      if (period.to && (!coverageTo || period.to > coverageTo)) coverageTo = period.to;
+
+      const headerRow = worksheet.getRow(headerRowNumber);
+      const headerValues = Array.from({ length: headerRow.cellCount }, (_, index) =>
+        normalizeValue(headerRow.getCell(index + 1).value),
+      );
+      const headers = uniqueHeaders(headerValues);
+      for (let rowNumber = headerRowNumber + 1; rowNumber <= worksheet.rowCount; rowNumber += 1) {
+        if (rawRows.length >= MAX_IMPORT_ROWS) {
+          throw new Error(`The workbook exceeds the ${MAX_IMPORT_ROWS.toLocaleString()} row limit`);
+        }
+        const row = worksheet.getRow(rowNumber);
+        const values = headers.map((_, index) => normalizeValue(row.getCell(index + 1).value));
+        const payload = rowPayload(headers, values);
+        const isin = stringValue(payload.ISIN);
+        const symbol = stringValue(payload.Symbol);
+        const tradeType = stringValue(payload["Trade Type"]).toLowerCase();
+        const quantity = numberValue(payload.Quantity);
+        const price = numberValue(payload.Price);
+        const occurredAt =
+          parseIsoDate(payload["Order Execution Time"]) ?? parseIsoDate(payload["Trade Date"]);
+        if (
+          !isin ||
+          !symbol ||
+          !occurredAt ||
+          quantity === null ||
+          quantity <= 0 ||
+          price === null ||
+          price < 0 ||
+          !["buy", "sell"].includes(tradeType)
+        ) {
+          continue;
+        }
+
+        const rowHash = stableRowHash([worksheet.name, ...values]);
+        rawRows.push({
+          rowNumber: rawRows.length + 1,
+          values,
+          payload: { worksheet: worksheet.name, ...payload },
+          rowHash,
+        });
+        coverageFrom =
+          !coverageFrom || occurredAt.toISOString().slice(0, 10) < coverageFrom
+            ? occurredAt.toISOString().slice(0, 10)
+            : coverageFrom;
+        coverageTo =
+          !coverageTo || occurredAt.toISOString().slice(0, 10) > coverageTo
+            ? occurredAt.toISOString().slice(0, 10)
+            : coverageTo;
+
+        let savedInstrument = instrumentCache.get(isin);
+        if (!savedInstrument) {
+          savedInstrument = await ensureInstrument({
+            userId,
+            isin,
+            symbol: stringValue(payload.Symbol),
+            name: symbol,
+            assetClass:
+              stringValue(payload.Segment).toUpperCase() === "MF" ||
+              worksheet.name.toLowerCase().includes("mutual")
+                ? "Indian mutual fund"
+                : "Indian equity",
+            currency: "INR",
+          });
+          instrumentCache.set(isin, savedInstrument);
+        }
+        const tradeId = stringValue(payload["Trade ID"]);
+        const executionTime = stringValue(payload["Order Execution Time"]);
+        const signedQuantity = tradeType === "sell" ? -quantity : quantity;
+        const grossAmount = quantity * price;
+        entries.push({
+          userId,
+          sourceId: source.id,
+          batchId: batch.id,
+          instrumentId: savedInstrument.id,
+          externalId: tradeId || null,
+          entryKey: `zerodha_tradebook:${tradeId || rowHash}:${isin}:${tradeType}:${executionTime}`,
+          occurredAt,
+          entryType: tradeType,
+          description: symbol,
+          quantity: signedQuantity.toString(),
+          price: price.toString(),
+          grossAmount: grossAmount.toString(),
+          netAmount: (tradeType === "buy" ? -grossAmount : grossAmount).toString(),
+          currency: "INR",
+          rawRowHash: rowHash,
+        });
+      }
+    }
+
+    if (rawRows.length === 0) {
+      throw new Error(
+        "No Zerodha trades found. Expected a worksheet with Symbol, ISIN, Trade Date, Trade Type, Quantity and Price columns.",
+      );
+    }
+    await saveRawRows(userId, batch.id, rawRows);
+    let insertedRows = 0;
+    for (let index = 0; index < entries.length; index += CHUNK_SIZE) {
+      const chunk = entries.slice(index, index + CHUNK_SIZE);
+      const inserted = await db
+        .insert(ledgerEntry)
+        .values(chunk)
+        .onConflictDoNothing()
+        .returning({ id: ledgerEntry.id });
+      insertedRows += inserted.length;
+    }
+    const skippedRows = rawRows.length - insertedRows;
+    const buyAmount = entries
+      .filter((entry) => entry.entryType === "buy")
+      .reduce((sum, entry) => sum + Number(entry.grossAmount ?? 0), 0);
+    const sellAmount = entries
+      .filter((entry) => entry.entryType === "sell")
+      .reduce((sum, entry) => sum + Number(entry.grossAmount ?? 0), 0);
+    await completeBatch(batch.id, {
+      statementDate: coverageTo,
+      rowCount: rawRows.length,
+      insertedRows,
+      skippedRows,
+      summary: {
+        coverageFrom,
+        coverageTo,
+        instruments: instrumentCache.size,
+        buyTrades: entries.filter((entry) => entry.entryType === "buy").length,
+        sellTrades: entries.filter((entry) => entry.entryType === "sell").length,
+        buyAmount,
+        sellAmount,
+        fullyOverlapping: insertedRows === 0,
+      },
+    });
+    return {
+      batchId: batch.id,
+      fileName: file.name,
+      kind,
+      duplicate: insertedRows === 0,
+      rowCount: rawRows.length,
+      insertedRows,
+      skippedRows,
+    } satisfies PortfolioImportResult;
+  } catch (error) {
+    await failBatch(batch.id, error);
+    throw error;
+  }
+}
+
 function parseCsvRows(file: PortfolioImportFile) {
   const text = Buffer.from(file.bytes)
     .toString("utf8")
@@ -624,7 +839,9 @@ export async function processPortfolioImport(input: {
     results.push(
       input.kind === "zerodha_holdings"
         ? await importZerodha(input.userId, file)
-        : await importDegiro(input.userId, file),
+        : input.kind === "zerodha_tradebook"
+          ? await importZerodhaTradebook(input.userId, file)
+          : await importDegiro(input.userId, file),
     );
   }
   return results;

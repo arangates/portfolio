@@ -16,7 +16,8 @@ EUR bank cash is intentionally separate from Degiro investments and broker activ
 
 ## Listed investments
 
-- **Indian equity** imports Zerodha holdings workbooks. Each unique upload creates an immutable portfolio snapshot with quantity, average price, market value and unrealized profit or loss.
+- **Indian investments** combine Zerodha holdings and tradebooks without mixing their roles. Holdings create immutable current-valuation snapshots. Users can select up to ten annual tradebooks; the browser processes them sequentially and overlapping trades are deduplicated across files.
+- Tradebook intelligence shows monthly purchases and redemptions, net invested cash, financial-year coverage, contribution consistency, fund concentration and history-quality gaps. Realized return, CAGR and XIRR stay hidden until every redemption has sufficient earlier acquisition history.
 - **Global equity** imports Degiro Transactions and Account CSV exports. The application reconstructs open quantities, moving-average cost basis, realized results, dividends, fees and recent activity from the retained ledger.
 
 Global-equity valuations are based on the latest imported trade price and are explicitly labelled as estimates, not live quotes.

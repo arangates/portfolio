@@ -19,6 +19,7 @@ import { DatabaseIcon } from "lucide-react";
 
 function kindLabel(kind: string) {
   if (kind === "zerodha_holdings") return "Zerodha holdings";
+  if (kind === "zerodha_tradebook") return "Zerodha tradebook";
   if (kind === "degiro_transactions") return "Degiro transactions";
   if (kind === "degiro_account") return "Degiro account";
   return kind;
@@ -42,6 +43,14 @@ export default async function ImportsPage() {
                 title="Import Zerodha holdings"
                 description="Upload one holdings XLSX file."
                 accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              />
+              <UploadDialog
+                kind="zerodha_tradebook"
+                title="Import Zerodha tradebooks"
+                description="Select annual tradebook XLSX files. Overlapping trades are deduplicated."
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                multiple
+                triggerLabel="Import tradebooks"
               />
               <UploadDialog
                 kind="degiro"
