@@ -1,5 +1,6 @@
 import { getRecentPortfolioImports } from "@portfolio/api/portfolio-import";
 import { getFireExport } from "@portfolio/api/fire-queries";
+import { getHouseholdExport } from "@portfolio/api/household-queries";
 import {
   getBankAccounts,
   getCommodityHoldings,
@@ -38,6 +39,7 @@ export async function GET() {
     realEstateHistory,
     imports,
     salary,
+    household,
     fire,
   ] = await Promise.all([
     getPortfolioPreference(userId),
@@ -54,6 +56,7 @@ export async function GET() {
     getRealEstateHistory(userId),
     getRecentPortfolioImports(userId),
     getSalaryExport(userId),
+    getHouseholdExport(userId),
     getFireExport(userId),
   ]);
 
@@ -75,6 +78,7 @@ export async function GET() {
       realEstateHistory,
       imports,
       salary,
+      household,
       fire,
     },
     null,

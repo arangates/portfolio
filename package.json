@@ -18,6 +18,7 @@
     "db:reset-data": "pnpm --filter @portfolio/db db:reset-data",
     "db:import-legacy-workbook": "pnpm --filter @portfolio/db db:import-legacy-workbook",
     "db:import-fire-workbook": "pnpm --filter @portfolio/db db:import-fire-workbook",
+    "db:import-household-workbook": "pnpm --filter @portfolio/db db:import-household-workbook",
     "check": "oxlint && oxfmt --write",
     "prepare": "husky"
   },

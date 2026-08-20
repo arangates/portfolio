@@ -6,6 +6,7 @@ import {
   CoinsIcon,
   DatabaseIcon,
   HandCoinsIcon,
+  HouseIcon,
   EuroIcon,
   FlameIcon,
   Globe2Icon,
@@ -58,7 +59,10 @@ const navigation = [
   },
   {
     label: "Planning",
-    items: [{ title: "FIRE planner", url: "/dashboard/fire", icon: FlameIcon }],
+    items: [
+      { title: "Household", url: "/dashboard/household", icon: HouseIcon },
+      { title: "FIRE planner", url: "/dashboard/fire", icon: FlameIcon },
+    ],
   },
   {
     label: "Data",

@@ -36,6 +36,7 @@ The application can be published as source code. Personal workbooks, broker expo
 - Postgres is the source of truth; no portfolio defaults or hardcoded user data are used as fallbacks.
 - Financial history is normalized into identities, dated snapshots, import batches and ledger entries. This costs more storage than overwriting values but preserves auditability.
 - Real estate has a dedicated model because its area, ownership and legal attributes do not fit a generic asset record cleanly.
+- Household planning has a dedicated model because recurring costs, refunds, contract terms and one-time purchases have different history and calculation rules.
 - Broker imports are provider-specific at the parsing boundary and normalized after parsing. Adding another broker should introduce a parser, not a second portfolio model.
 - Payslip parsing is adapter-based and currently verifies the supplied euHReka layout. Unsupported layouts fail explicitly instead of guessing financial values.
 - FIRE calculations are implemented as a pure, deterministic engine. Database queries normalize every included amount into the user's base currency before calling it, and missing FX rates are disclosed rather than replaced with guessed values.

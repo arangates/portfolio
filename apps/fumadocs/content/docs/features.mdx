@@ -35,6 +35,14 @@ Global-equity valuations are based on the latest imported trade price and are ex
 - Reconciliation checks compare net-wage components and bank-transfer totals with the payable amount. A statement that does not reconcile is retained with a review warning rather than silently treated as verified.
 - Trend charts, annual totals, typical monthly take-home and missing-period detection make incomplete salary history visible.
 
+## Household costs
+
+- **Monthly budget** separates gross expenses from government or other refunds, then shows the true household cost, annual run rate and per-adult share.
+- **Scenario planning** compares the current budget with minimum-away, stress and custom cases using household-level arithmetic.
+- **Service contracts** track current terms and cost history, flag expired or approaching end dates, and highlight differences from the matching budget line.
+- **One-time purchases** keep house-setup, car and other capital spending separate from recurring living costs.
+- Category and scenario charts expose the largest cost drivers and refund dependency without treating refunds as negative expenses.
+
 ## FIRE planning
 
 - **Family planning** supports the account owner, partner, children and other dependants without hardcoded names. Portfolio-linked wealth and manually entered partner wealth are kept distinct to prevent double counting.
@@ -49,7 +57,7 @@ The model is designed for early-retirement horizons, not only a fixed 30-year re
 ## Data management
 
 - Import history with row counts, deduplication results and processing status.
-- Account-scoped JSON export containing portfolio, salary and FIRE records with relevant history.
+- Account-scoped JSON export containing portfolio, salary, household and FIRE records with relevant history.
 - Archival that removes an item from current views without deleting its historical snapshots.
 - User preferences for base currency, locale and time zone.
 - Dated exchange rates for multi-currency aggregation.

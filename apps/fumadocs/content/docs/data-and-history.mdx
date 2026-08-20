@@ -46,6 +46,20 @@ pnpm db:import-fire-workbook -- \
 
 Execution additionally requires `--execute`, the same `--confirm-email`, and the exact `--expect-host` printed by the dry-run. The importer updates matching FIRE records, validates expense and one-time-cost totals, stores no raw workbook and does not duplicate the account owner's linked portfolio assets.
 
+## Household records
+
+Recurring budget items and service contracts have stable identity rows plus effective-dated snapshots. Updating an amount or contract term preserves the earlier value. Scenarios and one-time purchases are independent records, so a car or house-setup purchase never inflates the monthly run rate.
+
+The guarded household workbook importer uses every valid row in the detailed monthly sheet and independently reconciles gross expenses, refunds and net cost. It does not trust stale summary formulas. Run the dry-run first:
+
+```bash
+pnpm db:import-household-workbook -- \
+  --email=user@example.com \
+  --file=/absolute/path/to/Housing.xlsx
+```
+
+Execution additionally requires `--execute`, the matching `--confirm-email`, and the exact `--expect-host` printed by the dry-run. Stable source keys make repeat execution idempotent. The importer stores normalized financial records and an audit summary, but not the source workbook, client numbers, login identifiers or other credentials.
+
 ## One-time legacy workbook migration
 
 The repository includes a guarded local command for migrating cash accounts, fixed deposits, commodities, real estate, manual assets and a dated FX rate from the supported legacy workbook layout. It is intentionally separate from the browser importer because the workbook may contain credentials alongside portfolio data.
@@ -77,6 +91,7 @@ This prevents an application error from linking one user's snapshot or imported 
 - Ownership-based assets use attributable value: full market value multiplied by ownership share.
 - Multi-currency totals use stored dated FX rates. Missing conversions are disclosed and excluded.
 - FIRE corpus calculations use investable assets rather than total net worth, account for time-bounded expenses and income, and apply one-time costs in their planned year.
+- Household totals calculate refunds separately and subtract them once at household level before computing a per-adult share.
 - Indian-equity performance uses values supplied by the latest Zerodha snapshot.
 - Global-equity open cost and realized results use moving-average cost. Estimated market value uses the most recent imported trade price.
 

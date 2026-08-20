@@ -5,7 +5,7 @@ description: The controls protecting portfolio data and deployment secrets.
 
 ## User isolation
 
-Every portfolio, salary and FIRE table carries a required owner ID linked to the authentication user. Server-side queries, mutations, imports, exports and archival operations use the user ID from the verified session. The client cannot select or override the owner.
+Every portfolio, salary, household and FIRE table carries a required owner ID linked to the authentication user. Server-side queries, mutations, imports, exports and archival operations use the user ID from the verified session. The client cannot select or override the owner.
 
 ## Authentication controls
 
@@ -19,6 +19,7 @@ Every portfolio, salary and FIRE table carries a required owner ID linked to the
 
 - Bank records accept only a safe label and optional last four digits—never full account numbers or credentials.
 - Salary PDFs are parsed in memory. The database stores a file hash and normalized financial rows, but not the PDF, extracted text, home address, birth date, payroll number or bank account.
+- Household imports omit service client numbers and login identifiers. Contracts retain only the provider, service, financial terms and non-sensitive operational notes needed for planning.
 - Broker files and personal workbook values are data, not source code, and must never be committed to Git.
 - Family names, dates of birth, income, expenses and retirement assumptions are private account data. They are stored only in Postgres and never embedded as product defaults or source code.
 - Production secrets live in Vercel environment variables; local secrets live in ignored `.env` files.
