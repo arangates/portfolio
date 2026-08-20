@@ -21,6 +21,8 @@ import {
 } from "@portfolio/db";
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 
+import { getCommodityInventoryDashboard } from "./commodity-inventory";
+
 function latestBy<T>(rows: T[], key: (row: T) => string) {
   const latest = new Map<string, T>();
   for (const row of rows) {
@@ -580,6 +582,7 @@ export type PortfolioAsset = {
   nativeValue: number;
   currency: string;
   baseValue: number | null;
+  liquidBaseValue?: number | null;
   isLiquid: boolean;
   risk: string;
   location: string;
@@ -596,6 +599,7 @@ export async function getPortfolioOverview(userId: string) {
     accounts,
     deposits,
     commodities,
+    commodityInventory,
     realEstate,
     manualAssets,
   ] = await Promise.all([
@@ -607,6 +611,7 @@ export async function getPortfolioOverview(userId: string) {
     getBankAccounts(userId),
     getCurrentFixedDeposits(userId),
     getCommodityHoldings(userId),
+    getCommodityInventoryDashboard(userId),
     getRealEstatePortfolio(userId),
     getManualAssets(userId),
   ]);
@@ -686,6 +691,14 @@ export async function getPortfolioOverview(userId: string) {
   }
 
   for (const commodity of commodities) {
+    const itemizedLiquidValue = commodityInventory.items
+      .filter(
+        (item) =>
+          item.commodityHoldingId === commodity.id &&
+          item.valuationCurrency === commodity.currency &&
+          item.fireEligibleValue != null,
+      )
+      .reduce((sum, item) => sum + (item.fireEligibleValue ?? 0), 0);
     assets.push({
       key: `commodity-${commodity.id}`,
       name: commodity.name,
@@ -693,7 +706,8 @@ export async function getPortfolioOverview(userId: string) {
       nativeValue: commodity.value,
       currency: commodity.currency,
       baseValue: convert(commodity.value, commodity.currency),
-      isLiquid: true,
+      liquidBaseValue: convert(Math.min(commodity.value, itemizedLiquidValue), commodity.currency),
+      isLiquid: itemizedLiquidValue > 0,
       risk: "Moderate",
       location: commodity.location ?? "—",
       asOf: commodity.asOf,
@@ -735,9 +749,16 @@ export async function getPortfolioOverview(userId: string) {
     (asset): asset is PortfolioAsset & { baseValue: number } => asset.baseValue !== null,
   );
   const netWorth = valuedAssets.reduce((sum, asset) => sum + asset.baseValue, 0);
-  const liquidValue = valuedAssets
-    .filter((asset) => asset.isLiquid)
-    .reduce((sum, asset) => sum + asset.baseValue, 0);
+  const liquidValue = valuedAssets.reduce(
+    (sum, asset) =>
+      sum +
+      (asset.liquidBaseValue !== undefined
+        ? (asset.liquidBaseValue ?? 0)
+        : asset.isLiquid
+          ? asset.baseValue
+          : 0),
+    0,
+  );
   const equityInvested = equity?.holdings.reduce((sum, item) => sum + item.investedValue, 0) ?? 0;
   const equityPnl = equity?.holdings.reduce((sum, item) => sum + item.unrealizedPnl, 0) ?? 0;
   const unconvertedCurrencies = [

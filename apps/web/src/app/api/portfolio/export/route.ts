@@ -1,4 +1,5 @@
 import { getRecentPortfolioImports } from "@portfolio/api/portfolio-import";
+import { getCommodityInventoryExport } from "@portfolio/api/commodity-inventory";
 import { getFireExport } from "@portfolio/api/fire-queries";
 import { getHouseholdExport } from "@portfolio/api/household-queries";
 import {
@@ -30,6 +31,7 @@ export async function GET() {
     accounts,
     fixedDeposits,
     commodities,
+    commodityInventory,
     manualAssets,
     indianEquity,
     indianEquityHistory,
@@ -47,6 +49,7 @@ export async function GET() {
     getBankAccounts(userId),
     getCurrentFixedDeposits(userId),
     getCommodityHoldings(userId),
+    getCommodityInventoryExport(userId),
     getManualAssets(userId),
     getLatestZerodhaPortfolio(userId),
     getEquitySnapshotHistory(userId),
@@ -69,6 +72,7 @@ export async function GET() {
       accounts,
       fixedDeposits,
       commodities,
+      commodityInventory,
       manualAssets,
       indianEquity,
       indianEquityHistory,

@@ -381,6 +381,72 @@ export const commoditySnapshot = pgTable(
   ],
 );
 
+export const commodityInventoryItem = pgTable(
+  "commodity_inventory_item",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    commodityHoldingId: uuid("commodity_holding_id")
+      .notNull()
+      .references(() => commodityHolding.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    itemCount: numeric("item_count", { precision: 20, scale: 4 }).default("1").notNull(),
+    countUnit: text("count_unit").default("piece").notNull(),
+    ownerLabel: text("owner_label"),
+    provenance: text("provenance"),
+    location: text("location"),
+    eligibleForFire: boolean("eligible_for_fire").default(false).notNull(),
+    notes: text("notes"),
+    sourceKey: text("source_key"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("commodity_inventory_item_user_source_uidx").on(table.userId, table.sourceKey),
+    uniqueIndex("commodity_inventory_item_id_user_uidx").on(table.id, table.userId),
+    index("commodity_inventory_item_user_holding_idx").on(table.userId, table.commodityHoldingId),
+    foreignKey({
+      columns: [table.commodityHoldingId, table.userId],
+      foreignColumns: [commodityHolding.id, commodityHolding.userId],
+      name: "commodity_inventory_item_holding_owner_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const commodityInventorySnapshot = pgTable(
+  "commodity_inventory_snapshot",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => commodityInventoryItem.id, { onDelete: "cascade" }),
+    asOf: timestamp("as_of", { withTimezone: true }).defaultNow().notNull(),
+    grossWeightGrams: numeric("gross_weight_grams", { precision: 30, scale: 8 }),
+    purityFraction: numeric("purity_fraction", { precision: 12, scale: 8 }),
+    ownershipShare: numeric("ownership_share", { precision: 12, scale: 8 }),
+    liquidationFactor: numeric("liquidation_factor", { precision: 12, scale: 8 }),
+    appraisalValue: numeric("appraisal_value", { precision: 30, scale: 8 }),
+    appraisalCurrency: text("appraisal_currency"),
+    source: text("source").default("manual").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("commodity_inventory_snapshot_item_asof_uidx").on(table.itemId, table.asOf),
+    index("commodity_inventory_snapshot_user_asof_idx").on(table.userId, table.asOf),
+    foreignKey({
+      columns: [table.itemId, table.userId],
+      foreignColumns: [commodityInventoryItem.id, commodityInventoryItem.userId],
+      name: "commodity_inventory_snapshot_owner_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
 export const manualAsset = pgTable(
   "manual_asset",
   {

@@ -18,7 +18,8 @@
     "db:reset-data": "node ./scripts/reset-application-data.mjs",
     "db:import-legacy-workbook": "node ./scripts/import-legacy-workbook.mjs",
     "db:import-fire-workbook": "node ./scripts/import-fire-workbook.mjs",
-    "db:import-household-workbook": "node ./scripts/import-household-workbook.mjs"
+    "db:import-household-workbook": "node ./scripts/import-household-workbook.mjs",
+    "db:import-metals-inventory": "node ./scripts/import-metals-inventory.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

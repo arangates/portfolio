@@ -30,6 +30,21 @@ Salary imports use a separate account-owned model: a file fingerprint records pr
 
 The browser queues each selected PDF as an individual authenticated request. This allows a 50-file selection without creating one oversized Vercel request, and makes partial failures retryable without reprocessing successful files.
 
+## Metals inventory
+
+Commodity holdings remain the authoritative valued totals. Physical inventory items and their dated snapshots provide the supporting breakdown; they are not added to net worth again. Unknown purity, weight, ownership or appraisal stays `null` rather than being silently treated as zero or estimated.
+
+The guarded CSV importer is repeatable and account-specific. Run its dry-run first:
+
+```bash
+pnpm db:import-metals-inventory -- \
+  --email=user@example.com \
+  --file=/absolute/path/to/Metals.csv \
+  --effective-from=YYYY-MM-DD
+```
+
+Execution also requires `--execute`, the same `--confirm-email`, and the exact `--expect-host` printed by the dry-run. Stable source keys make repeated execution idempotent. The source file is not stored; only normalized items, dated measurements, a SHA-256 fingerprint and aggregate audit metadata are retained.
+
 ## FIRE planning records
 
 FIRE assumptions, family members, recurring expenses, one-time costs, income streams and scenarios are stored as separate account-owned records. Calculated corpus values and simulations are not stored as facts; they are recomputed from current source records, portfolio liquidity and stored FX rates.
@@ -91,6 +106,7 @@ This prevents an application error from linking one user's snapshot or imported 
 - Ownership-based assets use attributable value: full market value multiplied by ownership share.
 - Multi-currency totals use stored dated FX rates. Missing conversions are disclosed and excluded.
 - FIRE corpus calculations use investable assets rather than total net worth, account for time-bounded expenses and income, and apply one-time costs in their planned year.
+- Physical commodities are excluded from FIRE liquidity by default. An eligible item contributes at most its attributable liquidation value and can never cause its parent holding to be counted twice.
 - Household totals calculate refunds separately and subtract them once at household level before computing a per-adult share.
 - Indian-equity performance uses values supplied by the latest Zerodha snapshot.
 - Global-equity open cost and realized results use moving-average cost. Estimated market value uses the most recent imported trade price.

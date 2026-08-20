@@ -71,6 +71,13 @@
       "when": 1787256124099,
       "tag": "0009_tired_bulldozer",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787261695261,
+      "tag": "0010_nice_onslaught",
+      "breakpoints": true
     }
   ]
 }
