@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { BanknoteIcon, Building2Icon, LandmarkIcon, ShieldCheckIcon } from "lucide-react";
+import { BanknoteIcon, CircleGaugeIcon, LandmarkIcon, PieChartIcon } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -33,13 +33,27 @@ export default async function InrPage() {
     (current, account) => (!current || account.amount > current.amount ? account : current),
     null,
   );
+  const requiredMinimum = accounts.reduce(
+    (sum, account) =>
+      sum +
+      (typeof account.minimumBalance === "number" && !Number.isNaN(account.minimumBalance)
+        ? account.minimumBalance
+        : 0),
+    0,
+  );
+  const belowMinimum = accounts.filter(
+    (account) =>
+      typeof account.minimumBalance === "number" &&
+      !Number.isNaN(account.minimumBalance) &&
+      account.amount < account.minimumBalance,
+  ).length;
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title="INR accounts"
-          description="Only safe account identifiers and dated balance snapshots belonging to your account are stored. Never enter credentials or a full account number."
+          description="Track INR cash, concentration and minimum-balance headroom from dated account snapshots."
           action={<PortfolioRecordDialog kind="bank_account" values={{ currency: "INR" }} />}
         />
         {accounts.length === 0 ? (
@@ -47,7 +61,7 @@ export default async function InrPage() {
             <EmptyDataState
               icon={BanknoteIcon}
               title="No INR accounts"
-              description="Add your first account and balance. It will be visible only to this signed-in account."
+              description="Add your first account and balance to begin a dated cash history."
               action={<PortfolioRecordDialog kind="bank_account" values={{ currency: "INR" }} />}
             />
           </div>
@@ -72,20 +86,22 @@ export default async function InrPage() {
                   icon: LandmarkIcon,
                 },
                 {
-                  label: "Largest balance",
-                  value: largest ? formatCurrency(largest.amount, "INR") : "—",
+                  label: "Largest concentration",
+                  value: formatPercent(total === 0 ? 0 : (largest?.amount ?? 0) / total, 0),
                   badge: largest?.institution,
-                  note: largest ? `${largest.institution} · ${largest.name}` : "No account",
-                  detail: "Largest current cash concentration",
-                  icon: Building2Icon,
+                  note: largest
+                    ? `${formatCurrency(largest.amount, "INR")} in ${largest.name}`
+                    : "No account",
+                  detail: "Share of total INR cash",
+                  icon: PieChartIcon,
                 },
                 {
-                  label: "Data protection",
-                  value: "Account scoped",
-                  badge: "Masked",
-                  note: "Only last four digits are retained",
-                  detail: "Every query is filtered by the session user",
-                  icon: ShieldCheckIcon,
+                  label: "Above minimums",
+                  value: formatCurrency(total - requiredMinimum, "INR"),
+                  badge: belowMinimum === 0 ? "All covered" : `${belowMinimum} below minimum`,
+                  note: `${formatCurrency(requiredMinimum, "INR")} required across accounts`,
+                  detail: "Based on configured minimum balances",
+                  icon: CircleGaugeIcon,
                 },
               ]}
             />

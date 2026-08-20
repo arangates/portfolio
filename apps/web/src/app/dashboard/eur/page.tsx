@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
 import { getBankAccounts } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { Building2Icon, EuroIcon, LandmarkIcon, ShieldCheckIcon } from "lucide-react";
+import { CalendarClockIcon, EuroIcon, PieChartIcon } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -37,8 +37,8 @@ export default async function EurPage() {
   );
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title="EUR accounts"
           description="EUR bank accounts are kept separate from broker investments. Updates append dated balance snapshots without replacing history."
@@ -66,28 +66,22 @@ export default async function EurPage() {
                   icon: EuroIcon,
                 },
                 {
-                  label: "Active accounts",
-                  value: accounts.length.toLocaleString("en"),
-                  badge: "Bank only",
-                  note: "Broker cash is not mixed into this page",
-                  detail: latest ? `Updated ${formatDate(latest)}` : "No dated snapshot",
-                  icon: LandmarkIcon,
-                },
-                {
-                  label: "Largest balance",
-                  value: largest ? formatCurrency(largest.amount, "EUR") : "—",
+                  label: "Largest concentration",
+                  value: formatPercent(total === 0 ? 0 : (largest?.amount ?? 0) / total, 0),
                   badge: largest?.institution,
-                  note: largest ? `${largest.institution} · ${largest.name}` : "No account",
-                  detail: "Largest current cash concentration",
-                  icon: Building2Icon,
+                  note: largest
+                    ? `${formatCurrency(largest.amount, "EUR")} in ${largest.name}`
+                    : "No account",
+                  detail: "Share of total EUR cash",
+                  icon: PieChartIcon,
                 },
                 {
-                  label: "Data protection",
-                  value: "Account scoped",
-                  badge: "Masked",
-                  note: "Only last four digits are retained",
-                  detail: "Every query is filtered by the session user",
-                  icon: ShieldCheckIcon,
+                  label: "Data freshness",
+                  value: latest ? formatDate(latest) : "—",
+                  badge: `${accounts.length} accounts`,
+                  note: `${funded.length} accounts currently funded`,
+                  detail: "Latest balance snapshot date",
+                  icon: CalendarClockIcon,
                 },
               ]}
             />

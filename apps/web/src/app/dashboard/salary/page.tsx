@@ -72,8 +72,8 @@ export default async function SalaryPage() {
 
   if (payslips.length === 0) {
     return (
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+        <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
           <PageHeader
             title="Salary"
             description="Turn PDF payslips into a private, queryable income history with earnings, taxes, pension and reimbursement analytics."
@@ -153,8 +153,8 @@ export default async function SalaryPage() {
     .filter((gap) => gap.amount > 0.02);
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title="Salary intelligence"
           description="Verified payslip history with recurring salary, special earnings, taxes, pension, reimbursements and take-home pay kept separate."

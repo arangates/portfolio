@@ -1,5 +1,6 @@
 import { ArchiveRecordButton } from "@/components/archive-record-button";
 import { EmptyDataState } from "@/components/empty-data-state";
+import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
@@ -43,11 +44,10 @@ export default async function FixedDepositsPage() {
 
   if (deposits.length === 0) {
     return (
-      <div className="px-4 py-6 lg:px-6">
-        <EmptyDataState
-          icon={LandmarkIcon}
-          title="No fixed deposits"
-          description="Add your first deposit. Future updates append snapshots, preserving its entire history."
+      <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 py-4 sm:py-5 md:py-6">
+        <PageHeader
+          title="Fixed deposits"
+          description="Monitor principal, rates and upcoming maturities while keeping every historical update."
           action={
             <PortfolioRecordDialog
               kind="fixed_deposit"
@@ -55,6 +55,19 @@ export default async function FixedDepositsPage() {
             />
           }
         />
+        <div className="px-4 lg:px-6">
+          <EmptyDataState
+            icon={LandmarkIcon}
+            title="No fixed deposits"
+            description="Add your first deposit. Future updates append snapshots, preserving its entire history."
+            action={
+              <PortfolioRecordDialog
+                kind="fixed_deposit"
+                values={{ currency: "INR", compoundingPerYear: 4 }}
+              />
+            }
+          />
+        </div>
       </div>
     );
   }
@@ -77,8 +90,18 @@ export default async function FixedDepositsPage() {
   const banks = [...new Set(active.map((deposit) => deposit.bank))];
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
+        <PageHeader
+          title="Fixed deposits"
+          description="Monitor principal, rates and upcoming maturities while keeping every historical update."
+          action={
+            <PortfolioRecordDialog
+              kind="fixed_deposit"
+              values={{ currency: "INR", compoundingPerYear: 4 }}
+            />
+          }
+        />
         <SectionCards
           items={[
             {

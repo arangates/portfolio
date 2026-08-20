@@ -33,8 +33,8 @@ export default async function SalaryPayslipPage({ params }: { params: Promise<{ 
   if (!payslip) notFound();
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title={payslip.periodLabel}
           description={`${payslip.employerName} · parsed revision ${payslip.revision ?? "—"} · ${payslip.validationStatus.replace("_", " ")}`}

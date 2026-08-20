@@ -43,8 +43,8 @@ export default async function HouseholdPage() {
   const data = await getHouseholdDashboard(session.user.id);
   if (!data.configured || !data.profile) {
     return (
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+        <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
           <PageHeader
             title="Household"
             description="Track the recurring cost of running your household, government refunds, contracts and one-time purchases."
@@ -85,8 +85,8 @@ export default async function HouseholdPage() {
   );
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title={data.profile.name}
           description="A refund-aware household budget with historical amounts, stress scenarios, contract checks and one-time spending."

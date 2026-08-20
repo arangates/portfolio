@@ -26,11 +26,11 @@ export default async function DashboardPage() {
       : overview.totals.equityPnl / overview.totals.equityInvested;
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title="Portfolio overview"
-          description="A private, account-scoped view calculated from your latest database snapshots. No shared portfolio defaults or cross-user fallbacks are used."
+          description="Your latest net worth, liquidity, allocation and performance in one view."
           action={
             <PortfolioRecordDialog
               kind="manual_asset"
@@ -44,7 +44,7 @@ export default async function DashboardPage() {
             <EmptyDataState
               icon={DatabaseIcon}
               title="Build your portfolio"
-              description="Import a broker statement or add an asset. New accounts always start empty, so another user’s information can never appear here."
+              description="Import a broker statement or add an asset to create your first portfolio snapshot."
               action={
                 <div className="flex flex-wrap justify-center gap-2">
                   <UploadDialog

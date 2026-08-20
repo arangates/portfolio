@@ -73,8 +73,8 @@ export default async function FirePage() {
 
   if (!plan.configured) {
     return (
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+        <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
           <PageHeader
             title="FIRE planner"
             description="Turn your family expenses, investable assets and future life events into a transparent retirement plan."
@@ -115,8 +115,8 @@ export default async function FirePage() {
   const progress = Math.min(100, Math.max(0, (primary?.progress ?? 0) * 100));
 
   return (
-    <div className="@container/main flex flex-1 flex-col gap-2">
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+    <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
+      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title="FIRE planner"
           description="A family-wide plan combining current investable assets, phase-aware expenses, one-time goals, retirement income and probability-based risk ranges."

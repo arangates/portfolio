@@ -1,24 +1,10 @@
 "use client";
 
-import {
-  BanknoteIcon,
-  Building2Icon,
-  CoinsIcon,
-  DatabaseIcon,
-  HandCoinsIcon,
-  HouseIcon,
-  EuroIcon,
-  FlameIcon,
-  Globe2Icon,
-  LandmarkIcon,
-  LayoutDashboardIcon,
-  TrendingUpIcon,
-  WalletCardsIcon,
-  SettingsIcon,
-} from "lucide-react";
+import { WalletCardsIcon } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
+import { dashboardNavigation } from "@/lib/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -28,50 +14,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@portfolio/ui/components/sidebar";
-
-const navigation = [
-  {
-    label: "Portfolio",
-    items: [
-      { title: "Overview & assets", url: "/dashboard", icon: LayoutDashboardIcon },
-      { title: "Fixed deposits", url: "/dashboard/fixed-deposits", icon: LandmarkIcon },
-    ],
-  },
-  {
-    label: "Cash accounts",
-    items: [
-      { title: "INR", url: "/dashboard/inr", icon: BanknoteIcon },
-      { title: "EUR", url: "/dashboard/eur", icon: EuroIcon },
-    ],
-  },
-  {
-    label: "Investments",
-    items: [
-      { title: "Indian equity", url: "/dashboard/indian-equity", icon: TrendingUpIcon },
-      { title: "Global equity", url: "/dashboard/global-equity", icon: Globe2Icon },
-      { title: "Real estate", url: "/dashboard/real-estate", icon: Building2Icon },
-      { title: "Commodities", url: "/dashboard/commodities", icon: CoinsIcon },
-    ],
-  },
-  {
-    label: "Income",
-    items: [{ title: "Salary", url: "/dashboard/salary", icon: HandCoinsIcon }],
-  },
-  {
-    label: "Planning",
-    items: [
-      { title: "Household", url: "/dashboard/household", icon: HouseIcon },
-      { title: "FIRE planner", url: "/dashboard/fire", icon: FlameIcon },
-    ],
-  },
-  {
-    label: "Data",
-    items: [
-      { title: "Import history", url: "/dashboard/imports", icon: DatabaseIcon },
-      { title: "Settings & data", url: "/dashboard/settings", icon: SettingsIcon },
-    ],
-  },
-] as const;
 
 export function AppSidebar({
   user,
@@ -97,7 +39,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {navigation.map((group) => (
+        {dashboardNavigation.map((group) => (
           <NavMain key={group.label} label={group.label} items={group.items} />
         ))}
       </SidebarContent>
