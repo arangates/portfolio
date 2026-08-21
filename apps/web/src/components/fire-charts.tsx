@@ -77,7 +77,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
     }));
 
   return (
-    <div className="space-y-4 px-4 lg:px-6">
+    <div className="min-w-0 space-y-4 px-4 lg:px-6">
       <div className="flex flex-wrap gap-2">
         {results.map((result) => (
           <Button
@@ -90,8 +90,8 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
           </Button>
         ))}
       </div>
-      <div className="grid gap-4 xl:grid-cols-2">
-        <Card>
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader>
             <CardTitle>Range of possible outcomes</CardTitle>
             <CardDescription>
@@ -99,7 +99,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
               range, not a guarantee.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0 px-2 sm:px-6">
             <ChartContainer config={projectionConfig} className="h-[330px] w-full">
               <ComposedChart accessibilityLayer data={projection} margin={{ left: 8, right: 8 }}>
                 <CartesianGrid vertical={false} />
@@ -107,7 +107,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  width={74}
+                  width={56}
                   tickFormatter={(value) => compact(Number(value), currency)}
                 />
                 <ChartTooltip
@@ -151,14 +151,14 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader>
             <CardTitle>Retirement cash-flow map</CardTitle>
             <CardDescription>
               Inflation-adjusted living costs, planned events and non-portfolio income by year.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0 px-2 sm:px-6">
             <ChartContainer config={cashFlowConfig} className="h-[330px] w-full">
               <ComposedChart accessibilityLayer data={cashFlows} margin={{ left: 8, right: 8 }}>
                 <CartesianGrid vertical={false} />
@@ -166,7 +166,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  width={74}
+                  width={56}
                   tickFormatter={(value) => compact(Number(value), currency)}
                 />
                 <ChartTooltip

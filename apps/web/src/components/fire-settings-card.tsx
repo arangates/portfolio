@@ -85,8 +85,7 @@ export function FireSettingsCard({
       <CardHeader>
         <CardTitle>Family & FIRE planning</CardTitle>
         <CardDescription>
-          Model people by relationship rather than hardcoded names. A partner can contribute
-          separate net worth and a child can have age-bound expenses and future milestones.
+          Manage household members and the assumptions used across every retirement scenario.
         </CardDescription>
         <div className="flex flex-wrap gap-2 pt-2">
           <FireRecordDialog

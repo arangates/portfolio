@@ -52,15 +52,15 @@ export function ZerodhaTradebookCharts({
   }));
 
   return (
-    <div className="grid gap-4 px-4 xl:grid-cols-2 lg:px-6">
-      <Card>
+    <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>Monthly investment flow</CardTitle>
           <CardDescription>
             Actual purchases, redemptions and net invested cash from imported trades.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0 px-2 sm:px-6">
           <ChartContainer config={cashFlowConfig} className="h-[320px] w-full">
             <ComposedChart accessibilityLayer data={monthly} margin={{ left: 8, right: 8 }}>
               <CartesianGrid vertical={false} />
@@ -68,7 +68,7 @@ export function ZerodhaTradebookCharts({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                width={72}
+                width={56}
                 tickFormatter={(value) => compact(Number(value))}
               />
               <ChartTooltip
@@ -92,24 +92,18 @@ export function ZerodhaTradebookCharts({
           </ChartContainer>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>Where contributions went</CardTitle>
           <CardDescription>
             Top funds by cumulative purchase amount across all imported years.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0 px-2 sm:px-6">
           <ChartContainer config={fundConfig} className="h-[320px] w-full">
             <BarChart accessibilityLayer data={topFunds} layout="vertical" margin={{ left: 8 }}>
               <CartesianGrid horizontal={false} />
-              <YAxis
-                dataKey="label"
-                type="category"
-                tickLine={false}
-                axisLine={false}
-                width={150}
-              />
+              <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} width={96} />
               <XAxis
                 type="number"
                 tickLine={false}

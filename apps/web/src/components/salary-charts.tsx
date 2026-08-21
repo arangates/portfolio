@@ -55,15 +55,15 @@ export function SalaryCharts({
   currency: string;
 }) {
   return (
-    <div className="grid gap-4 px-4 xl:grid-cols-2 lg:px-6">
-      <Card>
+    <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>Earnings and take-home</CardTitle>
           <CardDescription>
             Recurring base pay, special earnings and deposited net pay.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0 px-2 sm:px-6">
           <ChartContainer config={earningsConfig} className="h-[320px] w-full">
             <ComposedChart accessibilityLayer data={data} margin={{ left: 8, right: 8 }}>
               <CartesianGrid vertical={false} />
@@ -71,7 +71,7 @@ export function SalaryCharts({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                width={72}
+                width={56}
                 tickFormatter={(value) => compactNumber(Number(value), currency)}
               />
               <ChartTooltip
@@ -100,14 +100,14 @@ export function SalaryCharts({
           </ChartContainer>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>Tax and retirement contributions</CardTitle>
           <CardDescription>
             Monthly wage tax, employee pension and social insurance.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0 px-2 sm:px-6">
           <ChartContainer config={deductionsConfig} className="h-[320px] w-full">
             <AreaChart accessibilityLayer data={data} margin={{ left: 8, right: 8 }}>
               <CartesianGrid vertical={false} />
@@ -115,7 +115,7 @@ export function SalaryCharts({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                width={72}
+                width={56}
                 tickFormatter={(value) => compactNumber(Number(value), currency)}
               />
               <ChartTooltip

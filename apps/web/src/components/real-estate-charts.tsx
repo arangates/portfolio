@@ -43,13 +43,13 @@ export function RealEstateCharts({
   currency: string;
 }) {
   return (
-    <div className="grid gap-4 px-4 xl:grid-cols-2 lg:px-6">
-      <Card>
+    <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>Property allocation</CardTitle>
           <CardDescription>Attributable value by property type.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0 px-2 sm:px-6">
           <ChartContainer config={allocationConfig} className="h-[300px] w-full">
             <BarChart accessibilityLayer data={allocation} layout="vertical" margin={{ left: 8 }}>
               <CartesianGrid horizontal={false} />
@@ -58,7 +58,7 @@ export function RealEstateCharts({
                 type="category"
                 tickLine={false}
                 axisLine={false}
-                width={100}
+                width={80}
               />
               <XAxis
                 type="number"
@@ -80,12 +80,12 @@ export function RealEstateCharts({
           </ChartContainer>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>Valuation history</CardTitle>
           <CardDescription>Portfolio value after each dated property snapshot.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0 px-2 sm:px-6">
           <ChartContainer config={historyConfig} className="h-[300px] w-full">
             <AreaChart accessibilityLayer data={history} margin={{ left: 8, right: 8 }}>
               <defs>
@@ -99,7 +99,7 @@ export function RealEstateCharts({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                width={72}
+                width={56}
                 tickFormatter={(value) => compactNumber(Number(value), currency)}
               />
               <ChartTooltip

@@ -52,13 +52,13 @@ export function PortfolioCharts({
   historyDescription?: string;
 }) {
   return (
-    <div className="grid gap-4 px-4 xl:grid-cols-2 lg:px-6">
-      <Card>
+    <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>{allocationTitle}</CardTitle>
           <CardDescription>Current value by asset category in {currency}.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0 px-2 sm:px-6">
           <ChartContainer config={allocationConfig} className="h-[300px] w-full">
             <BarChart accessibilityLayer data={allocation} layout="vertical" margin={{ left: 8 }}>
               <CartesianGrid horizontal={false} />
@@ -67,7 +67,7 @@ export function PortfolioCharts({
                 type="category"
                 tickLine={false}
                 axisLine={false}
-                width={120}
+                width={88}
               />
               <XAxis
                 type="number"
@@ -89,12 +89,12 @@ export function PortfolioCharts({
           </ChartContainer>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle>{historyTitle}</CardTitle>
           <CardDescription>{historyDescription}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0 px-2 sm:px-6">
           <ChartContainer config={historyConfig} className="h-[300px] w-full">
             <AreaChart accessibilityLayer data={equityHistory} margin={{ left: 8, right: 8 }}>
               <defs>
@@ -108,7 +108,7 @@ export function PortfolioCharts({
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                width={72}
+                width={56}
                 tickFormatter={(value) => compactNumber(Number(value), currency)}
               />
               <ChartTooltip

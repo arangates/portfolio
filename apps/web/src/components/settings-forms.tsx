@@ -65,7 +65,9 @@ export function PreferenceForm({
     <Card>
       <CardHeader>
         <CardTitle>Portfolio preferences</CardTitle>
-        <CardDescription>Choose how multi-currency values are presented.</CardDescription>
+        <CardDescription>
+          Control currency, number formatting and dates across Selvam.
+        </CardDescription>
       </CardHeader>
       <form onSubmit={submit}>
         <CardContent>
@@ -122,7 +124,7 @@ export function ExchangeRateForm({ baseCurrency }: { baseCurrency: string }) {
       <CardHeader>
         <CardTitle>Exchange rates</CardTitle>
         <CardDescription>
-          Store dated conversion rates instead of relying on a hardcoded or external live rate.
+          Add a dated rate for assets held outside your base currency.
         </CardDescription>
       </CardHeader>
       <form onSubmit={submit}>
@@ -180,7 +182,7 @@ export function AccountForm({ name, email }: { name: string; email: string }) {
     <Card>
       <CardHeader>
         <CardTitle>Account profile</CardTitle>
-        <CardDescription>Your authentication identity and private workspace owner.</CardDescription>
+        <CardDescription>Your display name and sign-in email.</CardDescription>
       </CardHeader>
       <form onSubmit={submit}>
         <CardContent>
@@ -210,17 +212,12 @@ export function DataControls() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Data portability</CardTitle>
-        <CardDescription>
-          Download a machine-readable copy of all portfolio records owned by your account.
-        </CardDescription>
+        <CardTitle>Export your data</CardTitle>
+        <CardDescription>Download a complete machine-readable portfolio backup.</CardDescription>
       </CardHeader>
       <CardContent className="flex items-start gap-3 text-sm text-muted-foreground">
         <ShieldCheckIcon />
-        <p>
-          The export is generated after a fresh server-side session check and is never publicly
-          cached.
-        </p>
+        <p>Your export is created on demand and is available only to your signed-in account.</p>
       </CardContent>
       <CardFooter>
         <Button
@@ -260,10 +257,8 @@ export function SecurityForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Security</CardTitle>
-        <CardDescription>
-          Change your password and sign out every other active session.
-        </CardDescription>
+        <CardTitle>Password</CardTitle>
+        <CardDescription>Change your password and revoke other password sessions.</CardDescription>
       </CardHeader>
       <form onSubmit={submit}>
         <CardContent>
@@ -311,7 +306,7 @@ export function DeleteAccountCard() {
       <CardHeader>
         <CardTitle>Delete account</CardTitle>
         <CardDescription>
-          Permanently delete your identity and all portfolio data through database cascades.
+          Permanently delete your account and every associated record.
         </CardDescription>
       </CardHeader>
       <CardContent>
