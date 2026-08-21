@@ -1,32 +1,34 @@
 "use client";
 
+import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { formatCurrency } from "@/lib/format";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@portfolio/ui/components/card";
+  EChartsBarChart,
+  type ChartConfig as BarChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-bar-chart";
 import {
-  type ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@portfolio/ui/components/chart";
-import { Bar, BarChart, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
+  EChartsComposedChart,
+  type ChartConfig as ComposedChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
 
 const cashFlowConfig = {
-  buys: { label: "Purchases", color: "var(--chart-1)" },
-  sells: { label: "Redemptions", color: "var(--chart-2)" },
-  netInvested: { label: "Net invested", color: "var(--chart-4)" },
-} satisfies ChartConfig;
+  buys: {
+    label: "Purchases",
+    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+  },
+  sells: { label: "Redemptions", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  netInvested: {
+    label: "Net invested",
+    colors: { light: ["#ca8a04"], dark: ["#facc15"] },
+  },
+} satisfies ComposedChartConfig;
 
 const fundConfig = {
-  buyAmount: { label: "Purchases", color: "var(--chart-1)" },
-} satisfies ChartConfig;
+  buyAmount: {
+    label: "Purchases",
+    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+  },
+} satisfies BarChartConfig;
 
 const compact = (value: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -50,80 +52,69 @@ export function ZerodhaTradebookCharts({
       .replace(/\s+DIRECT.*$/i, "")
       .slice(0, 34),
   }));
+  const netInvested = monthly.reduce((sum, row) => sum + row.netInvested, 0);
+  const largestFund = topFunds[0];
 
   return (
     <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>Monthly investment flow</CardTitle>
-          <CardDescription>
-            Actual purchases, redemptions and net invested cash from imported trades.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0 px-2 sm:px-6">
-          <ChartContainer config={cashFlowConfig} className="h-[320px] w-full">
-            <ComposedChart accessibilityLayer data={monthly} margin={{ left: 8, right: 8 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={56}
-                tickFormatter={(value) => compact(Number(value))}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => formatCurrency(Number(value), "INR")}
-                  />
-                }
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="buys" fill="var(--color-buys)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="sells" fill="var(--color-sells)" radius={[4, 4, 0, 0]} />
-              <Line
-                dataKey="netInvested"
-                type="monotone"
-                stroke="var(--color-netInvested)"
-                strokeWidth={2}
-                dot={false}
-              />
-            </ComposedChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>Where contributions went</CardTitle>
-          <CardDescription>
-            Top funds by cumulative purchase amount across all imported years.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0 px-2 sm:px-6">
-          <ChartContainer config={fundConfig} className="h-[320px] w-full">
-            <BarChart accessibilityLayer data={topFunds} layout="vertical" margin={{ left: 8 }}>
-              <CartesianGrid horizontal={false} />
-              <YAxis dataKey="label" type="category" tickLine={false} axisLine={false} width={96} />
-              <XAxis
-                type="number"
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => compact(Number(value))}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    hideLabel
-                    formatter={(value) => formatCurrency(Number(value), "INR")}
-                  />
-                }
-              />
-              <Bar dataKey="buyAmount" fill="var(--color-buyAmount)" radius={4} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <AnalyticsChartCard
+        title="Monthly investment flow"
+        description="Actual purchases, redemptions and net invested cash from imported trades."
+        metric={formatCurrency(netInvested, "INR")}
+        metricLabel="cumulative net invested"
+      >
+        <EChartsComposedChart
+          data={monthly}
+          config={cashFlowConfig}
+          xDataKey="month"
+          curveType="monotone"
+          className="h-[320px] min-w-0 w-full"
+          chartOptions={{ grid: { left: 8, right: 12, top: 48, bottom: 28, containLabel: true } }}
+        >
+          <EChartsComposedChart.Grid />
+          <EChartsComposedChart.XAxis dataKey="month" hideDots />
+          <EChartsComposedChart.YAxis tickFormatter={(value) => compact(value)} hideDots />
+          <EChartsComposedChart.Tooltip
+            variant="frosted-glass"
+            roundness="lg"
+            valueFormatter={(value) => formatCurrency(value, "INR")}
+          />
+          <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
+          <EChartsComposedChart.Bar dataKey="buys" variant="gradient" glow isClickable />
+          <EChartsComposedChart.Bar dataKey="sells" variant="hatched" isClickable />
+          <EChartsComposedChart.Line dataKey="netInvested" glow isClickable>
+            <EChartsComposedChart.ActiveDot variant="ping" />
+          </EChartsComposedChart.Line>
+        </EChartsComposedChart>
+      </AnalyticsChartCard>
+
+      <AnalyticsChartCard
+        title="Where contributions went"
+        description="Top funds by cumulative purchase amount across every imported financial year."
+        metric={largestFund ? formatCurrency(largestFund.buyAmount, "INR") : "—"}
+        metricLabel={largestFund?.label ?? "largest contribution"}
+      >
+        <EChartsBarChart
+          data={topFunds}
+          config={fundConfig}
+          xDataKey="label"
+          layout="horizontal"
+          className="h-[320px] min-w-0 w-full"
+          barRadius={5}
+          enableMaxValueHighlight
+          chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
+        >
+          <EChartsBarChart.Grid />
+          <EChartsBarChart.XAxis tickFormatter={(value) => compact(Number(value))} />
+          <EChartsBarChart.YAxis dataKey="label" hideDots />
+          <EChartsBarChart.Tooltip
+            variant="frosted-glass"
+            roundness="lg"
+            valueFormatter={(value) => formatCurrency(value, "INR")}
+          />
+          <EChartsBarChart.Bar dataKey="buyAmount" variant="duotone" enableHoverHighlight glowing />
+        </EChartsBarChart>
+      </AnalyticsChartCard>
     </div>
   );
 }

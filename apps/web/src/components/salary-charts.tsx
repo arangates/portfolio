@@ -1,36 +1,35 @@
 "use client";
 
+import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { formatCurrency } from "@/lib/format";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@portfolio/ui/components/card";
+  EChartsAreaChart,
+  type ChartConfig as AreaChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-area-chart";
 import {
-  type ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@portfolio/ui/components/chart";
-import { Area, AreaChart, Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
+  EChartsComposedChart,
+  type ChartConfig as ComposedChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
 
 const earningsConfig = {
-  baseSalary: { label: "Base salary", color: "var(--chart-1)" },
-  supplementalGross: { label: "Bonus & special", color: "var(--chart-2)" },
-  netPay: { label: "Net pay", color: "var(--chart-3)" },
-} satisfies ChartConfig;
+  baseSalary: { label: "Base salary", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
+  supplementalGross: {
+    label: "Bonus & special",
+    colors: { light: ["#7c3aed"], dark: ["#a78bfa"] },
+  },
+  netPay: {
+    label: "Net pay",
+    colors: { light: ["#059669", "#10b981"], dark: ["#34d399", "#6ee7b7"] },
+  },
+} satisfies ComposedChartConfig;
 
 const deductionsConfig = {
-  wageTax: { label: "Wage tax", color: "var(--chart-1)" },
-  pensionContribution: { label: "Pension", color: "var(--chart-2)" },
-  socialInsurance: { label: "Insurance", color: "var(--chart-4)" },
-} satisfies ChartConfig;
+  wageTax: { label: "Wage tax", colors: { light: ["#dc2626"], dark: ["#f87171"] } },
+  pensionContribution: { label: "Pension", colors: { light: ["#d97706"], dark: ["#fbbf24"] } },
+  socialInsurance: { label: "Insurance", colors: { light: ["#7c3aed"], dark: ["#a78bfa"] } },
+} satisfies AreaChartConfig;
 
-function compactNumber(value: number, currency: string) {
+function compact(value: number, currency: string) {
   return new Intl.NumberFormat("en", {
     style: "currency",
     currency,
@@ -39,121 +38,98 @@ function compactNumber(value: number, currency: string) {
   }).format(value);
 }
 
-export function SalaryCharts({
-  data,
-  currency,
-}: {
-  data: Array<{
-    month: string;
-    baseSalary: number;
-    supplementalGross: number;
-    netPay: number;
-    wageTax: number;
-    pensionContribution: number;
-    socialInsurance: number;
-  }>;
-  currency: string;
-}) {
+type SalaryPoint = {
+  month: string;
+  baseSalary: number;
+  supplementalGross: number;
+  netPay: number;
+  wageTax: number;
+  pensionContribution: number;
+  socialInsurance: number;
+};
+
+export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency: string }) {
+  const latest = data.at(-1);
+  const totalDeductions = data.reduce(
+    (sum, row) => sum + row.wageTax + row.pensionContribution + row.socialInsurance,
+    0,
+  );
   return (
     <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>Earnings and take-home</CardTitle>
-          <CardDescription>
-            Recurring base pay, special earnings and deposited net pay.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0 px-2 sm:px-6">
-          <ChartContainer config={earningsConfig} className="h-[320px] w-full">
-            <ComposedChart accessibilityLayer data={data} margin={{ left: 8, right: 8 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={56}
-                tickFormatter={(value) => compactNumber(Number(value), currency)}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => formatCurrency(Number(value), currency)}
-                  />
-                }
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="baseSalary" stackId="gross" fill="var(--color-baseSalary)" radius={3} />
-              <Bar
-                dataKey="supplementalGross"
-                stackId="gross"
-                fill="var(--color-supplementalGross)"
-                radius={3}
-              />
-              <Line
-                dataKey="netPay"
-                type="monotone"
-                stroke="var(--color-netPay)"
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-              />
-            </ComposedChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>Tax and retirement contributions</CardTitle>
-          <CardDescription>
-            Monthly wage tax, employee pension and social insurance.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0 px-2 sm:px-6">
-          <ChartContainer config={deductionsConfig} className="h-[320px] w-full">
-            <AreaChart accessibilityLayer data={data} margin={{ left: 8, right: 8 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={56}
-                tickFormatter={(value) => compactNumber(Number(value), currency)}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => formatCurrency(Number(value), currency)}
-                  />
-                }
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Area
-                dataKey="wageTax"
-                type="monotone"
-                stackId="deductions"
-                fill="var(--color-wageTax)"
-                stroke="var(--color-wageTax)"
-                fillOpacity={0.45}
-              />
-              <Area
-                dataKey="pensionContribution"
-                type="monotone"
-                stackId="deductions"
-                fill="var(--color-pensionContribution)"
-                stroke="var(--color-pensionContribution)"
-                fillOpacity={0.5}
-              />
-              <Area
-                dataKey="socialInsurance"
-                type="monotone"
-                stackId="deductions"
-                fill="var(--color-socialInsurance)"
-                stroke="var(--color-socialInsurance)"
-                fillOpacity={0.55}
-              />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <AnalyticsChartCard
+        title="Earnings and take-home"
+        description="Recurring pay, special earnings and deposited net pay."
+        metric={latest ? formatCurrency(latest.netPay, currency) : "—"}
+        metricLabel="latest net pay"
+      >
+        <EChartsComposedChart
+          data={data}
+          config={earningsConfig}
+          xDataKey="month"
+          curveType="monotone"
+          className="h-[320px] min-w-0 w-full"
+          chartOptions={{ grid: { left: 8, right: 12, top: 48, bottom: 28, containLabel: true } }}
+        >
+          <EChartsComposedChart.Grid />
+          <EChartsComposedChart.XAxis dataKey="month" hideDots />
+          <EChartsComposedChart.YAxis
+            tickFormatter={(value) => compact(value, currency)}
+            hideDots
+          />
+          <EChartsComposedChart.Tooltip
+            variant="frosted-glass"
+            valueFormatter={(value) => formatCurrency(value, currency)}
+          />
+          <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
+          <EChartsComposedChart.Bar
+            dataKey="baseSalary"
+            variant="gradient"
+            barProps={{ stack: "gross" }}
+            enableHoverHighlight
+          />
+          <EChartsComposedChart.Bar
+            dataKey="supplementalGross"
+            variant="duotone"
+            barProps={{ stack: "gross" }}
+            enableHoverHighlight
+          />
+          <EChartsComposedChart.Line dataKey="netPay" glow isClickable>
+            <EChartsComposedChart.ActiveDot variant="ping" />
+          </EChartsComposedChart.Line>
+        </EChartsComposedChart>
+      </AnalyticsChartCard>
+      <AnalyticsChartCard
+        title="Tax and retirement contributions"
+        description="Wage tax, employee pension and social insurance over time."
+        metric={compact(totalDeductions, currency)}
+        metricLabel="total deductions"
+      >
+        <EChartsAreaChart
+          data={data}
+          config={deductionsConfig}
+          xDataKey="month"
+          curveType="monotone"
+          stackType="stacked"
+          className="h-[320px] min-w-0 w-full"
+          chartOptions={{ grid: { left: 8, right: 12, top: 48, bottom: 28, containLabel: true } }}
+        >
+          <EChartsAreaChart.Grid />
+          <EChartsAreaChart.XAxis dataKey="month" hideDots />
+          <EChartsAreaChart.YAxis tickFormatter={(value) => compact(value, currency)} hideDots />
+          <EChartsAreaChart.Tooltip
+            variant="frosted-glass"
+            valueFormatter={(value) => formatCurrency(value, currency)}
+          />
+          <EChartsAreaChart.Legend align="left" verticalAlign="top" isClickable />
+          <EChartsAreaChart.Area dataKey="wageTax" variant="gradient" isClickable />
+          <EChartsAreaChart.Area
+            dataKey="pensionContribution"
+            variant="gradient-reverse"
+            isClickable
+          />
+          <EChartsAreaChart.Area dataKey="socialInsurance" variant="dotted" isClickable />
+        </EChartsAreaChart>
+      </AnalyticsChartCard>
     </div>
   );
 }

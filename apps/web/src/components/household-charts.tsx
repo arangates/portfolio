@@ -1,31 +1,30 @@
 "use client";
 
+import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { formatCurrency } from "@/lib/format";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@portfolio/ui/components/card";
+  EChartsBarChart,
+  type ChartConfig as BarChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-bar-chart";
 import {
-  type ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@portfolio/ui/components/chart";
-import { Bar, BarChart, CartesianGrid, Line, ComposedChart, XAxis, YAxis } from "recharts";
+  EChartsComposedChart,
+  type ChartConfig as ComposedChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
 
 const categoryConfig = {
-  amount: { label: "Monthly expense", color: "var(--chart-1)" },
-} satisfies ChartConfig;
+  amount: {
+    label: "Monthly expense",
+    colors: { light: ["#0891b2", "#2563eb"], dark: ["#22d3ee", "#60a5fa"] },
+  },
+} satisfies BarChartConfig;
 const scenarioConfig = {
-  grossExpenses: { label: "Gross expenses", color: "var(--chart-1)" },
-  refunds: { label: "Refunds", color: "var(--chart-2)" },
-  netMonthly: { label: "Net household cost", color: "var(--chart-3)" },
-} satisfies ChartConfig;
+  grossExpenses: { label: "Gross expenses", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
+  refunds: { label: "Refunds", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  netMonthly: {
+    label: "Net household cost",
+    colors: { light: ["#7c3aed", "#db2777"], dark: ["#a78bfa", "#f472b6"] },
+  },
+} satisfies ComposedChartConfig;
 
 function compact(value: number, currency: string) {
   return new Intl.NumberFormat("en", {
@@ -42,87 +41,80 @@ export function HouseholdCharts({
   currency,
 }: {
   categories: Array<{ category: string; amount: number }>;
-  scenarios: Array<{
-    name: string;
-    grossExpenses: number;
-    refunds: number;
-    netMonthly: number;
-  }>;
+  scenarios: Array<{ name: string; grossExpenses: number; refunds: number; netMonthly: number }>;
   currency: string;
 }) {
+  const total = categories.reduce((sum, row) => sum + row.amount, 0);
+  const current = scenarios[0];
   return (
     <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>Where the monthly budget goes</CardTitle>
-          <CardDescription>Gross expenses grouped from the current budget.</CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0 px-2 sm:px-6">
-          <ChartContainer config={categoryConfig} className="h-[320px] w-full">
-            <BarChart accessibilityLayer data={categories} margin={{ left: 8, right: 8 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="category" tickLine={false} axisLine={false} minTickGap={20} />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={56}
-                tickFormatter={(value) => compact(Number(value), currency)}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => formatCurrency(Number(value), currency)}
-                  />
-                }
-              />
-              <Bar dataKey="amount" fill="var(--color-amount)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>Scenario comparison</CardTitle>
-          <CardDescription>
-            Refunds are deducted once at household level before costs are divided per adult.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0 px-2 sm:px-6">
-          <ChartContainer config={scenarioConfig} className="h-[320px] w-full">
-            <ComposedChart accessibilityLayer data={scenarios} margin={{ left: 8, right: 8 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="name" tickLine={false} axisLine={false} minTickGap={20} />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={56}
-                tickFormatter={(value) => compact(Number(value), currency)}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => formatCurrency(Number(value), currency)}
-                  />
-                }
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Bar
-                dataKey="grossExpenses"
-                fill="var(--color-grossExpenses)"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar dataKey="refunds" fill="var(--color-refunds)" radius={[4, 4, 0, 0]} />
-              <Line
-                dataKey="netMonthly"
-                type="monotone"
-                stroke="var(--color-netMonthly)"
-                strokeWidth={2}
-                dot
-              />
-            </ComposedChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <AnalyticsChartCard
+        title="Where the monthly budget goes"
+        description="Current gross expenses grouped by category."
+        metric={formatCurrency(total, currency)}
+        metricLabel="monthly gross spend"
+      >
+        <EChartsBarChart
+          data={categories}
+          config={categoryConfig}
+          xDataKey="category"
+          className="h-[320px] min-w-0 w-full"
+          enableMaxValueHighlight
+          chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 38, containLabel: true } }}
+        >
+          <EChartsBarChart.Grid />
+          <EChartsBarChart.XAxis
+            dataKey="category"
+            tickFormatter={(value) => (value.length > 10 ? `${value.slice(0, 9)}…` : value)}
+            hideDots
+          />
+          <EChartsBarChart.YAxis
+            tickFormatter={(value) => compact(Number(value), currency)}
+            hideDots
+          />
+          <EChartsBarChart.Tooltip
+            variant="frosted-glass"
+            valueFormatter={(value) => formatCurrency(value, currency)}
+          />
+          <EChartsBarChart.Bar dataKey="amount" variant="blocks" enableHoverHighlight glowing />
+        </EChartsBarChart>
+      </AnalyticsChartCard>
+      <AnalyticsChartCard
+        title="Scenario comparison"
+        description="Gross costs, refunds and the resulting monthly household cost."
+        metric={current ? formatCurrency(current.netMonthly, currency) : "—"}
+        metricLabel="primary scenario net"
+      >
+        <EChartsComposedChart
+          data={scenarios}
+          config={scenarioConfig}
+          xDataKey="name"
+          curveType="monotone"
+          className="h-[320px] min-w-0 w-full"
+          chartOptions={{ grid: { left: 8, right: 12, top: 48, bottom: 28, containLabel: true } }}
+        >
+          <EChartsComposedChart.Grid />
+          <EChartsComposedChart.XAxis dataKey="name" hideDots />
+          <EChartsComposedChart.YAxis
+            tickFormatter={(value) => compact(value, currency)}
+            hideDots
+          />
+          <EChartsComposedChart.Tooltip
+            variant="frosted-glass"
+            valueFormatter={(value) => formatCurrency(value, currency)}
+          />
+          <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
+          <EChartsComposedChart.Bar
+            dataKey="grossExpenses"
+            variant="gradient"
+            enableHoverHighlight
+          />
+          <EChartsComposedChart.Bar dataKey="refunds" variant="duotone" enableHoverHighlight />
+          <EChartsComposedChart.Line dataKey="netMonthly" glow isClickable>
+            <EChartsComposedChart.ActiveDot variant="ping" />
+          </EChartsComposedChart.Line>
+        </EChartsComposedChart>
+      </AnalyticsChartCard>
     </div>
   );
 }

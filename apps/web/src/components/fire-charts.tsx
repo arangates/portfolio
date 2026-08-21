@@ -1,23 +1,16 @@
 "use client";
 
+import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { formatCurrency } from "@/lib/format";
+import {
+  EChartsComposedChart,
+  type ChartConfig as ComposedChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
+import {
+  EChartsLineChart,
+  type ChartConfig as LineChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-line-chart";
 import { Button } from "@portfolio/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@portfolio/ui/components/card";
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@portfolio/ui/components/chart";
-import { Area, Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import { useState } from "react";
 
 type ScenarioResult = {
@@ -35,17 +28,29 @@ type ScenarioResult = {
 };
 
 const projectionConfig = {
-  p10: { label: "10th percentile", color: "var(--chart-3)" },
-  median: { label: "Median", color: "var(--chart-1)" },
-  p90: { label: "90th percentile", color: "var(--chart-2)" },
-  deterministic: { label: "Expected path", color: "var(--chart-4)" },
-} satisfies ChartConfig;
+  p10: { label: "Conservative (P10)", colors: { light: ["#dc2626"], dark: ["#f87171"] } },
+  median: {
+    label: "Median outcome",
+    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+  },
+  p90: { label: "Optimistic (P90)", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  deterministic: {
+    label: "Expected path",
+    colors: { light: ["#ca8a04"], dark: ["#facc15"] },
+  },
+} satisfies LineChartConfig;
 
 const cashFlowConfig = {
-  expenses: { label: "Living expenses", color: "var(--chart-1)" },
-  oneTimeCosts: { label: "One-time costs", color: "var(--chart-3)" },
-  income: { label: "Other income", color: "var(--chart-2)" },
-} satisfies ChartConfig;
+  expenses: {
+    label: "Living expenses",
+    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+  },
+  oneTimeCosts: {
+    label: "One-time costs",
+    colors: { light: ["#dc2626"], dark: ["#f87171"] },
+  },
+  income: { label: "Other income", colors: { light: ["#059669"], dark: ["#34d399"] } },
+} satisfies ComposedChartConfig;
 
 function compact(value: number, currency: string) {
   return new Intl.NumberFormat("en", {
@@ -60,6 +65,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
   const [selectedId, setSelectedId] = useState(results[0]?.id ?? "");
   const selected = results.find((result) => result.id === selectedId) ?? results[0];
   if (!selected) return null;
+
   const expectedByYear = new Map(
     selected.deterministic.map((row) => [row.year, row.closingBalance]),
   );
@@ -75,6 +81,8 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
       income: row.income,
       oneTimeCosts: row.oneTimeCosts,
     }));
+  const finalProjection = projection.at(-1);
+  const retirementSpend = cashFlows[0];
 
   return (
     <div className="min-w-0 space-y-4 px-4 lg:px-6">
@@ -90,116 +98,101 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
           </Button>
         ))}
       </div>
+
       <div className="grid min-w-0 gap-4 xl:grid-cols-2">
-        <Card className="min-w-0 overflow-hidden">
-          <CardHeader>
-            <CardTitle>Range of possible outcomes</CardTitle>
-            <CardDescription>
-              1,000 reproducible return-and-inflation paths for {selected.name}; this is a risk
-              range, not a guarantee.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="min-w-0 px-2 sm:px-6">
-            <ChartContainer config={projectionConfig} className="h-[330px] w-full">
-              <ComposedChart accessibilityLayer data={projection} margin={{ left: 8, right: 8 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="year" tickLine={false} axisLine={false} minTickGap={24} />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  width={56}
-                  tickFormatter={(value) => compact(Number(value), currency)}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => formatCurrency(Number(value), currency)}
-                    />
-                  }
-                />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Area
-                  dataKey="p90"
-                  type="monotone"
-                  fill="var(--color-p90)"
-                  fillOpacity={0.08}
-                  stroke="var(--color-p90)"
-                  strokeWidth={1}
-                />
-                <Line
-                  dataKey="median"
-                  type="monotone"
-                  stroke="var(--color-median)"
-                  dot={false}
-                  strokeWidth={2}
-                />
-                <Line
-                  dataKey="p10"
-                  type="monotone"
-                  stroke="var(--color-p10)"
-                  dot={false}
-                  strokeDasharray="4 4"
-                />
-                <Line
-                  dataKey="deterministic"
-                  type="monotone"
-                  stroke="var(--color-deterministic)"
-                  dot={false}
-                  strokeDasharray="2 3"
-                />
-              </ComposedChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card className="min-w-0 overflow-hidden">
-          <CardHeader>
-            <CardTitle>Retirement cash-flow map</CardTitle>
-            <CardDescription>
-              Inflation-adjusted living costs, planned events and non-portfolio income by year.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="min-w-0 px-2 sm:px-6">
-            <ChartContainer config={cashFlowConfig} className="h-[330px] w-full">
-              <ComposedChart accessibilityLayer data={cashFlows} margin={{ left: 8, right: 8 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="year" tickLine={false} axisLine={false} minTickGap={24} />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  width={56}
-                  tickFormatter={(value) => compact(Number(value), currency)}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => formatCurrency(Number(value), currency)}
-                    />
-                  }
-                />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Bar
-                  dataKey="expenses"
-                  stackId="outflow"
-                  fill="var(--color-expenses)"
-                  radius={[3, 3, 0, 0]}
-                />
-                <Bar
-                  dataKey="oneTimeCosts"
-                  stackId="outflow"
-                  fill="var(--color-oneTimeCosts)"
-                  radius={[3, 3, 0, 0]}
-                />
-                <Line
-                  dataKey="income"
-                  type="monotone"
-                  stroke="var(--color-income)"
-                  dot={false}
-                  strokeWidth={2}
-                />
-              </ComposedChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+        <AnalyticsChartCard
+          title="Range of possible outcomes"
+          description={`1,000 reproducible return-and-inflation paths for ${selected.name}; a risk range, not a guarantee.`}
+          metric={finalProjection ? compact(finalProjection.median, currency) : "—"}
+          metricLabel="median final balance"
+        >
+          <EChartsLineChart
+            data={projection}
+            config={projectionConfig}
+            xDataKey="year"
+            curveType="monotone"
+            enableHoverReveal
+            className="h-[330px] min-w-0 w-full"
+            chartOptions={{ grid: { left: 8, right: 12, top: 48, bottom: 28, containLabel: true } }}
+          >
+            <EChartsLineChart.Grid />
+            <EChartsLineChart.XAxis dataKey="year" hideDots />
+            <EChartsLineChart.YAxis tickFormatter={(value) => compact(value, currency)} hideDots />
+            <EChartsLineChart.Tooltip
+              variant="frosted-glass"
+              roundness="lg"
+              valueFormatter={(value) => formatCurrency(value, currency)}
+            />
+            <EChartsLineChart.Legend align="left" verticalAlign="top" isClickable />
+            <EChartsLineChart.Line dataKey="p90" strokeWidth={1.5} isClickable>
+              <EChartsLineChart.ActiveDot variant="colored-border" />
+            </EChartsLineChart.Line>
+            <EChartsLineChart.Line dataKey="median" strokeWidth={2.5} glowing isClickable>
+              <EChartsLineChart.ActiveDot variant="ping" />
+            </EChartsLineChart.Line>
+            <EChartsLineChart.Line
+              dataKey="p10"
+              strokeVariant="dashed"
+              strokeWidth={1.5}
+              isClickable
+            />
+            <EChartsLineChart.Line
+              dataKey="deterministic"
+              strokeVariant="dashed"
+              strokeWidth={2}
+              isClickable
+            />
+          </EChartsLineChart>
+        </AnalyticsChartCard>
+
+        <AnalyticsChartCard
+          title="Retirement cash-flow map"
+          description="Inflation-adjusted living costs, planned events and non-portfolio income by year."
+          metric={
+            retirementSpend
+              ? compact(retirementSpend.expenses + retirementSpend.oneTimeCosts, currency)
+              : "—"
+          }
+          metricLabel="first retirement-year outflow"
+        >
+          <EChartsComposedChart
+            data={cashFlows}
+            config={cashFlowConfig}
+            xDataKey="year"
+            curveType="monotone"
+            className="h-[330px] min-w-0 w-full"
+            chartOptions={{ grid: { left: 8, right: 12, top: 48, bottom: 28, containLabel: true } }}
+          >
+            <EChartsComposedChart.Grid />
+            <EChartsComposedChart.XAxis dataKey="year" hideDots />
+            <EChartsComposedChart.YAxis
+              tickFormatter={(value) => compact(value, currency)}
+              hideDots
+            />
+            <EChartsComposedChart.Tooltip
+              variant="frosted-glass"
+              roundness="lg"
+              valueFormatter={(value) => formatCurrency(value, currency)}
+            />
+            <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
+            <EChartsComposedChart.Bar
+              dataKey="expenses"
+              variant="gradient"
+              glow
+              isClickable
+              barProps={{ stack: "outflow" }}
+            />
+            <EChartsComposedChart.Bar
+              dataKey="oneTimeCosts"
+              variant="hatched"
+              isClickable
+              barProps={{ stack: "outflow" }}
+            />
+            <EChartsComposedChart.Line dataKey="income" glow isClickable>
+              <EChartsComposedChart.ActiveDot variant="ping" />
+            </EChartsComposedChart.Line>
+          </EChartsComposedChart>
+        </AnalyticsChartCard>
       </div>
     </div>
   );

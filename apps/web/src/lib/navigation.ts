@@ -1,6 +1,7 @@
 import {
   BanknoteIcon,
   Building2Icon,
+  ChartNoAxesCombinedIcon,
   CoinsIcon,
   DatabaseIcon,
   EuroIcon,
@@ -25,6 +26,12 @@ export const dashboardNavigation = [
         url: "/dashboard",
         icon: LayoutDashboardIcon,
         keywords: "dashboard net worth allocation",
+      },
+      {
+        title: "Analytics",
+        url: "/dashboard/analytics",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "charts trends intelligence wealth cash flow analysis",
       },
       {
         title: "Fixed deposits",

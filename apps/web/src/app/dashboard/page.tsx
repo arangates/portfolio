@@ -122,6 +122,7 @@ export default async function DashboardPage() {
               allocation={overview.allocation}
               equityHistory={overview.equityHistory}
               currency={baseCurrency}
+              historyCurrency="INR"
             />
             <DataTable assets={overview.assets} baseCurrency={baseCurrency} />
           </>

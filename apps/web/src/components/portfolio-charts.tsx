@@ -1,33 +1,35 @@
 "use client";
 
+import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { formatCurrency } from "@/lib/format";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@portfolio/ui/components/card";
+  EChartsAreaChart,
+  type ChartConfig as AreaChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-area-chart";
 import {
-  type ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@portfolio/ui/components/chart";
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+  EChartsBarChart,
+  type ChartConfig as BarChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-bar-chart";
 
 const allocationConfig = {
-  value: { label: "Value", color: "var(--chart-1)" },
-} satisfies ChartConfig;
+  value: {
+    label: "Value",
+    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+  },
+} satisfies BarChartConfig;
 
 const historyConfig = {
-  marketValue: { label: "Market value", color: "var(--chart-1)" },
-  investedValue: { label: "Invested value", color: "var(--chart-2)" },
-} satisfies ChartConfig;
+  marketValue: {
+    label: "Market value",
+    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+  },
+  investedValue: {
+    label: "Invested value",
+    colors: { light: ["#059669"], dark: ["#34d399"] },
+  },
+} satisfies AreaChartConfig;
 
-function compactNumber(value: number, currency: string) {
+function compact(value: number, currency: string) {
   return new Intl.NumberFormat("en", {
     style: "currency",
     currency,
@@ -36,10 +38,15 @@ function compactNumber(value: number, currency: string) {
   }).format(value);
 }
 
+function shortLabel(value: string) {
+  return value.length > 18 ? `${value.slice(0, 17)}…` : value;
+}
+
 export function PortfolioCharts({
   allocation,
   equityHistory,
   currency,
+  historyCurrency = currency,
   allocationTitle = "Asset allocation",
   historyTitle = "Indian equity history",
   historyDescription = "Invested value versus market value across archived uploads.",
@@ -47,94 +54,90 @@ export function PortfolioCharts({
   allocation: Array<{ category: string; value: number }>;
   equityHistory: Array<{ date: string; investedValue: number; marketValue: number }>;
   currency: string;
+  historyCurrency?: string;
   allocationTitle?: string;
   historyTitle?: string;
   historyDescription?: string;
 }) {
+  const total = allocation.reduce((sum, item) => sum + item.value, 0);
+  const latest = equityHistory.at(-1);
+
   return (
     <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>{allocationTitle}</CardTitle>
-          <CardDescription>Current value by asset category in {currency}.</CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0 px-2 sm:px-6">
-          <ChartContainer config={allocationConfig} className="h-[300px] w-full">
-            <BarChart accessibilityLayer data={allocation} layout="vertical" margin={{ left: 8 }}>
-              <CartesianGrid horizontal={false} />
-              <YAxis
-                dataKey="category"
-                type="category"
-                tickLine={false}
-                axisLine={false}
-                width={88}
-              />
-              <XAxis
-                type="number"
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => compactNumber(Number(value), currency)}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    hideLabel
-                    formatter={(value) => formatCurrency(Number(value), currency)}
-                  />
-                }
-              />
-              <Bar dataKey="value" fill="var(--color-value)" radius={4} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-      <Card className="min-w-0 overflow-hidden">
-        <CardHeader>
-          <CardTitle>{historyTitle}</CardTitle>
-          <CardDescription>{historyDescription}</CardDescription>
-        </CardHeader>
-        <CardContent className="min-w-0 px-2 sm:px-6">
-          <ChartContainer config={historyConfig} className="h-[300px] w-full">
-            <AreaChart accessibilityLayer data={equityHistory} margin={{ left: 8, right: 8 }}>
-              <defs>
-                <linearGradient id="fill-market" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-marketValue)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--color-marketValue)" stopOpacity={0.05} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={56}
-                tickFormatter={(value) => compactNumber(Number(value), currency)}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => formatCurrency(Number(value), currency)}
-                  />
-                }
-              />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Area
-                dataKey="marketValue"
-                type="monotone"
-                fill="url(#fill-market)"
-                stroke="var(--color-marketValue)"
-              />
-              <Area
-                dataKey="investedValue"
-                type="monotone"
-                fill="transparent"
-                stroke="var(--color-investedValue)"
-              />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <AnalyticsChartCard
+        title={allocationTitle}
+        description={`Current value by category in ${currency}.`}
+        metric={compact(total, currency)}
+        metricLabel="allocated value"
+      >
+        <EChartsBarChart
+          data={allocation}
+          config={allocationConfig}
+          xDataKey="category"
+          layout="horizontal"
+          className="h-[300px] min-w-0 w-full"
+          barRadius={5}
+          enableMaxValueHighlight
+          chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
+        >
+          <EChartsBarChart.Grid />
+          <EChartsBarChart.XAxis tickFormatter={(value) => compact(Number(value), currency)} />
+          <EChartsBarChart.YAxis dataKey="category" tickFormatter={shortLabel} hideDots />
+          <EChartsBarChart.Tooltip
+            variant="frosted-glass"
+            roundness="lg"
+            valueFormatter={(value) => formatCurrency(value, currency)}
+          />
+          <EChartsBarChart.Bar dataKey="value" variant="gradient" enableHoverHighlight glowing />
+        </EChartsBarChart>
+      </AnalyticsChartCard>
+
+      <AnalyticsChartCard
+        title={historyTitle}
+        description={historyDescription}
+        metric={latest ? formatCurrency(latest.marketValue, historyCurrency) : "—"}
+        metricLabel="latest market value"
+      >
+        <EChartsAreaChart
+          data={equityHistory}
+          config={historyConfig}
+          xDataKey="date"
+          curveType="monotone"
+          enableHoverReveal
+          className="h-[300px] min-w-0 w-full"
+          chartOptions={{ grid: { left: 8, right: 12, top: 42, bottom: 28, containLabel: true } }}
+        >
+          <EChartsAreaChart.Grid />
+          <EChartsAreaChart.XAxis dataKey="date" hideDots />
+          <EChartsAreaChart.YAxis
+            tickFormatter={(value) => compact(value, historyCurrency)}
+            hideDots
+          />
+          <EChartsAreaChart.Tooltip
+            variant="frosted-glass"
+            roundness="lg"
+            valueFormatter={(value) => formatCurrency(value, historyCurrency)}
+          />
+          <EChartsAreaChart.Legend align="left" verticalAlign="top" isClickable />
+          <EChartsAreaChart.Area
+            dataKey="marketValue"
+            variant="gradient"
+            strokeWidth={2}
+            isClickable
+          >
+            <EChartsAreaChart.ActiveDot variant="ping" />
+          </EChartsAreaChart.Area>
+          <EChartsAreaChart.Area
+            dataKey="investedValue"
+            variant="none"
+            strokeVariant="dashed"
+            strokeWidth={2}
+            isClickable
+          >
+            <EChartsAreaChart.ActiveDot variant="colored-border" />
+          </EChartsAreaChart.Area>
+        </EChartsAreaChart>
+      </AnalyticsChartCard>
     </div>
   );
 }
