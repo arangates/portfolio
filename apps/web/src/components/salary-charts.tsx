@@ -48,6 +48,7 @@ export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency
   return (
     <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
+        id="earnings-and-take-home"
         title="Earnings and take-home"
         description="Recurring pay, special earnings and deposited net pay."
         metric={latest ? formatCurrency(latest.netPay, currency) : "—"}
@@ -90,6 +91,7 @@ export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency
         </EChartsComposedChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard
+        id="tax-and-retirement-contributions"
         title="Tax and retirement contributions"
         description="Wage tax, employee pension and social insurance over time."
         metric={formatCompactCurrency(totalDeductions, currency)}

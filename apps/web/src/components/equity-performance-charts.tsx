@@ -92,6 +92,7 @@ export function EquityPerformanceCharts({
         </EChartsBarChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard
+        id="indian-equity-trajectory"
         title="Indian equity trajectory"
         description="Invested capital versus market value across imported holdings snapshots."
         metric={latest ? formatCurrency(latest.marketValue, "INR") : "—"}

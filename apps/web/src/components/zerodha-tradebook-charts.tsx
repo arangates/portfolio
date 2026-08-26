@@ -50,6 +50,7 @@ export function ZerodhaTradebookCharts({
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
+        id="monthly-investment-flow"
         title="Monthly investment flow"
         description="Actual purchases, redemptions and net invested cash from imported trades."
         metric={formatCurrency(netInvested, "INR")}
@@ -84,6 +85,7 @@ export function ZerodhaTradebookCharts({
       </AnalyticsChartCard>
 
       <AnalyticsChartCard
+        id="contributions-by-fund"
         title="Where contributions went"
         description="Top funds by cumulative purchase amount across every imported financial year."
         metric={largestFund ? formatCurrency(largestFund.buyAmount, "INR") : "—"}

@@ -58,6 +58,7 @@ export function BankAccountCharts({
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
+        id="cash-by-account"
         title="Cash by account"
         description="Latest dated balance for every INR account, sorted by value."
         metric={formatCurrency(total, "INR")}
@@ -88,6 +89,7 @@ export function BankAccountCharts({
       </AnalyticsChartCard>
 
       <AnalyticsChartCard
+        id="minimum-balance-safety"
         title="Minimum-balance safety"
         description="Current cash against each configured minimum; missing minimums are shown as zero."
         metric={formatCurrency(
@@ -124,6 +126,7 @@ export function BankAccountCharts({
       {history.length > 1 ? (
         <div className="xl:col-span-2">
           <AnalyticsChartCard
+            id="inr-cash-history"
             title="INR cash history"
             description="End-of-day total reconstructed from every saved account snapshot."
             metric={formatCurrency(latestHistory, "INR")}

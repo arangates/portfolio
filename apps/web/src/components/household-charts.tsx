@@ -74,6 +74,7 @@ export function HouseholdCharts({
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
+        id="household-budget-breakdown"
         title="Where the monthly budget goes"
         description="Current gross expenses grouped by category."
         metric={formatCurrency(total, currency)}
@@ -104,6 +105,7 @@ export function HouseholdCharts({
         </EChartsBarChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard
+        id="essential-flexible-spend"
         title="Essential versus flexible"
         description="How current recurring expenses split between needs and choices."
         metric={formatCurrency(total, currency)}
@@ -125,6 +127,7 @@ export function HouseholdCharts({
         </EChartsPieChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard
+        id="household-scenario-comparison"
         title="Scenario comparison"
         description="Gross costs, refunds and the resulting monthly household cost."
         metric={current ? formatCurrency(current.netMonthly, currency) : "—"}
@@ -161,6 +164,7 @@ export function HouseholdCharts({
         </EChartsComposedChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard
+        id="household-cost-per-adult"
         title="Cost per adult by scenario"
         description="The monthly net cost each adult carries under every scenario."
         metric={current ? formatCurrency(current.perAdult, currency) : "—"}

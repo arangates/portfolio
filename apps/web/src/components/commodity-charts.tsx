@@ -63,6 +63,7 @@ export function CommodityCharts({
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
+        id="declared-value-by-holding"
         title="Declared value by holding"
         description={
           excludedCurrencies.length === 0
@@ -97,6 +98,7 @@ export function CommodityCharts({
       </AnalyticsChartCard>
 
       <AnalyticsChartCard
+        id="physical-inventory-reconciliation"
         title="Physical inventory reconciliation"
         description="Declared gross weight versus itemized gross weight for holdings with a known declared total."
         metric={`${weightData.reduce((sum, holding) => sum + holding.itemized, 0).toLocaleString("en-IN", { maximumFractionDigits: 1 })} g`}

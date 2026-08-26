@@ -37,6 +37,7 @@ export function RealEstateCharts({
   return (
     <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
+        id="property-allocation"
         title="Property allocation"
         description="Attributable value by property type."
         metric={formatCompactCurrency(total, currency)}
@@ -65,6 +66,7 @@ export function RealEstateCharts({
         </EChartsBarChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard
+        id="property-valuation-history"
         title="Valuation history"
         description="Owned value after each dated property snapshot."
         metric={history.at(-1) ? formatCurrency(history.at(-1)!.value, currency) : "—"}

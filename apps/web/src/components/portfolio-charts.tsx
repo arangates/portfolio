@@ -84,6 +84,7 @@ export function PortfolioCharts({
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
+        id="asset-allocation"
         title={allocationTitle}
         description={`Share of current value by category in ${currency}.`}
         metric={formatCompactCurrency(total, currency)}
@@ -151,6 +152,7 @@ export function PortfolioCharts({
       </AnalyticsChartCard>
 
       <AnalyticsChartCard
+        id="indian-equity-history"
         title={historyTitle}
         description={historyDescription}
         metric={latest ? formatCurrency(latest.marketValue, historyCurrency) : "—"}

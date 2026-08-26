@@ -147,3 +147,217 @@ export const dashboardNavigation = [
 export const dashboardPages = dashboardNavigation.flatMap((group) =>
   group.items.map((item) => ({ ...item, group: group.label })),
 );
+
+export const dashboardChartNavigation = [
+  {
+    label: "Analytics charts",
+    items: [
+      {
+        title: "Where your net worth sits",
+        url: "/dashboard/analytics#wealth-flow",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "wealth flow sankey liquidity asset class",
+      },
+      {
+        title: "Wealth mix",
+        url: "/dashboard/analytics#wealth-mix",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "allocation assets portfolio composition",
+      },
+      {
+        title: "Liquidity structure",
+        url: "/dashboard/analytics#liquidity-structure",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "liquid long-term assets available",
+      },
+    ],
+  },
+  {
+    label: "Overview charts",
+    items: [
+      {
+        title: "Asset allocation",
+        url: "/dashboard#asset-allocation",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "portfolio allocation categories assets",
+      },
+      {
+        title: "Indian equity history",
+        url: "/dashboard#indian-equity-history",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "portfolio equity history market invested value",
+      },
+    ],
+  },
+  {
+    label: "Global equity charts",
+    items: [
+      {
+        title: "Largest positions",
+        url: "/dashboard/global-equity#asset-allocation",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "global equity positions allocation holdings",
+      },
+      {
+        title: "Global equity history",
+        url: "/dashboard/global-equity#indian-equity-history",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "global equity history cost basis value",
+      },
+    ],
+  },
+  {
+    label: "Indian equity charts",
+    items: [
+      {
+        title: "What drives Indian equity P&L",
+        url: "/dashboard/analytics#equity-performance",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "equity profit loss holdings unrealized",
+      },
+      {
+        title: "Indian equity trajectory",
+        url: "/dashboard/analytics#indian-equity-trajectory",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "equity history market invested value",
+      },
+    ],
+  },
+  {
+    label: "Tradebook charts",
+    items: [
+      {
+        title: "Monthly investment flow",
+        url: "/dashboard/tradebook#monthly-investment-flow",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "tradebook purchases redemptions contributions",
+      },
+      {
+        title: "Where contributions went",
+        url: "/dashboard/tradebook#contributions-by-fund",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "fund investment purchases contribution",
+      },
+    ],
+  },
+  {
+    label: "Salary charts",
+    items: [
+      {
+        title: "Earnings and take-home",
+        url: "/dashboard/salary#earnings-and-take-home",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "salary income net pay gross earnings",
+      },
+      {
+        title: "Tax and retirement contributions",
+        url: "/dashboard/salary#tax-and-retirement-contributions",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "salary tax pension deductions",
+      },
+    ],
+  },
+  {
+    label: "Household charts",
+    items: [
+      {
+        title: "Where the monthly budget goes",
+        url: "/dashboard/household#household-budget-breakdown",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "household expenses budget categories spending",
+      },
+      {
+        title: "Essential versus flexible",
+        url: "/dashboard/household#essential-flexible-spend",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "household needs choices expenses",
+      },
+      {
+        title: "Scenario comparison",
+        url: "/dashboard/household#household-scenario-comparison",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "household gross refunds net scenarios",
+      },
+      {
+        title: "Cost per adult by scenario",
+        url: "/dashboard/household#household-cost-per-adult",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "household adult split scenarios",
+      },
+    ],
+  },
+  {
+    label: "Real estate charts",
+    items: [
+      {
+        title: "Property allocation",
+        url: "/dashboard/real-estate#property-allocation",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "real estate property types value",
+      },
+      {
+        title: "Valuation history",
+        url: "/dashboard/real-estate#property-valuation-history",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "real estate property history snapshots",
+      },
+    ],
+  },
+  {
+    label: "Commodity charts",
+    items: [
+      {
+        title: "Declared value by holding",
+        url: "/dashboard/commodities#declared-value-by-holding",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "commodities gold silver holding value",
+      },
+      {
+        title: "Physical inventory reconciliation",
+        url: "/dashboard/commodities#physical-inventory-reconciliation",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "commodities inventory weight declared itemized",
+      },
+    ],
+  },
+  {
+    label: "FIRE charts",
+    items: [
+      {
+        title: "Range of possible outcomes",
+        url: "/dashboard/fire#fire-outcomes",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "fire retirement simulation probability",
+      },
+      {
+        title: "Retirement cash-flow map",
+        url: "/dashboard/fire#retirement-cash-flow",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "fire retirement expenses income costs",
+      },
+    ],
+  },
+  {
+    label: "INR account charts",
+    items: [
+      {
+        title: "Cash by account",
+        url: "/dashboard/inr#cash-by-account",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "bank cash account balance",
+      },
+      {
+        title: "Minimum-balance safety",
+        url: "/dashboard/inr#minimum-balance-safety",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "bank cash minimum balance headroom",
+      },
+      {
+        title: "INR cash history",
+        url: "/dashboard/inr#inr-cash-history",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "bank cash history balance snapshots",
+      },
+    ],
+  },
+] as const;

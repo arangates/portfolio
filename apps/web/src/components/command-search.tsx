@@ -1,6 +1,6 @@
 "use client";
 
-import { dashboardNavigation } from "@/lib/navigation";
+import { dashboardChartNavigation, dashboardNavigation } from "@/lib/navigation";
 import { Button } from "@portfolio/ui/components/button";
 import {
   CommandDialog,
@@ -54,8 +54,8 @@ export function CommandSearch() {
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Search pages and features…" autoFocus />
         <CommandList>
-          <CommandEmpty>No matching page found.</CommandEmpty>
-          {dashboardNavigation.map((group) => (
+          <CommandEmpty>No matching page or chart found.</CommandEmpty>
+          {[...dashboardNavigation, ...dashboardChartNavigation].map((group) => (
             <CommandGroup key={group.label} heading={group.label}>
               {group.items.map((item) => (
                 <CommandItem

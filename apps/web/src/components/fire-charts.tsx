@@ -92,6 +92,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-2">
         <AnalyticsChartCard
+          id="fire-outcomes"
           title="Range of possible outcomes"
           description={`1,000 reproducible return-and-inflation paths for ${selected.name}; a risk range, not a guarantee.`}
           metric={finalProjection ? formatCompactCurrency(finalProjection.median, currency) : "—"}
@@ -143,6 +144,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
         </AnalyticsChartCard>
 
         <AnalyticsChartCard
+          id="retirement-cash-flow"
           title="Retirement cash-flow map"
           description="Inflation-adjusted living costs, planned events and non-portfolio income by year."
           metric={
