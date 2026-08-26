@@ -1,7 +1,8 @@
 import { EmptyDataState } from "@/components/empty-data-state";
+import { EquityPerformanceCharts } from "@/components/equity-performance-charts";
 import { HouseholdCharts } from "@/components/household-charts";
 import { PageHeader } from "@/components/page-header";
-import { PortfolioCharts } from "@/components/portfolio-charts";
+import { PortfolioFlowChart } from "@/components/portfolio-flow-chart";
 import { RealEstateCharts } from "@/components/real-estate-charts";
 import { SalaryCharts } from "@/components/salary-charts";
 import { WealthMixCharts } from "@/components/wealth-mix-charts";
@@ -29,16 +30,18 @@ function monthLabel(value: string) {
 }
 
 function AnalyticsSection({
+  id,
   title,
   description,
   children,
 }: {
+  id?: string;
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return (
-    <section className="min-w-0 space-y-3">
+    <section id={id} className="min-w-0 scroll-mt-24 space-y-3">
       <div className="px-4 lg:px-6">
         <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
         <p className="text-sm text-muted-foreground">{description}</p>
@@ -114,23 +117,34 @@ export default async function AnalyticsPage() {
 
         {hasPortfolio ? (
           <AnalyticsSection
+            id="wealth-structure"
             title="Wealth structure"
             description="Composition, liquidity and historical market value across your complete portfolio."
           >
+            <PortfolioFlowChart
+              assets={overview.assets}
+              netWorth={overview.totals.netWorth}
+              liquidValue={overview.totals.liquidValue}
+              currency={baseCurrency}
+            />
             <WealthMixCharts
               allocation={overview.allocation}
               netWorth={overview.totals.netWorth}
               liquidValue={overview.totals.liquidValue}
               currency={baseCurrency}
             />
-            <PortfolioCharts
-              allocation={overview.allocation}
-              equityHistory={overview.equityHistory}
-              currency={baseCurrency}
-              historyCurrency="INR"
-              allocationTitle="Allocation concentration"
-              historyTitle="Indian equity trajectory"
-              historyDescription="Invested capital versus market value across imported snapshots."
+          </AnalyticsSection>
+        ) : null}
+
+        {overview.equityBreakdown.length > 0 ? (
+          <AnalyticsSection
+            id="equity-performance-section"
+            title="Indian equity performance"
+            description="The holdings responsible for current unrealized P&L and how the total evolved across imports."
+          >
+            <EquityPerformanceCharts
+              holdings={overview.equityBreakdown}
+              history={overview.equityHistory}
             />
           </AnalyticsSection>
         ) : null}

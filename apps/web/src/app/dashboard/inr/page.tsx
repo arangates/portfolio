@@ -1,11 +1,12 @@
 import { ArchiveRecordButton } from "@/components/archive-record-button";
+import { BankAccountCharts } from "@/components/bank-account-charts";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { formatCurrency, formatPercent } from "@/lib/format";
-import { getBankAccounts } from "@portfolio/api/portfolio-queries";
+import { getBankAccounts, getBankBalanceHistory } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
 import {
@@ -23,7 +24,10 @@ import { redirect } from "next/navigation";
 export default async function InrPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
-  const accounts = await getBankAccounts(session.user.id, "INR");
+  const [accounts, history] = await Promise.all([
+    getBankAccounts(session.user.id, "INR"),
+    getBankBalanceHistory(session.user.id, "INR"),
+  ]);
   const total = accounts.reduce((sum, account) => sum + account.amount, 0);
   const funded = accounts.filter((account) => account.amount !== 0);
   const nre = accounts
@@ -105,6 +109,7 @@ export default async function InrPage() {
                 },
               ]}
             />
+            <BankAccountCharts accounts={accounts} history={history} />
             <div className="px-4 lg:px-6">
               <TableCard
                 title="Bank accounts"

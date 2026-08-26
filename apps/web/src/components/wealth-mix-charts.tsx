@@ -62,8 +62,9 @@ export function WealthMixCharts({
   } satisfies ChartConfig;
 
   return (
-    <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
+        id="wealth-mix"
         title="Wealth mix"
         description="Every valued asset grouped by its role in your portfolio."
         metric={formatCurrency(netWorth, currency)}
@@ -95,6 +96,7 @@ export function WealthMixCharts({
       </AnalyticsChartCard>
 
       <AnalyticsChartCard
+        id="liquidity-structure"
         title="Liquidity structure"
         description="How much wealth is readily available versus tied to long-term assets."
         metric={formatPercent(netWorth === 0 ? 0 : liquidValue / netWorth, 0)}

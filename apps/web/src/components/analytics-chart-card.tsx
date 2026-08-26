@@ -7,12 +7,14 @@ import {
 } from "@portfolio/ui/components/card";
 
 export function AnalyticsChartCard({
+  id,
   title,
   description,
   metric,
   metricLabel,
   children,
 }: {
+  id?: string;
   title: string;
   description: string;
   metric?: string;
@@ -20,7 +22,7 @@ export function AnalyticsChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="min-w-0 gap-0 overflow-hidden py-0 shadow-xs">
+    <Card id={id} className="min-w-0 scroll-mt-24 gap-0 overflow-hidden py-0 shadow-xs">
       <CardHeader className="gap-1 border-b px-4 py-4 sm:px-5">
         <div className="flex min-w-0 flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
           <div className="min-w-0 space-y-1">

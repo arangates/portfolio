@@ -421,6 +421,56 @@ export async function getBankAccounts(userId: string, currency?: string) {
   }));
 }
 
+export async function getBankBalanceHistory(userId: string, currency: string) {
+  const rows = await db
+    .select({
+      accountId: bankAccount.id,
+      asOf: bankBalanceSnapshot.asOf,
+      amount: bankBalanceSnapshot.amount,
+    })
+    .from(bankAccount)
+    .innerJoin(
+      bankBalanceSnapshot,
+      and(
+        eq(bankBalanceSnapshot.accountId, bankAccount.id),
+        eq(bankBalanceSnapshot.userId, userId),
+      ),
+    )
+    .where(
+      and(
+        eq(bankAccount.userId, userId),
+        eq(bankAccount.currency, currency),
+        isNull(bankAccount.archivedAt),
+      ),
+    )
+    .orderBy(asc(bankBalanceSnapshot.asOf), asc(bankAccount.id));
+
+  const latestByAccount = new Map<string, number>();
+  const history: Array<{ date: string; value: number }> = [];
+  let currentDate: string | null = null;
+
+  for (const row of rows) {
+    const date = row.asOf.toISOString().slice(0, 10);
+    if (currentDate && date !== currentDate) {
+      history.push({
+        date: currentDate,
+        value: [...latestByAccount.values()].reduce((sum, amount) => sum + amount, 0),
+      });
+    }
+    latestByAccount.set(row.accountId, Number(row.amount));
+    currentDate = date;
+  }
+
+  if (currentDate) {
+    history.push({
+      date: currentDate,
+      value: [...latestByAccount.values()].reduce((sum, amount) => sum + amount, 0),
+    });
+  }
+
+  return history;
+}
+
 export async function getCurrentFixedDeposits(userId: string) {
   const rows = await db
     .select({
@@ -813,6 +863,13 @@ export async function getPortfolioOverview(userId: string) {
     assets,
     allocation,
     equityHistory,
+    equityBreakdown:
+      equity?.holdings.map((holding) => ({
+        name: holding.name,
+        investedValue: holding.investedValue,
+        marketValue: holding.marketValue,
+        unrealizedPnl: holding.unrealizedPnl,
+      })) ?? [],
     totals: { netWorth, liquidValue, equityInvested, equityPnl },
     unconvertedCurrencies,
     asOf:

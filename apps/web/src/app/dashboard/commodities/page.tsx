@@ -1,6 +1,7 @@
 import { ArchiveRecordButton } from "@/components/archive-record-button";
 import { CommodityInventoryArchiveButton } from "@/components/commodity-inventory-archive-button";
 import { CommodityInventoryDialog } from "@/components/commodity-inventory-dialog";
+import { CommodityCharts } from "@/components/commodity-charts";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
@@ -131,6 +132,7 @@ export default async function CommoditiesPage() {
                 },
               ]}
             />
+            <CommodityCharts holdings={holdings} reconciliation={inventory.reconciliation} />
             <div className="grid gap-4 px-4 lg:px-6">
               <TableCard
                 title="Declared totals and reconciliation"

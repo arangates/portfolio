@@ -9,7 +9,13 @@ import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
 import { getPortfolioOverview } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
-import { DatabaseIcon, PieChartIcon, TrendingUpIcon, WalletCardsIcon } from "lucide-react";
+import {
+  DatabaseIcon,
+  LandmarkIcon,
+  PieChartIcon,
+  TrendingUpIcon,
+  WalletCardsIcon,
+} from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -24,6 +30,8 @@ export default async function DashboardPage() {
     overview.totals.equityInvested === 0
       ? 0
       : overview.totals.equityPnl / overview.totals.equityInvested;
+  const longTermValue = Math.max(0, overview.totals.netWorth - overview.totals.liquidValue);
+  const largestAllocation = overview.allocation.at(0);
 
   return (
     <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
@@ -74,6 +82,7 @@ export default async function DashboardPage() {
                     ? `Latest valuation ${formatDate(overview.asOf)}`
                     : "Current data",
                   icon: WalletCardsIcon,
+                  href: "/dashboard/analytics#wealth-flow",
                 },
                 {
                   label: "Liquid assets",
@@ -87,28 +96,45 @@ export default async function DashboardPage() {
                   note: "Cash and readily sellable holdings",
                   detail: "Driven by each record’s liquidity setting",
                   icon: PieChartIcon,
+                  href: "/dashboard/analytics#liquidity-structure",
                 },
+                overview.equityBreakdown.length > 0
+                  ? {
+                      label: "Indian equity P&L",
+                      value: formatCurrency(overview.totals.equityPnl, "INR"),
+                      badge: formatPercent(equityReturn, 2),
+                      note: "Latest imported position snapshot",
+                      detail: `${overview.equityHistory.length} historical statement${overview.equityHistory.length === 1 ? "" : "s"}`,
+                      icon: TrendingUpIcon,
+                      href: "/dashboard/analytics#equity-performance" as const,
+                    }
+                  : {
+                      label: "Largest allocation",
+                      value: largestAllocation?.category ?? "—",
+                      badge: formatPercent(
+                        overview.totals.netWorth === 0
+                          ? 0
+                          : (largestAllocation?.value ?? 0) / overview.totals.netWorth,
+                        0,
+                      ),
+                      note: largestAllocation
+                        ? formatCurrency(largestAllocation.value, baseCurrency)
+                        : "No valued category",
+                      detail: "Share of current net worth",
+                      icon: PieChartIcon,
+                      href: "/dashboard/analytics#wealth-mix" as const,
+                    },
                 {
-                  label: "Indian equity P&L",
-                  value: formatCurrency(overview.totals.equityPnl, "INR"),
-                  badge: formatPercent(equityReturn, 2),
-                  note: "Latest imported position snapshot",
-                  detail: `${overview.equityHistory.length} historical statement${overview.equityHistory.length === 1 ? "" : "s"}`,
-                  icon: TrendingUpIcon,
-                },
-                {
-                  label: "Data coverage",
-                  value:
-                    overview.unconvertedCurrencies.length === 0
-                      ? "Complete"
-                      : `${overview.unconvertedCurrencies.length} FX gap${overview.unconvertedCurrencies.length === 1 ? "" : "s"}`,
-                  badge: overview.unconvertedCurrencies.length === 0 ? "Valued" : "Action needed",
-                  note: "Currencies included in net worth",
-                  detail:
-                    overview.unconvertedCurrencies.length === 0
-                      ? `All values converted to ${baseCurrency}`
-                      : `Add rates for ${overview.unconvertedCurrencies.join(", ")}`,
-                  icon: DatabaseIcon,
+                  label: "Long-term assets",
+                  value: formatCurrency(longTermValue, baseCurrency),
+                  badge: formatPercent(
+                    overview.totals.netWorth === 0 ? 0 : longTermValue / overview.totals.netWorth,
+                    0,
+                  ),
+                  note: "Wealth not classified as readily liquid",
+                  detail: "Property and other long-horizon assets",
+                  icon: LandmarkIcon,
+                  href: "/dashboard/analytics#wealth-flow",
                 },
               ]}
             />
