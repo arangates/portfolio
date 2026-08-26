@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -24,15 +24,6 @@ const historyConfig = {
   },
 } satisfies AreaChartConfig;
 
-function compact(value: number, currency: string) {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
-
 export function RealEstateCharts({
   allocation,
   history,
@@ -48,7 +39,7 @@ export function RealEstateCharts({
       <AnalyticsChartCard
         title="Property allocation"
         description="Attributable value by property type."
-        metric={compact(total, currency)}
+        metric={formatCompactCurrency(total, currency)}
         metricLabel="owned value"
       >
         <EChartsBarChart
@@ -61,7 +52,9 @@ export function RealEstateCharts({
           chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
         >
           <EChartsBarChart.Grid />
-          <EChartsBarChart.XAxis tickFormatter={(value) => compact(Number(value), currency)} />
+          <EChartsBarChart.XAxis
+            tickFormatter={(value) => formatCompactCurrency(Number(value), currency)}
+          />
           <EChartsBarChart.YAxis dataKey="category" hideDots />
           <EChartsBarChart.Tooltip
             variant="frosted-glass"
@@ -87,7 +80,10 @@ export function RealEstateCharts({
         >
           <EChartsAreaChart.Grid />
           <EChartsAreaChart.XAxis dataKey="date" hideDots />
-          <EChartsAreaChart.YAxis tickFormatter={(value) => compact(value, currency)} hideDots />
+          <EChartsAreaChart.YAxis
+            tickFormatter={(value) => formatCompactCurrency(value, currency)}
+            hideDots
+          />
           <EChartsAreaChart.Tooltip
             variant="frosted-glass"
             valueFormatter={(value) => formatCurrency(value, currency)}

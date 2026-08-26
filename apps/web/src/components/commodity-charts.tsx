@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -17,15 +17,6 @@ const weightConfig = {
   declared: { label: "Declared weight", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
   itemized: { label: "Itemized weight", colors: { light: ["#059669"], dark: ["#34d399"] } },
 } satisfies BarChartConfig;
-
-function compact(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
 
 function shortLabel(value: string) {
   return value.length > 23 ? `${value.slice(0, 22)}…` : value;
@@ -92,7 +83,9 @@ export function CommodityCharts({
           chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
         >
           <EChartsBarChart.Grid />
-          <EChartsBarChart.XAxis tickFormatter={(value) => compact(Number(value))} />
+          <EChartsBarChart.XAxis
+            tickFormatter={(value) => formatCompactCurrency(Number(value), "INR")}
+          />
           <EChartsBarChart.YAxis dataKey="name" tickFormatter={shortLabel} hideDots />
           <EChartsBarChart.Tooltip
             variant="frosted-glass"

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -27,15 +27,6 @@ const historyConfig = {
     colors: { light: ["#059669"], dark: ["#34d399"] },
   },
 } satisfies AreaChartConfig;
-
-function compact(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
 
 function shortLabel(value: string) {
   return value.length > 22 ? `${value.slice(0, 21)}…` : value;
@@ -88,7 +79,9 @@ export function EquityPerformanceCharts({
           chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
         >
           <EChartsBarChart.Grid />
-          <EChartsBarChart.XAxis tickFormatter={(value) => compact(Number(value))} />
+          <EChartsBarChart.XAxis
+            tickFormatter={(value) => formatCompactCurrency(Number(value), "INR")}
+          />
           <EChartsBarChart.YAxis dataKey="name" tickFormatter={shortLabel} hideDots />
           <EChartsBarChart.Tooltip
             variant="frosted-glass"
@@ -115,7 +108,10 @@ export function EquityPerformanceCharts({
         >
           <EChartsAreaChart.Grid />
           <EChartsAreaChart.XAxis dataKey="date" hideDots />
-          <EChartsAreaChart.YAxis tickFormatter={compact} hideDots />
+          <EChartsAreaChart.YAxis
+            tickFormatter={(value) => formatCompactCurrency(value, "INR")}
+            hideDots
+          />
           <EChartsAreaChart.Tooltip
             variant="frosted-glass"
             roundness="lg"

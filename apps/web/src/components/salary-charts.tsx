@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -28,15 +28,6 @@ const deductionsConfig = {
   pensionContribution: { label: "Pension", colors: { light: ["#d97706"], dark: ["#fbbf24"] } },
   socialInsurance: { label: "Insurance", colors: { light: ["#7c3aed"], dark: ["#a78bfa"] } },
 } satisfies AreaChartConfig;
-
-function compact(value: number, currency: string) {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
 
 type SalaryPoint = {
   month: string;
@@ -73,7 +64,7 @@ export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency
           <EChartsComposedChart.Grid />
           <EChartsComposedChart.XAxis dataKey="month" hideDots />
           <EChartsComposedChart.YAxis
-            tickFormatter={(value) => compact(value, currency)}
+            tickFormatter={(value) => formatCompactCurrency(value, currency)}
             hideDots
           />
           <EChartsComposedChart.Tooltip
@@ -101,7 +92,7 @@ export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency
       <AnalyticsChartCard
         title="Tax and retirement contributions"
         description="Wage tax, employee pension and social insurance over time."
-        metric={compact(totalDeductions, currency)}
+        metric={formatCompactCurrency(totalDeductions, currency)}
         metricLabel="total deductions"
       >
         <EChartsAreaChart
@@ -115,7 +106,10 @@ export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency
         >
           <EChartsAreaChart.Grid />
           <EChartsAreaChart.XAxis dataKey="month" hideDots />
-          <EChartsAreaChart.YAxis tickFormatter={(value) => compact(value, currency)} hideDots />
+          <EChartsAreaChart.YAxis
+            tickFormatter={(value) => formatCompactCurrency(value, currency)}
+            hideDots
+          />
           <EChartsAreaChart.Tooltip
             variant="frosted-glass"
             valueFormatter={(value) => formatCurrency(value, currency)}

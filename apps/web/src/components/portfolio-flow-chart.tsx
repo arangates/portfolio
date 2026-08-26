@@ -2,7 +2,7 @@
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/format";
 import {
   EChartsSankeyChart,
   type ChartConfig,
@@ -28,15 +28,6 @@ const palette = [
 const rootColors = { light: ["#0f766e", "#14b8a6"], dark: ["#14b8a6", "#5eead4"] };
 const liquidColors = { light: ["#047857", "#10b981"], dark: ["#10b981", "#6ee7b7"] };
 const longTermColors = { light: ["#a16207", "#eab308"], dark: ["#ca8a04", "#fde047"] };
-
-function compact(value: number, currency: string) {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
 
 function safeKey(value: string) {
   return value
@@ -201,7 +192,7 @@ export function PortfolioFlowChart({
             <EChartsSankeyChart.NodeLabel
               position="inside"
               showValues={!isMobile}
-              valueFormatter={(value) => compact(value, currency)}
+              valueFormatter={(value) => formatCompactCurrency(value, currency)}
             />
           </EChartsSankeyChart.Node>
         </EChartsSankeyChart>
@@ -213,7 +204,9 @@ export function PortfolioFlowChart({
           ].map(([label, value]) => (
             <div key={String(label)} className="rounded-lg bg-muted/40 px-3 py-2">
               <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="font-medium tabular-nums">{compact(Number(value), currency)}</p>
+              <p className="font-medium tabular-nums">
+                {formatCompactCurrency(Number(value), currency)}
+              </p>
               {label !== "Net worth" ? (
                 <p className="text-[11px] text-muted-foreground">
                   {formatPercent(netWorth === 0 ? 0 : Number(value) / netWorth, 1)} of net worth

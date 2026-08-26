@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -29,14 +29,6 @@ const fundConfig = {
     colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
   },
 } satisfies BarChartConfig;
-
-const compact = (value: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
 
 export function ZerodhaTradebookCharts({
   monthly,
@@ -73,7 +65,10 @@ export function ZerodhaTradebookCharts({
         >
           <EChartsComposedChart.Grid />
           <EChartsComposedChart.XAxis dataKey="month" hideDots />
-          <EChartsComposedChart.YAxis tickFormatter={(value) => compact(value)} hideDots />
+          <EChartsComposedChart.YAxis
+            tickFormatter={(value) => formatCompactCurrency(value, "INR")}
+            hideDots
+          />
           <EChartsComposedChart.Tooltip
             variant="frosted-glass"
             roundness="lg"
@@ -104,7 +99,9 @@ export function ZerodhaTradebookCharts({
           chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
         >
           <EChartsBarChart.Grid />
-          <EChartsBarChart.XAxis tickFormatter={(value) => compact(Number(value))} />
+          <EChartsBarChart.XAxis
+            tickFormatter={(value) => formatCompactCurrency(Number(value), "INR")}
+          />
           <EChartsBarChart.YAxis dataKey="label" hideDots />
           <EChartsBarChart.Tooltip
             variant="frosted-glass"

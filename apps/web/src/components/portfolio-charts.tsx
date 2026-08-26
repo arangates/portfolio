@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -30,15 +30,6 @@ const historyConfig = {
     colors: { light: ["#059669"], dark: ["#34d399"] },
   },
 } satisfies AreaChartConfig;
-
-function compact(value: number, currency: string) {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
 
 function keyFor(category: string, index: number) {
   const key = category
@@ -83,7 +74,7 @@ export function PortfolioCharts({
       <AnalyticsChartCard
         title={allocationTitle}
         description={`Share of current value by category in ${currency}.`}
-        metric={compact(total, currency)}
+        metric={formatCompactCurrency(total, currency)}
         metricLabel="allocated value"
       >
         <EChartsPieChart
@@ -128,7 +119,7 @@ export function PortfolioCharts({
           <EChartsAreaChart.Grid />
           <EChartsAreaChart.XAxis dataKey="date" hideDots />
           <EChartsAreaChart.YAxis
-            tickFormatter={(value) => compact(value, historyCurrency)}
+            tickFormatter={(value) => formatCompactCurrency(value, historyCurrency)}
             hideDots
           />
           <EChartsAreaChart.Tooltip

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import {
   EChartsComposedChart,
   type ChartConfig as ComposedChartConfig,
@@ -52,15 +52,6 @@ const cashFlowConfig = {
   income: { label: "Other income", colors: { light: ["#059669"], dark: ["#34d399"] } },
 } satisfies ComposedChartConfig;
 
-function compact(value: number, currency: string) {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
-
 export function FireCharts({ results, currency }: { results: ScenarioResult[]; currency: string }) {
   const [selectedId, setSelectedId] = useState(results[0]?.id ?? "");
   const selected = results.find((result) => result.id === selectedId) ?? results[0];
@@ -103,7 +94,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
         <AnalyticsChartCard
           title="Range of possible outcomes"
           description={`1,000 reproducible return-and-inflation paths for ${selected.name}; a risk range, not a guarantee.`}
-          metric={finalProjection ? compact(finalProjection.median, currency) : "—"}
+          metric={finalProjection ? formatCompactCurrency(finalProjection.median, currency) : "—"}
           metricLabel="median final balance"
         >
           <EChartsLineChart
@@ -117,7 +108,10 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
           >
             <EChartsLineChart.Grid />
             <EChartsLineChart.XAxis dataKey="year" hideDots />
-            <EChartsLineChart.YAxis tickFormatter={(value) => compact(value, currency)} hideDots />
+            <EChartsLineChart.YAxis
+              tickFormatter={(value) => formatCompactCurrency(value, currency)}
+              hideDots
+            />
             <EChartsLineChart.Tooltip
               variant="frosted-glass"
               roundness="lg"
@@ -150,7 +144,10 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
           description="Inflation-adjusted living costs, planned events and non-portfolio income by year."
           metric={
             retirementSpend
-              ? compact(retirementSpend.expenses + retirementSpend.oneTimeCosts, currency)
+              ? formatCompactCurrency(
+                  retirementSpend.expenses + retirementSpend.oneTimeCosts,
+                  currency,
+                )
               : "—"
           }
           metricLabel="first retirement-year outflow"
@@ -166,7 +163,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
             <EChartsComposedChart.Grid />
             <EChartsComposedChart.XAxis dataKey="year" hideDots />
             <EChartsComposedChart.YAxis
-              tickFormatter={(value) => compact(value, currency)}
+              tickFormatter={(value) => formatCompactCurrency(value, currency)}
               hideDots
             />
             <EChartsComposedChart.Tooltip

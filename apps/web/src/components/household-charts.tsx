@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -25,15 +25,6 @@ const scenarioConfig = {
     colors: { light: ["#7c3aed", "#db2777"], dark: ["#a78bfa", "#f472b6"] },
   },
 } satisfies ComposedChartConfig;
-
-function compact(value: number, currency: string) {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
 
 export function HouseholdCharts({
   categories,
@@ -68,7 +59,7 @@ export function HouseholdCharts({
             hideDots
           />
           <EChartsBarChart.YAxis
-            tickFormatter={(value) => compact(Number(value), currency)}
+            tickFormatter={(value) => formatCompactCurrency(Number(value), currency)}
             hideDots
           />
           <EChartsBarChart.Tooltip
@@ -95,7 +86,7 @@ export function HouseholdCharts({
           <EChartsComposedChart.Grid />
           <EChartsComposedChart.XAxis dataKey="name" hideDots />
           <EChartsComposedChart.YAxis
-            tickFormatter={(value) => compact(value, currency)}
+            tickFormatter={(value) => formatCompactCurrency(value, currency)}
             hideDots
           />
           <EChartsComposedChart.Tooltip
