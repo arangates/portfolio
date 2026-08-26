@@ -74,7 +74,7 @@ export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency
           <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
           <EChartsComposedChart.Bar
             dataKey="baseSalary"
-            variant="gradient"
+            variant="default"
             barProps={{ stack: "gross" }}
             enableHoverHighlight
           />

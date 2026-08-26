@@ -75,7 +75,7 @@ export function ZerodhaTradebookCharts({
             valueFormatter={(value) => formatCurrency(value, "INR")}
           />
           <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
-          <EChartsComposedChart.Bar dataKey="buys" variant="gradient" glow isClickable />
+          <EChartsComposedChart.Bar dataKey="buys" variant="default" glow isClickable />
           <EChartsComposedChart.Bar dataKey="sells" variant="hatched" isClickable />
           <EChartsComposedChart.Line dataKey="netInvested" glow isClickable>
             <EChartsComposedChart.ActiveDot variant="ping" />
@@ -108,12 +108,7 @@ export function ZerodhaTradebookCharts({
             roundness="lg"
             valueFormatter={(value) => formatCurrency(value, "INR")}
           />
-          <EChartsBarChart.Bar
-            dataKey="buyAmount"
-            variant="gradient"
-            enableHoverHighlight
-            glowing
-          />
+          <EChartsBarChart.Bar dataKey="buyAmount" variant="default" enableHoverHighlight glowing />
         </EChartsBarChart>
       </AnalyticsChartCard>
     </div>

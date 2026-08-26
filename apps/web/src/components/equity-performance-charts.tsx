@@ -88,7 +88,7 @@ export function EquityPerformanceCharts({
             roundness="lg"
             valueFormatter={(value) => formatCurrency(value, "INR")}
           />
-          <EChartsBarChart.Bar dataKey="value" variant="gradient" enableHoverHighlight />
+          <EChartsBarChart.Bar dataKey="value" variant="default" enableHoverHighlight />
         </EChartsBarChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard

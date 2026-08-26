@@ -1,10 +1,29 @@
+import { InstitutionConcentrationPieChart } from "@/components/evilcharts/blocks/market-share-echarts-pie-chart";
 import { HouseholdCharts } from "@/components/household-charts";
 import { PortfolioFlowChart } from "@/components/portfolio-flow-chart";
+import { TableCard } from "@/components/table-card";
 import { ZerodhaTradebookCharts } from "@/components/zerodha-tradebook-charts";
 
 export default function ChartPreviewPage() {
   return (
     <main className="mx-auto grid w-full max-w-[1500px] gap-8 py-8">
+      <div className="w-full max-w-lg px-4">
+        <TableCard
+          title="Institution concentration"
+          description="Share of active principal by institution. Select a slice to isolate it."
+          dataTable={false}
+        >
+          <InstitutionConcentrationPieChart
+            institutions={[
+              { institution: "State Bank of India", amount: 4_250_000 },
+              { institution: "HDFC Bank", amount: 3_100_000 },
+              { institution: "ICICI Bank", amount: 2_300_000 },
+              { institution: "Axis Bank", amount: 1_275_000 },
+              { institution: "Federal Bank", amount: 875_000 },
+            ]}
+          />
+        </TableCard>
+      </div>
       <PortfolioFlowChart
         assets={[
           { category: "Real estate", baseValue: 34_000_000, isLiquid: false },

@@ -1,5 +1,6 @@
 import { ArchiveRecordButton } from "@/components/archive-record-button";
 import { EmptyDataState } from "@/components/empty-data-state";
+import { InstitutionConcentrationPieChart } from "@/components/evilcharts/blocks/market-share-echarts-pie-chart";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
@@ -8,7 +9,6 @@ import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
 import { getCurrentFixedDeposits } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
-import { Progress } from "@portfolio/ui/components/progress";
 import {
   Table,
   TableBody,
@@ -88,6 +88,12 @@ export default async function FixedDepositsPage() {
       null,
     );
   const banks = [...new Set(active.map((deposit) => deposit.bank))];
+  const institutionConcentration = banks.map((institution) => ({
+    institution,
+    amount: active
+      .filter((deposit) => deposit.bank === institution)
+      .reduce((sum, deposit) => sum + deposit.principal, 0),
+  }));
 
   return (
     <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
@@ -198,26 +204,15 @@ export default async function FixedDepositsPage() {
               </TableBody>
             </Table>
           </TableCard>
-          <TableCard title="Institution concentration" description="Share of active principal.">
-            <div className="flex flex-col gap-5 px-4">
-              {banks.map((bank) => {
-                const amount = active
-                  .filter((deposit) => deposit.bank === bank)
-                  .reduce((sum, deposit) => sum + deposit.principal, 0);
-                const share = totalPrincipal === 0 ? 0 : amount / totalPrincipal;
-                return (
-                  <div key={bank} className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between gap-4 text-sm">
-                      <span className="font-medium">{bank}</span>
-                      <span className="tabular-nums text-muted-foreground">
-                        {formatPercent(share, 0)}
-                      </span>
-                    </div>
-                    <Progress value={share * 100} />
-                  </div>
-                );
-              })}
-            </div>
+          <TableCard
+            title="Institution concentration"
+            description="Share of active principal by institution. Select a slice to isolate it."
+            dataTable={false}
+          >
+            <InstitutionConcentrationPieChart
+              institutions={institutionConcentration}
+              currency="INR"
+            />
           </TableCard>
         </div>
       </div>

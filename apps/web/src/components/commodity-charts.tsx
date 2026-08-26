@@ -92,7 +92,7 @@ export function CommodityCharts({
             roundness="lg"
             valueFormatter={(value) => formatCurrency(value, "INR")}
           />
-          <EChartsBarChart.Bar dataKey="value" variant="gradient" enableHoverHighlight />
+          <EChartsBarChart.Bar dataKey="value" variant="default" enableHoverHighlight />
         </EChartsBarChart>
       </AnalyticsChartCard>
 
@@ -124,7 +124,7 @@ export function CommodityCharts({
             }
           />
           <EChartsBarChart.Legend align="left" verticalAlign="top" isClickable />
-          <EChartsBarChart.Bar dataKey="declared" variant="gradient" enableHoverHighlight />
+          <EChartsBarChart.Bar dataKey="declared" variant="default" enableHoverHighlight />
           <EChartsBarChart.Bar dataKey="itemized" variant="hatched" enableHoverHighlight />
         </EChartsBarChart>
       </AnalyticsChartCard>

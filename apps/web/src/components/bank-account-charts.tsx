@@ -83,7 +83,7 @@ export function BankAccountCharts({
             roundness="lg"
             valueFormatter={(value) => formatCurrency(value, "INR")}
           />
-          <EChartsBarChart.Bar dataKey="balance" variant="gradient" enableHoverHighlight />
+          <EChartsBarChart.Bar dataKey="balance" variant="default" enableHoverHighlight />
         </EChartsBarChart>
       </AnalyticsChartCard>
 
@@ -116,7 +116,7 @@ export function BankAccountCharts({
             valueFormatter={(value) => formatCurrency(value, "INR")}
           />
           <EChartsBarChart.Legend align="left" verticalAlign="top" isClickable />
-          <EChartsBarChart.Bar dataKey="balance" variant="gradient" enableHoverHighlight />
+          <EChartsBarChart.Bar dataKey="balance" variant="default" enableHoverHighlight />
           <EChartsBarChart.Bar dataKey="minimum" variant="hatched" enableHoverHighlight />
         </EChartsBarChart>
       </AnalyticsChartCard>

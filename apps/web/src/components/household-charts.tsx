@@ -66,7 +66,7 @@ export function HouseholdCharts({
             variant="frosted-glass"
             valueFormatter={(value) => formatCurrency(value, currency)}
           />
-          <EChartsBarChart.Bar dataKey="amount" variant="gradient" enableHoverHighlight glowing />
+          <EChartsBarChart.Bar dataKey="amount" variant="default" enableHoverHighlight glowing />
         </EChartsBarChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard
@@ -96,7 +96,7 @@ export function HouseholdCharts({
           <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
           <EChartsComposedChart.Bar
             dataKey="grossExpenses"
-            variant="gradient"
+            variant="default"
             enableHoverHighlight
           />
           <EChartsComposedChart.Bar dataKey="refunds" variant="duotone" enableHoverHighlight />

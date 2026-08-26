@@ -174,7 +174,7 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
             <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
             <EChartsComposedChart.Bar
               dataKey="expenses"
-              variant="gradient"
+              variant="default"
               glow
               isClickable
               barProps={{ stack: "outflow" }}
