@@ -176,6 +176,8 @@ export default async function AnalyticsPage() {
               categories={household.categoryBreakdown}
               scenarios={household.scenarios}
               currency={household.currency}
+              essentialExpenses={household.metrics.essentialExpenses}
+              flexibleExpenses={household.metrics.flexibleExpenses}
             />
           </AnalyticsSection>
         ) : null}

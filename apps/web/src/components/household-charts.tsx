@@ -10,6 +10,10 @@ import {
   EChartsComposedChart,
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
+import {
+  EChartsPieChart,
+  type ChartConfig as PieChartConfig,
+} from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
 
 const categoryConfig = {
   amount: {
@@ -25,18 +29,48 @@ const scenarioConfig = {
     colors: { light: ["#7c3aed", "#db2777"], dark: ["#a78bfa", "#f472b6"] },
   },
 } satisfies ComposedChartConfig;
+const mixConfig = {
+  essential: {
+    label: "Essential expenses",
+    colors: { light: ["#2563eb", "#0891b2"], dark: ["#60a5fa", "#22d3ee"] },
+  },
+  flexible: {
+    label: "Flexible expenses",
+    colors: { light: ["#d97706", "#db2777"], dark: ["#fbbf24", "#f472b6"] },
+  },
+} satisfies PieChartConfig;
+const perAdultConfig = {
+  perAdult: {
+    label: "Net cost per adult",
+    colors: { light: ["#7c3aed", "#db2777"], dark: ["#a78bfa", "#f472b6"] },
+  },
+} satisfies BarChartConfig;
 
 export function HouseholdCharts({
   categories,
   scenarios,
   currency,
+  essentialExpenses,
+  flexibleExpenses,
 }: {
   categories: Array<{ category: string; amount: number }>;
-  scenarios: Array<{ name: string; grossExpenses: number; refunds: number; netMonthly: number }>;
+  scenarios: Array<{
+    name: string;
+    grossExpenses: number;
+    refunds: number;
+    netMonthly: number;
+    perAdult: number;
+  }>;
   currency: string;
+  essentialExpenses?: number;
+  flexibleExpenses?: number;
 }) {
   const total = categories.reduce((sum, row) => sum + row.amount, 0);
   const current = scenarios[0];
+  const mixData = [
+    { name: "essential", value: essentialExpenses ?? 0 },
+    { name: "flexible", value: flexibleExpenses ?? 0 },
+  ];
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
@@ -68,6 +102,27 @@ export function HouseholdCharts({
           />
           <EChartsBarChart.Bar dataKey="amount" variant="default" enableHoverHighlight glowing />
         </EChartsBarChart>
+      </AnalyticsChartCard>
+      <AnalyticsChartCard
+        title="Essential versus flexible"
+        description="How current recurring expenses split between needs and choices."
+        metric={formatCurrency(total, currency)}
+        metricLabel="gross recurring spend"
+      >
+        <EChartsPieChart
+          data={mixData}
+          config={mixConfig}
+          dataKey="value"
+          nameKey="name"
+          className="h-[320px] min-w-0 w-full"
+        >
+          <EChartsPieChart.Pie innerRadius="55%" outerRadius="80%" variant="gradient" />
+          <EChartsPieChart.Tooltip
+            variant="frosted-glass"
+            valueFormatter={(value) => formatCurrency(value, currency)}
+          />
+          <EChartsPieChart.Legend align="center" verticalAlign="bottom" isClickable />
+        </EChartsPieChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard
         title="Scenario comparison"
@@ -104,6 +159,36 @@ export function HouseholdCharts({
             <EChartsComposedChart.ActiveDot variant="ping" />
           </EChartsComposedChart.Line>
         </EChartsComposedChart>
+      </AnalyticsChartCard>
+      <AnalyticsChartCard
+        title="Cost per adult by scenario"
+        description="The monthly net cost each adult carries under every scenario."
+        metric={current ? formatCurrency(current.perAdult, currency) : "—"}
+        metricLabel="primary scenario per adult"
+      >
+        <EChartsBarChart
+          data={scenarios}
+          config={perAdultConfig}
+          xDataKey="name"
+          className="h-[320px] min-w-0 w-full"
+          chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 38, containLabel: true } }}
+        >
+          <EChartsBarChart.Grid />
+          <EChartsBarChart.XAxis
+            dataKey="name"
+            tickFormatter={(value) => (value.length > 12 ? `${value.slice(0, 11)}…` : value)}
+            hideDots
+          />
+          <EChartsBarChart.YAxis
+            tickFormatter={(value) => formatCompactCurrency(Number(value), currency)}
+            hideDots
+          />
+          <EChartsBarChart.Tooltip
+            variant="frosted-glass"
+            valueFormatter={(value) => formatCurrency(value, currency)}
+          />
+          <EChartsBarChart.Bar dataKey="perAdult" variant="default" enableHoverHighlight glowing />
+        </EChartsBarChart>
       </AnalyticsChartCard>
     </div>
   );

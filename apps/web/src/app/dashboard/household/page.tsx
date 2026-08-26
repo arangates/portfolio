@@ -141,6 +141,8 @@ export default async function HouseholdPage() {
           categories={data.categoryBreakdown}
           scenarios={data.scenarios}
           currency={data.currency}
+          essentialExpenses={data.metrics.essentialExpenses}
+          flexibleExpenses={data.metrics.flexibleExpenses}
         />
 
         <div className="px-4 lg:px-6">

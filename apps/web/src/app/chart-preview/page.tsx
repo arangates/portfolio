@@ -53,10 +53,12 @@ export default function ChartPreviewPage() {
           { category: "Insurance", amount: 150 },
         ]}
         scenarios={[
-          { name: "Current", grossExpenses: 4610, refunds: 750, netMonthly: 3860 },
-          { name: "Doable", grossExpenses: 4200, refunds: 750, netMonthly: 3450 },
+          { name: "Current", grossExpenses: 4610, refunds: 750, netMonthly: 3860, perAdult: 1930 },
+          { name: "Doable", grossExpenses: 4200, refunds: 750, netMonthly: 3450, perAdult: 1725 },
         ]}
         currency="EUR"
+        essentialExpenses={3500}
+        flexibleExpenses={1110}
       />
       <ZerodhaTradebookCharts
         monthly={[
