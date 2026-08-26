@@ -17,15 +17,21 @@ function formatIndianCompactCurrency(value: number) {
   return `${value < 0 ? "-" : ""}₹${formattedValue}${unit?.suffix ?? ""}`;
 }
 
-export function formatCurrency(value: number, currency: string) {
+export function formatFullCurrency(value: number, currency: string) {
   const normalizedCurrency = currency.toUpperCase();
-  if (normalizedCurrency === "INR") return formatIndianCompactCurrency(value);
 
   return new Intl.NumberFormat("en", {
     style: "currency",
     currency: normalizedCurrency,
     maximumFractionDigits: 2,
   }).format(value);
+}
+
+export function formatCurrency(value: number, currency: string) {
+  const normalizedCurrency = currency.toUpperCase();
+  if (normalizedCurrency === "INR") return formatIndianCompactCurrency(value);
+
+  return formatFullCurrency(value, normalizedCurrency);
 }
 
 export function formatCompactCurrency(value: number, currency: string) {

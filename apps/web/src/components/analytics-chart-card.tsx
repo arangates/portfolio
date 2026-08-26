@@ -11,6 +11,7 @@ export function AnalyticsChartCard({
   title,
   description,
   metric,
+  metricTooltip,
   metricLabel,
   children,
 }: {
@@ -18,6 +19,7 @@ export function AnalyticsChartCard({
   title: string;
   description: string;
   metric?: string;
+  metricTooltip?: string;
   metricLabel?: string;
   children: React.ReactNode;
 }) {
@@ -31,7 +33,12 @@ export function AnalyticsChartCard({
           </div>
           {metric ? (
             <div className="shrink-0 text-left sm:text-right">
-              <p className="text-lg font-semibold tracking-tight tabular-nums">{metric}</p>
+              <p
+                className="text-lg font-semibold tracking-tight tabular-nums"
+                title={metricTooltip}
+              >
+                {metric}
+              </p>
               {metricLabel ? (
                 <p className="text-[11px] text-muted-foreground">{metricLabel}</p>
               ) : null}

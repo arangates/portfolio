@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsComposedChart,
   type ChartConfig as ComposedChartConfig,
@@ -95,6 +95,9 @@ export function FireCharts({ results, currency }: { results: ScenarioResult[]; c
           title="Range of possible outcomes"
           description={`1,000 reproducible return-and-inflation paths for ${selected.name}; a risk range, not a guarantee.`}
           metric={finalProjection ? formatCompactCurrency(finalProjection.median, currency) : "—"}
+          metricTooltip={
+            finalProjection ? formatFullCurrency(finalProjection.median, currency) : undefined
+          }
           metricLabel="median final balance"
         >
           <EChartsLineChart

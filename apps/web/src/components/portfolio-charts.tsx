@@ -1,7 +1,12 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/format";
+import {
+  formatCompactCurrency,
+  formatCurrency,
+  formatFullCurrency,
+  formatPercent,
+} from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -82,6 +87,7 @@ export function PortfolioCharts({
         title={allocationTitle}
         description={`Share of current value by category in ${currency}.`}
         metric={formatCompactCurrency(total, currency)}
+        metricTooltip={formatFullCurrency(total, currency)}
         metricLabel="allocated value"
       >
         <div className="grid min-w-0 items-center gap-2 sm:grid-cols-[minmax(220px,0.9fr)_minmax(0,1.1fr)]">
@@ -128,7 +134,10 @@ export function PortfolioCharts({
                   <span className="truncate text-xs font-medium" title={item.category}>
                     {item.category}
                   </span>
-                  <span className="whitespace-nowrap text-right text-xs font-medium tabular-nums">
+                  <span
+                    className="whitespace-nowrap text-right text-xs font-medium tabular-nums"
+                    title={formatFullCurrency(item.value, currency)}
+                  >
                     {formatCompactCurrency(item.value, currency)}
                     <span className="ml-1 text-[10px] font-normal text-muted-foreground">
                       · {formatPercent(total === 0 ? 0 : item.value / total, 1)}

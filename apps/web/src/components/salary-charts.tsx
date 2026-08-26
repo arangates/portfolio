@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -93,6 +93,7 @@ export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency
         title="Tax and retirement contributions"
         description="Wage tax, employee pension and social insurance over time."
         metric={formatCompactCurrency(totalDeductions, currency)}
+        metricTooltip={formatFullCurrency(totalDeductions, currency)}
         metricLabel="total deductions"
       >
         <EChartsAreaChart

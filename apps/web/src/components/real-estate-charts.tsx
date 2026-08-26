@@ -1,7 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -40,6 +40,7 @@ export function RealEstateCharts({
         title="Property allocation"
         description="Attributable value by property type."
         metric={formatCompactCurrency(total, currency)}
+        metricTooltip={formatFullCurrency(total, currency)}
         metricLabel="owned value"
       >
         <EChartsBarChart

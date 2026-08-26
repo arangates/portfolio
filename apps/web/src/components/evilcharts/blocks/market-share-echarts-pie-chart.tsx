@@ -1,6 +1,11 @@
 "use client";
 
-import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/format";
+import {
+  formatCompactCurrency,
+  formatCurrency,
+  formatFullCurrency,
+  formatPercent,
+} from "@/lib/format";
 import {
   EChartsPieChart,
   type ChartConfig,
@@ -97,7 +102,10 @@ export function InstitutionConcentrationPieChart({
         </EChartsPieChart>
 
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-          <span className="max-w-32 text-center text-xl font-semibold tracking-tight text-primary @xl:text-2xl">
+          <span
+            className="max-w-32 text-center text-xl font-semibold tracking-tight text-primary @xl:text-2xl"
+            title={formatFullCurrency(total, currency)}
+          >
             {formatCompactCurrency(total, currency)}
           </span>
           <span className="text-[10px] text-muted-foreground @xl:text-xs">Active principal</span>
@@ -124,7 +132,10 @@ export function InstitutionConcentrationPieChart({
             <span className="truncate font-medium text-primary" title={label}>
               {label}
             </span>
-            <span className="whitespace-nowrap tabular-nums text-muted-foreground">
+            <span
+              className="whitespace-nowrap tabular-nums text-muted-foreground"
+              title={formatFullCurrency(value, currency)}
+            >
               {formatCompactCurrency(value, currency)} · {formatPercent(share, 0)}
             </span>
           </button>
