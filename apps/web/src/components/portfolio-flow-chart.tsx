@@ -1,10 +1,12 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import {
   EChartsSankeyChart,
   type ChartConfig,
+  type SankeyData,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-sankey-chart";
 
 type FlowAsset = {
@@ -15,13 +17,17 @@ type FlowAsset = {
 };
 
 const palette = [
-  { light: ["#2563eb"], dark: ["#60a5fa"] },
-  { light: ["#059669"], dark: ["#34d399"] },
-  { light: ["#7c3aed"], dark: ["#a78bfa"] },
-  { light: ["#d97706"], dark: ["#fbbf24"] },
-  { light: ["#0891b2"], dark: ["#22d3ee"] },
-  { light: ["#dc2626"], dark: ["#f87171"] },
+  { light: ["#7c3aed", "#a78bfa"], dark: ["#8b5cf6", "#c4b5fd"] },
+  { light: ["#d97706", "#f59e0b"], dark: ["#f59e0b", "#fcd34d"] },
+  { light: ["#2563eb", "#60a5fa"], dark: ["#3b82f6", "#93c5fd"] },
+  { light: ["#e11d48", "#fb7185"], dark: ["#f43f5e", "#fda4af"] },
+  { light: ["#0891b2", "#22d3ee"], dark: ["#06b6d4", "#67e8f9"] },
+  { light: ["#ea580c", "#fb923c"], dark: ["#f97316", "#fdba74"] },
 ];
+
+const rootColors = { light: ["#0f766e", "#14b8a6"], dark: ["#14b8a6", "#5eead4"] };
+const liquidColors = { light: ["#047857", "#10b981"], dark: ["#10b981", "#6ee7b7"] };
+const longTermColors = { light: ["#a16207", "#eab308"], dark: ["#ca8a04", "#fde047"] };
 
 function compact(value: number, currency: string) {
   return new Intl.NumberFormat("en", {
@@ -30,6 +36,22 @@ function compact(value: number, currency: string) {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
+}
+
+function safeKey(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function compactLabel(value: string) {
+  const labels: Record<string, string> = {
+    "Marketable securities": "Securities",
+    "Fixed deposits": "Deposits",
+    "Other assets": "Other",
+  };
+  return labels[value] ?? value;
 }
 
 export function PortfolioFlowChart({
@@ -43,6 +65,7 @@ export function PortfolioFlowChart({
   liquidValue: number;
   currency: string;
 }) {
+  const isMobile = useIsMobile();
   const branches = new Map<string, number>();
   for (const asset of assets) {
     if (asset.baseValue == null || asset.baseValue <= 0) continue;
@@ -78,32 +101,78 @@ export function PortfolioFlowChart({
   const grossFlowValue = flowLiquidValue + flowLongTermValue;
   const hasNegativeAdjustments = Math.abs(grossFlowValue - netWorth) > 0.01;
   const bucketRows = [
-    { key: "Liquid assets", value: flowLiquidValue, prefix: "Liquid ·" },
-    { key: "Long-term assets", value: flowLongTermValue, prefix: "Long-term ·" },
+    {
+      id: "bucket-liquid",
+      label: "Liquid assets",
+      value: flowLiquidValue,
+      prefix: "Liquid ·",
+      colors: liquidColors,
+    },
+    {
+      id: "bucket-long-term",
+      label: "Long-term assets",
+      value: flowLongTermValue,
+      prefix: "Long-term ·",
+      colors: longTermColors,
+    },
   ].filter((row) => row.value > 0);
-  const rootName = hasNegativeAdjustments ? "Gross assets" : "Net worth";
-  const nodes = [{ name: rootName }, ...bucketRows.map((row) => ({ name: row.key }))];
+  const rootLabel = hasNegativeAdjustments ? "Gross assets" : "Net worth";
+  const nodes: SankeyData["nodes"] = [
+    { name: "portfolio-total" },
+    ...bucketRows.map((row) => ({ name: row.id })),
+  ];
   const links: Array<{ source: number; target: number; value: number }> = [];
   for (let index = 0; index < bucketRows.length; index += 1) {
     links.push({ source: 0, target: index + 1, value: bucketRows[index]!.value });
   }
-  for (const [branch, value] of [...branches.entries()].sort((left, right) => right[1] - left[1])) {
+
+  const groupedBranches = new Map<string, { bucketIndex: number; label: string; value: number }>();
+  for (const [branch, value] of branches) {
     const bucketIndex = bucketRows.findIndex((row) => branch.startsWith(row.prefix));
     if (bucketIndex < 0) continue;
-    const target = nodes.length;
-    nodes.push({ name: branch });
-    links.push({ source: bucketIndex + 1, target, value });
+    const category = branch.split(" · ")[1] ?? branch;
+    const isSmall = grossFlowValue > 0 && value / grossFlowValue < 0.015;
+    const key = isSmall ? `${bucketIndex}:other` : `${bucketIndex}:${category}`;
+    const existing = groupedBranches.get(key);
+    groupedBranches.set(key, {
+      bucketIndex,
+      label: isSmall ? "Other assets" : category,
+      value: (existing?.value ?? 0) + value,
+    });
   }
 
-  const config = Object.fromEntries(
-    nodes.map((node, index) => [
-      node.name,
-      {
-        label: node.name.includes(" · ") ? node.name.split(" · ")[1] : node.name,
-        colors: palette[index % palette.length]!,
-      },
-    ]),
-  ) satisfies ChartConfig;
+  const branchRows = [...groupedBranches.values()].sort((left, right) => right.value - left.value);
+  for (const [index, branch] of branchRows.entries()) {
+    const target = nodes.length;
+    nodes.push({
+      name: `category-${branch.bucketIndex}-${safeKey(branch.label)}-${index}`,
+      showValue: false,
+      hideLabel: grossFlowValue > 0 && branch.value / grossFlowValue < 0.025,
+    });
+    links.push({ source: branch.bucketIndex + 1, target, value: branch.value });
+  }
+
+  const config = {
+    "portfolio-total": { label: rootLabel, colors: rootColors },
+    ...Object.fromEntries(
+      bucketRows.map((bucket) => [
+        bucket.id,
+        {
+          label: isMobile ? bucket.label.replace(" assets", "") : bucket.label,
+          colors: bucket.colors,
+        },
+      ]),
+    ),
+    ...Object.fromEntries(
+      branchRows.map((branch, index) => [
+        `category-${branch.bucketIndex}-${safeKey(branch.label)}-${index}`,
+        {
+          label: isMobile ? compactLabel(branch.label) : branch.label,
+          colors: palette[index % palette.length]!,
+        },
+      ]),
+    ),
+  } satisfies ChartConfig;
 
   return (
     <div className="px-4 lg:px-6">
@@ -121,15 +190,19 @@ export function PortfolioFlowChart({
         <EChartsSankeyChart
           data={{ nodes, links }}
           config={config}
-          className="h-[390px] min-w-0 w-full sm:h-[430px]"
-          nodeWidth={16}
-          nodePadding={14}
+          className="h-[410px] min-w-0 w-full sm:h-[450px]"
+          nodeWidth={isMobile ? 72 : 104}
+          nodePadding={isMobile ? 12 : 16}
           linkCurvature={0.55}
         >
           <EChartsSankeyChart.Tooltip variant="frosted-glass" roundness="lg" />
           <EChartsSankeyChart.Link variant="gradient" />
           <EChartsSankeyChart.Node radius={5} isClickable>
-            <EChartsSankeyChart.NodeLabel position="outside" />
+            <EChartsSankeyChart.NodeLabel
+              position="inside"
+              showValues={!isMobile}
+              valueFormatter={(value) => compact(value, currency)}
+            />
           </EChartsSankeyChart.Node>
         </EChartsSankeyChart>
         <div className="grid gap-2 border-t px-2 pt-3 sm:grid-cols-3">

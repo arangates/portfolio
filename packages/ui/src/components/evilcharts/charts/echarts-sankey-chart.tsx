@@ -156,6 +156,8 @@ export type SankeyAnimationType = "none" | "default";
 export type SankeyNode = {
   name: string;
   icon?: ReactNode;
+  showValue?: boolean;
+  hideLabel?: boolean;
 };
 
 // A single directed flow. `source`/`target` are indices into `nodes`, matching
@@ -663,7 +665,7 @@ type OptionBuildContext = {
 // The node label config, shared by every node. Two-line rich text when values are
 // shown; per-node opacity (for selection dimming) is applied on the node items.
 function buildNodeLabel(ctx: OptionBuildContext): SankeySeriesOption["label"] {
-  const { nodeLabel, config, nodeValues, resolved } = ctx;
+  const { data, nodeLabel, config, nodeValues, resolved } = ctx;
   const position = nodeLabel?.position;
 
   // No <NodeLabel>, or one with no position, shows nothing — Recharts parity.
@@ -682,7 +684,8 @@ function buildNodeLabel(ctx: OptionBuildContext): SankeySeriesOption["label"] {
   const formatter = (params: unknown): string => {
     const name = String((params as { name?: string | number }).name ?? "");
     const nameText = labelOf(name);
-    if (!showValues) return `{name|${nameText}}`;
+    const node = data.nodes.find((item) => item.name === name);
+    if (!showValues || node?.showValue === false) return `{name|${nameText}}`;
     return `{name|${nameText}}\n{value|${format(nodeValues[name] ?? 0)}}`;
   };
 
@@ -777,7 +780,7 @@ function buildSankeySeries(ctx: OptionBuildContext): SankeySeriesOption {
       // config label opts a node out entirely — a pass-through hub carries its
       // total in the surrounding layout, not on the node.
       label: {
-        ...(config[node.name]?.label === "" ? { show: false } : {}),
+        ...(config[node.name]?.label === "" || node.hideLabel ? { show: false } : {}),
         opacity: (dimmed ? LABEL_DIM_OPACITY : 1) * phase,
         ...(outsideLabels && !targetNames.has(node.name)
           ? { position: "left" as const, align: "right" as const }

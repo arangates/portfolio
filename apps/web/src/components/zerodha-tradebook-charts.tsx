@@ -56,7 +56,7 @@ export function ZerodhaTradebookCharts({
   const largestFund = topFunds[0];
 
   return (
-    <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
         title="Monthly investment flow"
         description="Actual purchases, redemptions and net invested cash from imported trades."
@@ -101,7 +101,6 @@ export function ZerodhaTradebookCharts({
           layout="horizontal"
           className="h-[320px] min-w-0 w-full"
           barRadius={5}
-          enableMaxValueHighlight
           chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
         >
           <EChartsBarChart.Grid />
@@ -112,7 +111,12 @@ export function ZerodhaTradebookCharts({
             roundness="lg"
             valueFormatter={(value) => formatCurrency(value, "INR")}
           />
-          <EChartsBarChart.Bar dataKey="buyAmount" variant="duotone" enableHoverHighlight glowing />
+          <EChartsBarChart.Bar
+            dataKey="buyAmount"
+            variant="gradient"
+            enableHoverHighlight
+            glowing
+          />
         </EChartsBarChart>
       </AnalyticsChartCard>
     </div>

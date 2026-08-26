@@ -47,7 +47,7 @@ export function HouseholdCharts({
   const total = categories.reduce((sum, row) => sum + row.amount, 0);
   const current = scenarios[0];
   return (
-    <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
       <AnalyticsChartCard
         title="Where the monthly budget goes"
         description="Current gross expenses grouped by category."
@@ -59,7 +59,6 @@ export function HouseholdCharts({
           config={categoryConfig}
           xDataKey="category"
           className="h-[320px] min-w-0 w-full"
-          enableMaxValueHighlight
           chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 38, containLabel: true } }}
         >
           <EChartsBarChart.Grid />
@@ -76,7 +75,7 @@ export function HouseholdCharts({
             variant="frosted-glass"
             valueFormatter={(value) => formatCurrency(value, currency)}
           />
-          <EChartsBarChart.Bar dataKey="amount" variant="blocks" enableHoverHighlight glowing />
+          <EChartsBarChart.Bar dataKey="amount" variant="gradient" enableHoverHighlight glowing />
         </EChartsBarChart>
       </AnalyticsChartCard>
       <AnalyticsChartCard

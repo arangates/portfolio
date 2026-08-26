@@ -1,0 +1,57 @@
+import { HouseholdCharts } from "@/components/household-charts";
+import { PortfolioFlowChart } from "@/components/portfolio-flow-chart";
+import { ZerodhaTradebookCharts } from "@/components/zerodha-tradebook-charts";
+
+export default function ChartPreviewPage() {
+  return (
+    <main className="mx-auto grid w-full max-w-[1500px] gap-8 py-8">
+      <PortfolioFlowChart
+        assets={[
+          { category: "Real estate", baseValue: 34_000_000, isLiquid: false },
+          { category: "Marketable securities", baseValue: 15_000_000, isLiquid: true },
+          { category: "Fixed deposits", baseValue: 11_800_000, isLiquid: true },
+          {
+            category: "Commodities",
+            baseValue: 2_700_000,
+            liquidBaseValue: 500_000,
+            isLiquid: true,
+          },
+          { category: "Cash", baseValue: 500_000, isLiquid: true },
+          { category: "Vehicle", baseValue: 200_000, isLiquid: false },
+        ]}
+        netWorth={64_200_000}
+        liquidValue={27_800_000}
+        currency="INR"
+      />
+      <HouseholdCharts
+        categories={[
+          { category: "Housing", amount: 1900 },
+          { category: "Childcare", amount: 1250 },
+          { category: "Groceries", amount: 520 },
+          { category: "Transport", amount: 310 },
+          { category: "Utilities", amount: 280 },
+          { category: "Shopping", amount: 200 },
+          { category: "Insurance", amount: 150 },
+        ]}
+        scenarios={[
+          { name: "Current", grossExpenses: 4610, refunds: 750, netMonthly: 3860 },
+          { name: "Doable", grossExpenses: 4200, refunds: 750, netMonthly: 3450 },
+        ]}
+        currency="EUR"
+      />
+      <ZerodhaTradebookCharts
+        monthly={[
+          { month: "Jan 26", buys: 120000, sells: 0, netInvested: 120000 },
+          { month: "Feb 26", buys: 160000, sells: 25000, netInvested: 135000 },
+        ]}
+        funds={[
+          { name: "Nippon India Ultra Short Duration", buyAmount: 8_729_990 },
+          { name: "Parag Parikh Flexi Cap Fund", buyAmount: 1_850_000 },
+          { name: "ICICI Prudential Nifty 50 Index Fund", buyAmount: 1_400_000 },
+          { name: "SBI Gold Fund", buyAmount: 1_180_000 },
+          { name: "Quant Mid Cap Fund", buyAmount: 1_050_000 },
+        ]}
+      />
+    </main>
+  );
+}
