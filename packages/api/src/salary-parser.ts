@@ -48,8 +48,17 @@ export type ParsedSalaryPayslip = {
   lineItems: ParsedSalaryLineItem[];
 };
 
-const PARSER_VERSION = "euhreka-v1";
+export const SALARY_PARSER_VERSION = "euhreka-v2";
 const MONEY_PATTERN = /(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2}-?/g;
+const PAYROLL_DETAIL_END_MARKERS = [
+  "Comm.distance",
+  "Cost center",
+  "Bank transfer",
+  "E-mail:",
+  "Phone number:",
+  "Calculation data",
+  "Produced by NorthgateArinso euHReka",
+];
 const PERSONAL_DATA_MARKERS = [
   "Birth date",
   "Employed on",
@@ -123,6 +132,7 @@ function categoryFor(description: string): SalaryLineItemCategory {
     value.includes("premium wia") ||
     value.includes("paww") ||
     value.includes("wage in kind") ||
+    value.includes("deduction paid par.leave") ||
     value.includes("gross adj") ||
     value.includes("exchange com. traffic br") ||
     value === "exchange wkr"
@@ -134,6 +144,7 @@ function categoryFor(description: string): SalaryLineItemCategory {
     value.includes("profit sharing") ||
     value.includes("end of year benefit") ||
     value.includes("holiday allowance") ||
+    value.includes("paid parental leave") ||
     value.includes("paid flex hours") ||
     value.includes("quarterly allowance") ||
     value.includes("conversion adv") ||
@@ -213,6 +224,13 @@ function revisionFrom(fileName: string) {
   return fileName.match(/_R(\d+)/i)?.[1] ?? null;
 }
 
+function payrollDetailEnd(lines: string[], headerIndex: number) {
+  return lines.findIndex(
+    (line, index) =>
+      index > headerIndex && PAYROLL_DETAIL_END_MARKERS.some((marker) => line.startsWith(marker)),
+  );
+}
+
 export async function parseSalaryPayslip(
   bytes: Uint8Array,
   fileName: string,
@@ -242,9 +260,7 @@ export async function parseSalaryPayslip(
     .map((line) => line.trim().replace(/\s+/g, " "))
     .filter(Boolean);
   const headerIndex = lines.findIndex((line) => line.startsWith("Description Quantity"));
-  const detailsEnd = lines.findIndex(
-    (line, index) => index > headerIndex && line.startsWith("Comm.distance"),
-  );
+  const detailsEnd = payrollDetailEnd(lines, headerIndex);
   if (headerIndex < 0 || detailsEnd < 0)
     throw new Error("Could not identify the payroll detail table.");
 
@@ -254,6 +270,7 @@ export async function parseSalaryPayslip(
       (line) =>
         line === line.toUpperCase() &&
         /[A-Z]/.test(line) &&
+        !/^\d/.test(line) &&
         !line.startsWith("IF UNDELIVERABLE") &&
         !line.includes("POSTBUS") &&
         !line.includes("EINDHOVEN"),
@@ -330,7 +347,7 @@ export async function parseSalaryPayslip(
   }
 
   return {
-    parserVersion: PARSER_VERSION,
+    parserVersion: SALARY_PARSER_VERSION,
     employerName,
     payPeriod,
     periodLabel,

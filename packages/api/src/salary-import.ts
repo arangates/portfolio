@@ -5,7 +5,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { auditEvent, db, salaryImport, salaryLineItem, salaryPayslip } from "@portfolio/db";
 import { and, desc, eq } from "drizzle-orm";
 
-import { parseSalaryPayslip } from "./salary-parser";
+import { parseSalaryPayslip, SALARY_PARSER_VERSION } from "./salary-parser";
 
 export type SalaryImportFile = {
   name: string;
@@ -19,8 +19,6 @@ export type SalaryImportResult = {
   periodLabel: string;
   validationStatus: "verified" | "needs_review";
 };
-
-const PARSER_VERSION = "euhreka-v1";
 
 function hash(bytes: Uint8Array) {
   return createHash("sha256").update(bytes).digest("hex");
@@ -86,7 +84,7 @@ export async function processSalaryImport(input: {
         fileHash,
         mimeType: "application/pdf",
         fileSize: input.file.bytes.byteLength,
-        parserVersion: PARSER_VERSION,
+        parserVersion: SALARY_PARSER_VERSION,
         status: "failed",
         errorMessage: message,
         completedAt: new Date(),
