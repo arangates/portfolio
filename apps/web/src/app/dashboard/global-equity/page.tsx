@@ -35,11 +35,14 @@ export default async function GlobalEquityPage() {
   const marketValue = portfolio.holdings.reduce((sum, holding) => sum + holding.marketValue, 0);
   const costBasis = portfolio.holdings.reduce((sum, holding) => sum + holding.costBasis, 0);
   const unrealizedPnl = marketValue - costBasis;
+  const cashBalances = analytics.balances.filter((balance) => Math.abs(balance.balance) >= 0.005);
+  const primaryCashBalance =
+    cashBalances.find((balance) => balance.currency === "EUR") ?? cashBalances[0] ?? null;
   const allocation = portfolio.holdings.slice(0, 10).map((holding) => ({
     category: holding.name,
     value: holding.marketValue,
   }));
-  const hasData = portfolio.history.length > 0 || entries.length > 0;
+  const hasData = portfolio.history.length > 0 || entries.length > 0 || cashBalances.length > 0;
 
   return (
     <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
@@ -89,11 +92,18 @@ export default async function GlobalEquityPage() {
                   icon: LineChartIcon,
                 },
                 {
-                  label: "Open cost basis",
-                  value: formatCurrency(costBasis, "EUR"),
-                  badge: "Ledger derived",
-                  note: "Moving-average cost of open positions",
-                  detail: "Includes imported transaction totals",
+                  label: "DEGIRO cash",
+                  value: primaryCashBalance
+                    ? formatCurrency(primaryCashBalance.balance, primaryCashBalance.currency)
+                    : formatCurrency(0, "EUR"),
+                  badge:
+                    cashBalances.length > 1
+                      ? `${cashBalances.length} currencies`
+                      : (primaryCashBalance?.currency ?? "No idle cash"),
+                  note: "Uninvested broker balance",
+                  detail: primaryCashBalance
+                    ? `Statement balance ${formatDate(primaryCashBalance.occurredAt)}`
+                    : "Import a DEGIRO Account CSV",
                   icon: CircleDollarSignIcon,
                 },
                 {

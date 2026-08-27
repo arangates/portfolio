@@ -10,6 +10,7 @@ import {
   fixedDeposit,
   fixedDepositSnapshot,
   importBatch,
+  importRow,
   instrument,
   ledgerEntry,
   manualAsset,
@@ -247,8 +248,16 @@ export async function getDegiroAnalytics(userId: string) {
         eq(importBatch.status, "completed"),
       ),
     )
+    .innerJoin(
+      importRow,
+      and(
+        eq(importRow.userId, userId),
+        eq(importRow.batchId, ledgerEntry.batchId),
+        eq(importRow.rowHash, ledgerEntry.rawRowHash),
+      ),
+    )
     .where(and(eq(ledgerEntry.userId, userId), sql`${ledgerEntry.balance} is not null`))
-    .orderBy(desc(ledgerEntry.occurredAt));
+    .orderBy(desc(ledgerEntry.occurredAt), asc(importRow.rowNumber));
 
   return {
     rowCount: summary?.rowCount ?? 0,
@@ -679,6 +688,7 @@ export async function getPortfolioOverview(userId: string) {
     equity,
     equityHistory,
     globalEquity,
+    degiroAnalytics,
     accounts,
     deposits,
     commodities,
@@ -691,6 +701,7 @@ export async function getPortfolioOverview(userId: string) {
     getLatestZerodhaPortfolio(userId),
     getEquitySnapshotHistory(userId),
     getGlobalEquityPortfolio(userId),
+    getDegiroAnalytics(userId),
     getBankAccounts(userId),
     getCurrentFixedDeposits(userId),
     getCommodityHoldings(userId),
@@ -740,6 +751,22 @@ export async function getPortfolioOverview(userId: string) {
       risk: "High",
       location: "Degiro",
       asOf: globalEquity.lastTradeAt,
+    });
+  }
+
+  for (const balance of degiroAnalytics.balances) {
+    if (Math.abs(balance.balance) < 0.00000001) continue;
+    assets.push({
+      key: `degiro-cash-${balance.currency.toLowerCase()}`,
+      name: `DEGIRO cash · ${balance.currency}`,
+      category: "DEGIRO cash",
+      nativeValue: balance.balance,
+      currency: balance.currency,
+      baseValue: convert(balance.balance, balance.currency),
+      isLiquid: true,
+      risk: "Low",
+      location: "DEGIRO broker account",
+      asOf: balance.occurredAt,
     });
   }
 
