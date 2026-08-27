@@ -667,6 +667,121 @@ export async function getRealEstateHistory(userId: string) {
   return [...history.values()];
 }
 
+export async function getRealEstateDashboard(userId: string) {
+  const [preference, rates, properties, historyRows] = await Promise.all([
+    getPortfolioPreference(userId),
+    getLatestExchangeRates(userId),
+    getRealEstatePortfolio(userId),
+    db
+      .select({
+        propertyId: realEstateProperty.id,
+        asOf: realEstateSnapshot.asOf,
+        createdAt: realEstateSnapshot.createdAt,
+        marketValue: realEstateSnapshot.marketValue,
+        ownershipShare: realEstateSnapshot.ownershipShare,
+        currency: realEstateSnapshot.currency,
+      })
+      .from(realEstateSnapshot)
+      .innerJoin(
+        realEstateProperty,
+        and(
+          eq(realEstateSnapshot.propertyId, realEstateProperty.id),
+          eq(realEstateProperty.userId, userId),
+        ),
+      )
+      .where(and(eq(realEstateSnapshot.userId, userId), isNull(realEstateProperty.archivedAt)))
+      .orderBy(asc(realEstateSnapshot.asOf), asc(realEstateSnapshot.createdAt)),
+  ]);
+
+  const rateMap = new Map(
+    rates
+      .filter((rate) => rate.baseCurrency === preference.baseCurrency)
+      .map((rate) => [rate.quoteCurrency, rate.rate]),
+  );
+  rateMap.set(preference.baseCurrency, 1);
+  const convert = (value: number, currency: string) => {
+    const rate = rateMap.get(currency);
+    return rate === undefined ? null : value * rate;
+  };
+
+  const valuedProperties = properties.map((property) => ({
+    ...property,
+    baseMarketValue: convert(property.marketValue, property.currency),
+    baseOwnedValue: convert(property.ownedValue, property.currency),
+  }));
+  const currencies = [...new Set(properties.map((property) => property.currency))].toSorted();
+  const missingCurrencies = currencies.filter((currency) => !rateMap.has(currency));
+  const grossValue = valuedProperties.reduce(
+    (sum, property) => sum + (property.baseMarketValue ?? 0),
+    0,
+  );
+  const ownedValue = valuedProperties.reduce(
+    (sum, property) => sum + (property.baseOwnedValue ?? 0),
+    0,
+  );
+  const ownedAreaSquareFeet = properties.reduce(
+    (sum, property) => sum + property.areaSquareFeet * property.ownershipShare,
+    0,
+  );
+  const ownedAreaCents = properties.reduce(
+    (sum, property) => sum + property.areaCents * property.ownershipShare,
+    0,
+  );
+
+  const allocationByProperty = new Map<string, number>();
+  for (const property of valuedProperties) {
+    if (property.baseOwnedValue === null) continue;
+    allocationByProperty.set(
+      property.name,
+      (allocationByProperty.get(property.name) ?? 0) + property.baseOwnedValue,
+    );
+  }
+
+  const latestSnapshots = new Map<
+    string,
+    { marketValue: number; ownershipShare: number; currency: string }
+  >();
+  const history: Array<{ date: string; value: number; currency: string }> = [];
+  let currentDate: string | null = null;
+  const appendHistoryPoint = (date: string) => {
+    const value = [...latestSnapshots.values()].reduce((sum, snapshot) => {
+      const ownedSnapshotValue = snapshot.marketValue * snapshot.ownershipShare;
+      return sum + (convert(ownedSnapshotValue, snapshot.currency) ?? 0);
+    }, 0);
+    history.push({ date, value, currency: preference.baseCurrency });
+  };
+
+  for (const row of historyRows) {
+    const date = row.asOf.toISOString().slice(0, 10);
+    if (currentDate && date !== currentDate) appendHistoryPoint(currentDate);
+    latestSnapshots.set(row.propertyId, {
+      marketValue: Number(row.marketValue),
+      ownershipShare: Number(row.ownershipShare),
+      currency: row.currency,
+    });
+    currentDate = date;
+  }
+  if (currentDate) appendHistoryPoint(currentDate);
+
+  return {
+    preference,
+    properties: valuedProperties,
+    currencies,
+    missingCurrencies,
+    totals: {
+      grossValue,
+      ownedValue,
+      ownedAreaSquareFeet,
+      ownedAreaCents,
+      verified: properties.filter((property) => property.legalStatus === "verified").length,
+      pending: properties.filter((property) => property.legalStatus === "pending").length,
+      unknown: properties.filter((property) => property.legalStatus === "unknown").length,
+    },
+    allocation: [...allocationByProperty].map(([category, value]) => ({ category, value })),
+    history,
+  };
+}
+
 export type PortfolioAsset = {
   key: string;
   name: string;

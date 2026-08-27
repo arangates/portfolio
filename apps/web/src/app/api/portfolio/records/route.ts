@@ -56,7 +56,10 @@ export async function POST(request: Request) {
                   : await saveExchangeRate(session.user.id, input.data);
     return Response.json(result, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not save record";
+    const rawMessage = error instanceof Error ? error.message : "";
+    const message = rawMessage.startsWith("Failed query:")
+      ? "Could not save this record. Please check the values and try again."
+      : rawMessage || "Could not save record";
     return Response.json({ error: message }, { status: 400 });
   }
 }

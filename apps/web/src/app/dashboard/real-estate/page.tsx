@@ -6,7 +6,7 @@ import { RealEstateCharts } from "@/components/real-estate-charts";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
-import { getRealEstateHistory, getRealEstatePortfolio } from "@portfolio/api/portfolio-queries";
+import { getRealEstateDashboard } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
 import {
@@ -24,36 +24,16 @@ import { redirect } from "next/navigation";
 export default async function RealEstatePage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
-  const [properties, allHistory] = await Promise.all([
-    getRealEstatePortfolio(session.user.id),
-    getRealEstateHistory(session.user.id),
-  ]);
-  const currency = properties[0]?.currency ?? "INR";
-  const currentCurrencyProperties = properties.filter((property) => property.currency === currency);
-  const history = allHistory.filter((point) => point.currency === currency);
-  const grossValue = currentCurrencyProperties.reduce(
-    (sum, property) => sum + property.marketValue,
-    0,
-  );
-  const ownedValue = currentCurrencyProperties.reduce(
-    (sum, property) => sum + property.ownedValue,
-    0,
-  );
-  const ownedArea = currentCurrencyProperties.reduce(
-    (sum, property) => sum + property.areaSquareFeet * property.ownershipShare,
-    0,
-  );
-  const verified = properties.filter((property) => property.legalStatus === "verified").length;
-  const propertyTypes = [
-    ...new Set(currentCurrencyProperties.map((property) => property.propertyType)),
-  ];
-  const allocation = propertyTypes.map((propertyType) => ({
-    category: propertyType,
-    value: currentCurrencyProperties
-      .filter((property) => property.propertyType === propertyType)
-      .reduce((sum, property) => sum + property.ownedValue, 0),
-  }));
-  const currencies = [...new Set(properties.map((property) => property.currency))];
+  const dashboard = await getRealEstateDashboard(session.user.id);
+  const { properties, allocation, history, totals, preference, currencies, missingCurrencies } =
+    dashboard;
+  const currency = preference.baseCurrency;
+  const conversionDetail =
+    missingCurrencies.length > 0
+      ? `Missing rates for ${missingCurrencies.join(", ")}`
+      : currencies.length > 1
+        ? `${currencies.join(" + ")} converted to ${currency}`
+        : `All current valuations in ${currency}`;
 
   return (
     <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
@@ -61,7 +41,7 @@ export default async function RealEstatePage() {
         <PageHeader
           title="Real estate"
           description="Property identity, land area, ownership, legal status and valuation are tracked as account-scoped historical snapshots."
-          action={<PortfolioRecordDialog kind="real_estate" values={{ currency: "INR" }} />}
+          action={<PortfolioRecordDialog kind="real_estate" values={{ currency }} />}
         />
         {properties.length === 0 ? (
           <div className="px-4 lg:px-6">
@@ -69,7 +49,7 @@ export default async function RealEstatePage() {
               icon={Building2Icon}
               title="No properties"
               description="Add a property to start a durable valuation history in Selvam."
-              action={<PortfolioRecordDialog kind="real_estate" values={{ currency: "INR" }} />}
+              action={<PortfolioRecordDialog kind="real_estate" values={{ currency }} />}
             />
           </div>
         ) : (
@@ -78,37 +58,37 @@ export default async function RealEstatePage() {
               items={[
                 {
                   label: "Attributable value",
-                  value: formatCurrency(ownedValue, currency),
-                  badge: `${currentCurrencyProperties.length} properties`,
-                  note: "Full valuation × ownership share",
-                  detail:
-                    currencies.length > 1
-                      ? `Showing ${currency}; ${currencies.length - 1} other currencies retained`
-                      : `All current ${currency} valuations`,
+                  value: formatCurrency(totals.ownedValue, currency),
+                  badge: `${properties.length} properties`,
+                  note: "Your ownership-adjusted value",
+                  detail: conversionDetail,
                   icon: Building2Icon,
                 },
                 {
                   label: "Gross market value",
-                  value: formatCurrency(grossValue, currency),
-                  badge: formatPercent(grossValue === 0 ? 0 : ownedValue / grossValue, 1),
+                  value: formatCurrency(totals.grossValue, currency),
+                  badge: formatPercent(
+                    totals.grossValue === 0 ? 0 : totals.ownedValue / totals.grossValue,
+                    1,
+                  ),
                   note: "Full value before ownership allocation",
-                  detail: "Explicit appraisal or area × unit price",
+                  detail: "Badge shows the attributable share",
                   icon: MapIcon,
                 },
                 {
                   label: "Attributable area",
-                  value: `${ownedArea.toLocaleString("en-IN", { maximumFractionDigits: 0 })} sq. ft.`,
-                  badge: `${propertyTypes.length} types`,
+                  value: `${totals.ownedAreaSquareFeet.toLocaleString("en-IN", { maximumFractionDigits: 0 })} sq. ft.`,
+                  badge: `${totals.ownedAreaCents.toLocaleString("en-IN", { maximumFractionDigits: 1 })} cents`,
                   note: "Area weighted by ownership share",
-                  detail: "Land and home area retained separately",
+                  detail: "Cents and square feet stay synchronized",
                   icon: RulerIcon,
                 },
                 {
                   label: "Legal verification",
-                  value: `${verified} verified`,
-                  badge: `${properties.length - verified} review`,
-                  note: "Document status across current properties",
-                  detail: "Use Pending when due diligence is underway",
+                  value: `${totals.verified} of ${properties.length} verified`,
+                  badge: `${totals.pending} pending · ${totals.unknown} unknown`,
+                  note: "Documentation confidence",
+                  detail: "Unverified valuations remain provisional",
                   icon: FileCheck2Icon,
                 },
               ]}
@@ -171,6 +151,11 @@ export default async function RealEstatePage() {
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
                           {formatCurrency(property.ownedValue, property.currency)}
+                          {property.currency !== currency && property.baseOwnedValue !== null ? (
+                            <div className="text-xs text-muted-foreground">
+                              ≈ {formatCurrency(property.baseOwnedValue, currency)}
+                            </div>
+                          ) : null}
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-end gap-1">

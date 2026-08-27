@@ -216,16 +216,20 @@ function RecordFields({ kind, values }: { kind: PortfolioRecordKind; values: Val
           name="areaCents"
           label="Area (cents)"
           type="number"
+          required={false}
           min="0"
           step="any"
+          description="Enter cents or square feet; the missing unit is calculated automatically."
         />
         <TextField
           values={values}
           name="areaSquareFeet"
           label="Area (sq. ft.)"
           type="number"
+          required={false}
           min="0"
           step="any"
+          description="Leave empty or zero when area in cents is available."
         />
         <TextField
           values={values}

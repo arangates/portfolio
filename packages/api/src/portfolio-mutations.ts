@@ -414,19 +414,31 @@ export async function saveRealEstate(userId: string, raw: unknown) {
   }
   if (!property) throw new Error(input.id ? "Property not found" : "Could not save property");
 
-  const calculatedMarketValue = input.areaSquareFeet * input.pricePerSquareFoot;
-  await db.insert(realEstateSnapshot).values({
-    userId,
-    propertyId: property.id,
-    asOf: asOfDate(input.asOf),
-    areaCents: input.areaCents.toString(),
-    areaSquareFeet: input.areaSquareFeet.toString(),
+  const areaCents = input.areaCents || input.areaSquareFeet / 435.6;
+  const areaSquareFeet = input.areaSquareFeet || input.areaCents * 435.6;
+  const calculatedMarketValue = areaSquareFeet * input.pricePerSquareFoot;
+  const snapshotAsOf = asOfDate(input.asOf);
+  const snapshot = {
+    areaCents: areaCents.toString(),
+    areaSquareFeet: areaSquareFeet.toString(),
     ownershipShare: (input.ownershipShare / 100).toString(),
     legalStatus: input.legalStatus,
     pricePerSquareFoot: input.pricePerSquareFoot.toString(),
     marketValue: (input.marketValue ?? calculatedMarketValue).toString(),
     currency: input.currency,
-  });
+  };
+  await db
+    .insert(realEstateSnapshot)
+    .values({
+      userId,
+      propertyId: property.id,
+      asOf: snapshotAsOf,
+      ...snapshot,
+    })
+    .onConflictDoUpdate({
+      target: [realEstateSnapshot.propertyId, realEstateSnapshot.asOf],
+      set: snapshot,
+    });
   await recordAuditEvent({
     userId,
     action: input.id ? "updated" : "created",

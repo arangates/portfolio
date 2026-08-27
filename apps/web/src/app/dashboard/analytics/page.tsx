@@ -8,11 +8,7 @@ import { SalaryCharts } from "@/components/salary-charts";
 import { WealthMixCharts } from "@/components/wealth-mix-charts";
 import { ZerodhaTradebookCharts } from "@/components/zerodha-tradebook-charts";
 import { getHouseholdDashboard } from "@portfolio/api/household-queries";
-import {
-  getPortfolioOverview,
-  getRealEstateHistory,
-  getRealEstatePortfolio,
-} from "@portfolio/api/portfolio-queries";
+import { getPortfolioOverview, getRealEstateDashboard } from "@portfolio/api/portfolio-queries";
 import { getSalaryPayslips } from "@portfolio/api/salary-queries";
 import { getZerodhaTradebookAnalytics } from "@portfolio/api/zerodha-tradebook-queries";
 import { auth } from "@portfolio/auth";
@@ -55,22 +51,20 @@ export default async function AnalyticsPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
 
-  const [overview, tradebook, payslips, household, properties, allPropertyHistory] =
-    await Promise.all([
-      getPortfolioOverview(session.user.id),
-      getZerodhaTradebookAnalytics(session.user.id),
-      getSalaryPayslips(session.user.id),
-      getHouseholdDashboard(session.user.id),
-      getRealEstatePortfolio(session.user.id),
-      getRealEstateHistory(session.user.id),
-    ]);
+  const [overview, tradebook, payslips, household, realEstate] = await Promise.all([
+    getPortfolioOverview(session.user.id),
+    getZerodhaTradebookAnalytics(session.user.id),
+    getSalaryPayslips(session.user.id),
+    getHouseholdDashboard(session.user.id),
+    getRealEstateDashboard(session.user.id),
+  ]);
 
   const baseCurrency = overview.preference.baseCurrency;
   const hasPortfolio = overview.assets.length > 0;
   const hasTradebook = tradebook.summary.trades > 0;
   const hasSalary = payslips.length > 0;
   const hasHousehold = household.configured && household.categoryBreakdown.length > 0;
-  const hasProperty = properties.length > 0;
+  const hasProperty = realEstate.properties.length > 0;
   const hasAnyData = hasPortfolio || hasTradebook || hasSalary || hasHousehold || hasProperty;
 
   const salaryCurrency = payslips.at(-1)?.currency ?? "EUR";
@@ -83,19 +77,6 @@ export default async function AnalyticsPage() {
     pensionContribution: payslip.pensionContribution,
     socialInsurance: payslip.socialInsurance,
   }));
-
-  const propertyCurrency = properties[0]?.currency ?? baseCurrency;
-  const currencyProperties = properties.filter(
-    (property) => property.currency === propertyCurrency,
-  );
-  const propertyTypes = [...new Set(currencyProperties.map((property) => property.propertyType))];
-  const propertyAllocation = propertyTypes.map((propertyType) => ({
-    category: propertyType,
-    value: currencyProperties
-      .filter((property) => property.propertyType === propertyType)
-      .reduce((sum, property) => sum + property.ownedValue, 0),
-  }));
-  const propertyHistory = allPropertyHistory.filter((point) => point.currency === propertyCurrency);
 
   return (
     <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
@@ -185,12 +166,12 @@ export default async function AnalyticsPage() {
         {hasProperty ? (
           <AnalyticsSection
             title="Property intelligence"
-            description={`Attributable real-estate value and valuation history in ${propertyCurrency}.`}
+            description={`Attributable real-estate value across every property, normalized into ${realEstate.preference.baseCurrency}.`}
           >
             <RealEstateCharts
-              allocation={propertyAllocation}
-              history={propertyHistory}
-              currency={propertyCurrency}
+              allocation={realEstate.allocation}
+              history={realEstate.history}
+              currency={realEstate.preference.baseCurrency}
             />
           </AnalyticsSection>
         ) : null}
