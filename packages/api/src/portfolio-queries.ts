@@ -832,16 +832,13 @@ export async function getPortfolioOverview(userId: string) {
     (asset): asset is PortfolioAsset & { baseValue: number } => asset.baseValue !== null,
   );
   const netWorth = valuedAssets.reduce((sum, asset) => sum + asset.baseValue, 0);
-  const liquidValue = valuedAssets.reduce(
-    (sum, asset) =>
-      sum +
-      (asset.liquidBaseValue !== undefined
-        ? (asset.liquidBaseValue ?? 0)
-        : asset.isLiquid
-          ? asset.baseValue
-          : 0),
-    0,
-  );
+  const liquidValueFor = (asset: (typeof valuedAssets)[number]) =>
+    asset.liquidBaseValue !== undefined
+      ? (asset.liquidBaseValue ?? 0)
+      : asset.isLiquid
+        ? asset.baseValue
+        : 0;
+  const liquidValue = valuedAssets.reduce((sum, asset) => sum + liquidValueFor(asset), 0);
   const equityInvested = equity?.holdings.reduce((sum, item) => sum + item.investedValue, 0) ?? 0;
   const equityPnl = equity?.holdings.reduce((sum, item) => sum + item.unrealizedPnl, 0) ?? 0;
   const unconvertedCurrencies = [
@@ -857,11 +854,29 @@ export async function getPortfolioOverview(userId: string) {
     }))
     .sort((left, right) => right.value - left.value);
 
+  const liquidBucketFor = (asset: (typeof valuedAssets)[number]) => {
+    if (asset.key === "zerodha-equity") return "Indian equity";
+    if (asset.key === "degiro-equity") return "Global equity";
+    if (asset.category === "Commodities") return "Liquid commodities";
+    return asset.category;
+  };
+  const liquidBuckets = new Map<string, number>();
+  for (const asset of valuedAssets) {
+    const value = liquidValueFor(asset);
+    if (value <= 0) continue;
+    const bucket = liquidBucketFor(asset);
+    liquidBuckets.set(bucket, (liquidBuckets.get(bucket) ?? 0) + value);
+  }
+  const liquidAllocation = [...liquidBuckets.entries()]
+    .map(([category, value]) => ({ category, value }))
+    .sort((left, right) => right.value - left.value);
+
   return {
     preference,
     rates,
     assets,
     allocation,
+    liquidAllocation,
     equityHistory,
     equityBreakdown:
       equity?.holdings.map((holding) => ({

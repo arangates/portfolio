@@ -105,7 +105,6 @@ export function BankAccountCharts({
           layout="horizontal"
           className="h-[320px] min-w-0 w-full"
           barRadius={4}
-          chartOptions={{ grid: { left: 8, right: 12, top: 42, bottom: 24, containLabel: true } }}
         >
           <EChartsBarChart.Grid />
           <EChartsBarChart.XAxis

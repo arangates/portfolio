@@ -1,5 +1,6 @@
 "use client";
 
+import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { Button } from "@portfolio/ui/components/button";
 import {
   DropdownMenu,
@@ -114,9 +115,15 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id} className="whitespace-nowrap">
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder ? null : typeof header.column.columnDef.header ===
+                      "string" ? (
+                      <DataTableColumnHeader
+                        column={header.column}
+                        title={header.column.columnDef.header}
+                      />
+                    ) : (
+                      flexRender(header.column.columnDef.header, header.getContext())
+                    )}
                   </TableHead>
                 ))}
               </TableRow>

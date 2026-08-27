@@ -50,7 +50,6 @@ export function RealEstateCharts({
           xDataKey="category"
           layout="horizontal"
           className="h-[300px] min-w-0 w-full"
-          enableMaxValueHighlight
           chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
         >
           <EChartsBarChart.Grid />

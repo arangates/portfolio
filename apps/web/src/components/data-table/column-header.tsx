@@ -20,7 +20,7 @@ export function DataTableColumnHeader<TData>({
       variant="ghost"
       size="sm"
       className={`-ml-3 h-8 ${className ?? ""}`}
-      onClick={() => column.toggleSorting(sorted === "asc")}
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc", false)}
     >
       {title}
       {sorted === "desc" ? (

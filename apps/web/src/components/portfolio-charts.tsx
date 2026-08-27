@@ -54,6 +54,8 @@ export function PortfolioCharts({
   currency,
   historyCurrency = currency,
   allocationTitle = "Asset allocation",
+  allocationDescription = `Share of current value by category in ${currency}.`,
+  allocationMetricLabel = "allocated value",
   historyTitle = "Indian equity history",
   historyDescription = "Invested value versus market value across archived uploads.",
 }: {
@@ -62,6 +64,8 @@ export function PortfolioCharts({
   currency: string;
   historyCurrency?: string;
   allocationTitle?: string;
+  allocationDescription?: string;
+  allocationMetricLabel?: string;
   historyTitle?: string;
   historyDescription?: string;
 }) {
@@ -86,10 +90,10 @@ export function PortfolioCharts({
       <AnalyticsChartCard
         id="asset-allocation"
         title={allocationTitle}
-        description={`Share of current value by category in ${currency}.`}
+        description={allocationDescription}
         metric={formatCompactCurrency(total, currency)}
         metricTooltip={formatFullCurrency(total, currency)}
-        metricLabel="allocated value"
+        metricLabel={allocationMetricLabel}
       >
         <div className="grid min-w-0 items-center gap-2 sm:grid-cols-[minmax(220px,0.9fr)_minmax(0,1.1fr)]">
           <EChartsPieChart

@@ -145,10 +145,13 @@ export default async function DashboardPage() {
               </div>
             ) : null}
             <PortfolioCharts
-              allocation={overview.allocation}
+              allocation={overview.liquidAllocation}
               equityHistory={overview.equityHistory}
               currency={baseCurrency}
               historyCurrency="INR"
+              allocationTitle="Liquid asset breakdown"
+              allocationDescription={`Cash and readily sellable assets only, grouped by source in ${baseCurrency}.`}
+              allocationMetricLabel="liquid value"
             />
             <DataTable assets={overview.assets} baseCurrency={baseCurrency} />
           </>

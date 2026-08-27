@@ -80,7 +80,6 @@ export function CommodityCharts({
           layout="horizontal"
           className="h-[320px] min-w-0 w-full"
           barRadius={5}
-          enableMaxValueHighlight
           chartOptions={{ grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true } }}
         >
           <EChartsBarChart.Grid />
