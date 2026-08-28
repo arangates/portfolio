@@ -158,9 +158,9 @@ export default async function FirePage() {
             {
               label: `${primary?.name ?? "Primary"} corpus`,
               value: formatCurrency(primary?.requiredCorpus ?? 0, plan.baseCurrency),
-              badge: formatPercent(primary?.withdrawalRate ?? 0, 1),
+              badge: `SWR ${formatPercent(plan.profile.safeWithdrawalRate, 1)}`,
               note: `Gap ${formatCurrency(primary?.gap ?? 0, plan.baseCurrency)}`,
-              detail: `Retirement year ${primary?.retirementYear ?? plan.profile.plannedRetirementYear}`,
+              detail: `Retirement year ${primary?.retirementYear ?? plan.profile.plannedRetirementYear} · ${primary?.calculationBasis === "safe_withdrawal" ? "SWR policy floor" : "lifespan simulation"}`,
               icon: PiggyBankIcon,
             },
             {
@@ -195,8 +195,8 @@ export default async function FirePage() {
                 <span className="tabular-nums">{progress.toFixed(0)}%</span>
               </CardTitle>
               <CardDescription>
-                Current investable assets divided by the modeled corpus—not total household net
-                worth.
+                Current investable assets divided by the higher of the safe-withdrawal reserve and
+                the deterministic lifespan requirement—not total household net worth.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -208,7 +208,7 @@ export default async function FirePage() {
         <div className="px-4 lg:px-6">
           <TableCard
             title="Scenario comparison"
-            description="Doable, Safety Max and any custom scenarios all use the same underlying family records."
+            description="Every corpus is the higher of the lifespan simulation and the safe-withdrawal policy reserve."
             action={
               <FireRecordDialog
                 kind="fire_scenario"
@@ -224,6 +224,8 @@ export default async function FirePage() {
                   <TableHead>Scenario</TableHead>
                   <TableHead className="text-right">Retire</TableHead>
                   <TableHead className="text-right">Annual spending</TableHead>
+                  <TableHead className="text-right">Recurring reserve</TableHead>
+                  <TableHead className="text-right">Life events</TableHead>
                   <TableHead className="text-right">Corpus</TableHead>
                   <TableHead className="text-right">Funded</TableHead>
                   <TableHead className="text-right">Success range</TableHead>
@@ -239,6 +241,12 @@ export default async function FirePage() {
                       <TableCell className="text-right">{result.retirementYear}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {formatCurrency(result.annualExpensesAtRetirement, plan.baseCurrency)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCurrency(result.recurringReserve, plan.baseCurrency)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatCurrency(result.oneTimeReserve, plan.baseCurrency)}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
                         {formatCurrency(result.requiredCorpus, plan.baseCurrency)}

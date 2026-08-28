@@ -10,7 +10,8 @@
     }
   },
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test:fire": "tsx --test src/fire-engine.test.ts"
   },
   "dependencies": {
     "@portfolio/auth": "workspace:*",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@portfolio/config": "workspace:*",
     "@types/papaparse": "^5.5.2",
+    "tsx": "^4.23.12",
     "typescript": "catalog:"
   }
 }

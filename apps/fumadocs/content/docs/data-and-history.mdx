@@ -109,7 +109,8 @@ This prevents an application error from linking one user's snapshot or imported 
 - Portfolio totals use the latest snapshot for each current record.
 - Ownership-based assets use attributable value: full market value multiplied by ownership share.
 - Multi-currency totals use stored dated FX rates. Missing conversions are disclosed and excluded.
-- FIRE corpus calculations use investable assets rather than total net worth, account for time-bounded expenses and income, and apply one-time costs in their planned year.
+- FIRE corpus calculations use investable assets rather than total net worth and account for time-bounded expenses and income. The required corpus is the higher of (1) the year-by-year amount that remains solvent through the configured end age and (2) the recurring safe-withdrawal reserve plus the retirement-date present value of future one-time costs.
+- Inflation-linked one-time costs are first grown to their planned year and then discounted back to retirement at the scenario return rate. Costs before retirement affect the accumulation projection but do not enter the retirement-date life-event reserve.
 - Physical commodities are excluded from FIRE liquidity by default. An eligible item contributes at most its attributable liquidation value and can never cause its parent holding to be counted twice.
 - Household totals calculate refunds separately and subtract them once at household level before computing a per-adult share.
 - Indian-equity performance uses values supplied by the latest Zerodha snapshot.

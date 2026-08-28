@@ -79,8 +79,15 @@ export type FireScenarioResult = {
   retirementYear: number;
   annualExpensesAtRetirement: number;
   annualEssentialAtRetirement: number;
+  annualIncomeAtRetirement: number;
+  annualWithdrawalAtRetirement: number;
+  deterministicCorpus: number;
+  recurringReserve: number;
+  oneTimeReserve: number;
+  policyCorpus: number;
+  calculationBasis: "deterministic" | "safe_withdrawal";
   requiredCorpus: number;
-  withdrawalRate: number;
+  initialWithdrawalRate: number;
   progress: number;
   gap: number;
   coastNumberToday: number;
@@ -199,7 +206,7 @@ function project(input: ProjectionInput) {
   const defaultInflation = input.scenario.inflationRateOverride ?? input.profile.inflationRate;
   const expenseMultiplier = input.scenario.spendingMultiplier * (1 + input.scenario.bufferRate);
   const birth = birthYear(input.profile.birthDate);
-  const endYear = endYearFor(input.profile);
+  const endYear = Math.max(endYearFor(input.profile), retirementYear);
   const valuationYear = input.valuationYear ?? input.currentYear;
   const rows: FireProjectionRow[] = [];
   let balance = input.startingBalance;
@@ -309,6 +316,51 @@ function requiredCorpus(input: Omit<ProjectionInput, "startingBalance">) {
   return high;
 }
 
+function safeWithdrawalPolicyReserve(
+  input: Omit<ProjectionInput, "startingBalance">,
+  retirementYear: number,
+  inflationRate: number,
+  returnRate: number,
+) {
+  const endYear = Math.max(endYearFor(input.profile), retirementYear);
+  const expenseMultiplier = input.scenario.spendingMultiplier * (1 + input.scenario.bufferRate);
+  let maximumRealAnnualWithdrawal = 0;
+
+  for (let year = retirementYear; year <= endYear; year += 1) {
+    const expenses = expensesForYear(
+      input.expenses,
+      year,
+      input.currentYear,
+      inflationRate,
+      expenseMultiplier,
+    );
+    const income = incomeForYear(input.incomeStreams, year, input.currentYear, inflationRate);
+    const netWithdrawal = Math.max(0, expenses.total - income);
+    const retirementYearValue =
+      netWithdrawal / inflationFactor(inflationRate, retirementYear, year);
+    maximumRealAnnualWithdrawal = Math.max(maximumRealAnnualWithdrawal, retirementYearValue);
+  }
+
+  const recurringReserve = maximumRealAnnualWithdrawal / input.profile.safeWithdrawalRate;
+  const oneTimeReserve = input.oneTimeCosts.reduce((total, cost) => {
+    if (cost.plannedYear < retirementYear || cost.plannedYear > endYear) return total;
+    const futureAmount =
+      cost.amount *
+      (cost.inflationLinked
+        ? inflationFactor(inflationRate, input.currentYear, cost.plannedYear)
+        : 1) *
+      (1 + input.scenario.bufferRate);
+    const yearsFromRetirement = cost.plannedYear - retirementYear;
+    return total + futureAmount / (1 + returnRate) ** yearsFromRetirement;
+  }, 0);
+
+  return {
+    recurringReserve,
+    oneTimeReserve,
+    policyCorpus: recurringReserve + oneTimeReserve,
+  };
+}
+
 function seededRandom(seed: number) {
   let state = seed >>> 0;
   return () => {
@@ -402,14 +454,30 @@ export function calculateFirePlan(input: {
       inflationRate,
       multiplier,
     );
-    const required = requiredCorpus({
+    const retirementIncome = incomeForYear(
+      input.incomeStreams,
+      retirementYear,
+      input.currentYear,
+      inflationRate,
+    );
+    const annualWithdrawalAtRetirement = Math.max(0, retirementExpenses.total - retirementIncome);
+    const calculationInput = {
       currentYear: input.currentYear,
       profile: input.profile,
       expenses: input.expenses,
       oneTimeCosts: input.oneTimeCosts,
       incomeStreams: input.incomeStreams,
       scenario,
-    });
+    };
+    const deterministicCorpus = requiredCorpus(calculationInput);
+    const returnRate = scenario.returnRateOverride ?? input.profile.expectedReturnRate;
+    const policyReserve = safeWithdrawalPolicyReserve(
+      calculationInput,
+      retirementYear,
+      inflationRate,
+      returnRate,
+    );
+    const required = Math.max(deterministicCorpus, policyReserve.policyCorpus);
     const deterministic = project({
       currentYear: input.currentYear,
       startingBalance: input.currentInvestableAssets,
@@ -428,7 +496,6 @@ export function calculateFirePlan(input: {
       incomeStreams: input.incomeStreams,
       scenario,
     });
-    const returnRate = scenario.returnRateOverride ?? input.profile.expectedReturnRate;
     const yearsUntilRetirement = Math.max(0, retirementYear - input.currentYear);
     return {
       id: scenario.id,
@@ -436,8 +503,16 @@ export function calculateFirePlan(input: {
       retirementYear,
       annualExpensesAtRetirement: retirementExpenses.total,
       annualEssentialAtRetirement: retirementExpenses.essential,
+      annualIncomeAtRetirement: retirementIncome,
+      annualWithdrawalAtRetirement,
+      deterministicCorpus,
+      recurringReserve: policyReserve.recurringReserve,
+      oneTimeReserve: policyReserve.oneTimeReserve,
+      policyCorpus: policyReserve.policyCorpus,
+      calculationBasis:
+        policyReserve.policyCorpus >= deterministicCorpus ? "safe_withdrawal" : "deterministic",
       requiredCorpus: required,
-      withdrawalRate: required === 0 ? 0 : retirementExpenses.total / required,
+      initialWithdrawalRate: required === 0 ? 0 : annualWithdrawalAtRetirement / required,
       progress: required === 0 ? 1 : input.currentInvestableAssets / required,
       gap: Math.max(0, required - input.currentInvestableAssets),
       coastNumberToday: required / (1 + returnRate) ** yearsUntilRetirement,

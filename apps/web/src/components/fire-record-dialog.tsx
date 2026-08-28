@@ -235,11 +235,12 @@ function RecordFields({
           <TextField
             values={values}
             name="safeWithdrawalRate"
-            label="Reference withdrawal rate (%)"
+            label="Safe withdrawal rate (%)"
             type="number"
             step="0.01"
             min="0.1"
             max="20"
+            description="Sets the minimum recurring reserve used by every scenario."
           />
           <TextField
             values={values}
