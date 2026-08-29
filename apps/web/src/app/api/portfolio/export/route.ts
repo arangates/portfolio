@@ -18,6 +18,7 @@ import {
 } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { getSalaryExport } from "@portfolio/api/salary-queries";
+import { getIncomeTaxExport } from "@portfolio/api/income-tax-queries";
 import { getZerodhaTradebookExport } from "@portfolio/api/zerodha-tradebook-queries";
 import { headers } from "next/headers";
 
@@ -45,6 +46,7 @@ export async function GET() {
     salary,
     household,
     fire,
+    incomeTax,
   ] = await Promise.all([
     getPortfolioPreference(userId),
     getLatestExchangeRates(userId),
@@ -64,6 +66,7 @@ export async function GET() {
     getSalaryExport(userId),
     getHouseholdExport(userId),
     getFireExport(userId),
+    getIncomeTaxExport(userId),
   ]);
 
   const body = JSON.stringify(
@@ -88,6 +91,7 @@ export async function GET() {
       salary,
       household,
       fire,
+      incomeTax,
     },
     null,
     2,

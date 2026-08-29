@@ -78,6 +78,13 @@
       "when": 1787261695261,
       "tag": "0010_nice_onslaught",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788016098855,
+      "tag": "0011_careless_mongoose",
+      "breakpoints": true
     }
   ]
 }

@@ -105,6 +105,12 @@ export const dashboardNavigation = [
         icon: HandCoinsIcon,
         keywords: "payslip income compensation",
       },
+      {
+        title: "Income tax",
+        url: "/dashboard/tax",
+        icon: ReceiptTextIcon,
+        keywords: "india itr tax return refund assessment year tds",
+      },
     ],
   },
   {

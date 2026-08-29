@@ -41,6 +41,14 @@ Global-equity valuations are based on the latest imported trade price and are ex
 - Reconciliation checks compare net-wage components and bank-transfer totals with the payable amount. A statement that does not reconcile is retained with a review warning rather than silently treated as verified.
 - Trend charts, annual totals, typical monthly take-home and missing-period detection make incomplete salary history visible.
 
+## Indian income-tax history
+
+- Bulk JSON import supports official ITR-2 and ITR-3 exports across assessment years, with exact-file duplicate detection and preserved revisions.
+- The application normalizes income heads, Chapter VI-A deductions, taxable income, liability, interest, advance tax, TDS, TCS, self-assessment tax, balance payable and refund due.
+- Every import is arithmetically reconciled. Inconsistent returns stay visible with a review warning instead of being presented as verified.
+- Annual charts show reported income composition and tax settlement history; gaps between imported assessment years are disclosed.
+- This is a history of values declared in the ITR JSON. Government acceptance still requires the corresponding processing intimation when independent confirmation matters.
+
 ## Household costs
 
 - **Monthly budget** separates gross expenses from government or other refunds, then shows the true household cost, annual run rate and per-adult share.
@@ -64,7 +72,7 @@ The model is designed for early-retirement horizons, not only a fixed 30-year re
 ## Data management
 
 - Import history with row counts, deduplication results and processing status.
-- Account-scoped JSON export containing portfolio, salary, household and FIRE records with relevant history.
+- Account-scoped JSON export containing portfolio, salary, income-tax, household and FIRE records with relevant history.
 - Archival that removes an item from current views without deleting its historical snapshots.
 - User preferences for base currency, locale and time zone.
 - Dated exchange rates for multi-currency aggregation.
