@@ -44,6 +44,16 @@ Validation reconciles taxes paid with advance tax, TDS, TCS and self-assessment 
 
 The source JSON is parsed in memory and discarded. The database retains normalized financial values, a SHA-256 fingerprint, parser version, limited filing metadata and only the last four acknowledgement digits in application responses.
 
+## Dutch final-assessment PDF imports
+
+Dutch income-tax imports use an account-owned fingerprint record plus a normalized assessment record. The parser reads the official final-assessment layout by page coordinates, supporting both an original `Aanslag` and a later `Vermindering`. It records accepted Box 1, Box 2 and Box 3 values, social-insurance premiums, credits, withholding, provisional refunds, interest and the final settlement.
+
+Each selected PDF is sent as an individual authenticated request. Exact duplicates are skipped. A different notice for the same taxpayer and tax year is retained as a revision, while charts and summary rows use the latest successfully imported revision. The importer can assign a notice to the account owner or to an existing, account-owned family member.
+
+Validation independently reconciles the component taxes and credits to the final tax amount, then reconciles withholding, provisional refunds, earlier balances and interest to the final refund or amount payable. "Verified" means the notice is internally consistent; records that fail either check remain visible as needing review.
+
+The source PDF and extracted text are discarded after parsing. The database retains normalized financial values, a SHA-256 fingerprint, parser version, assessment type and date, and only a masked suffix of the assessment reference. It does not retain the taxpayer's name, address or full reference number.
+
 ## Metals inventory
 
 Commodity holdings remain the authoritative valued totals. Physical inventory items and their dated snapshots provide the supporting breakdown; they are not added to net worth again. Unknown purity, weight, ownership or appraisal stays `null` rather than being silently treated as zero or estimated.
@@ -127,5 +137,6 @@ This prevents an application error from linking one user's snapshot or imported 
 - Zerodha tradebook cash flows use quantity multiplied by execution price. They exclude taxes, exit loads and charges because those fields are absent from the tradebook export.
 - Global-equity open cost and realized results use moving-average cost. Estimated market value uses the most recent imported trade price.
 - Income-tax analytics use the latest successful imported revision for each assessment year. Values represent the filed return; a processing intimation is the independent source for accepted amounts and final refund or demand.
+- Dutch income-tax analytics use the latest successful final-assessment revision for each taxpayer and tax year. These are accepted assessment values from Belastingdienst, rather than values copied from the submitted return.
 
 These calculations are informational. They are not a substitute for broker statements, audited accounting or tax records.

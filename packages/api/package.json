@@ -12,7 +12,8 @@
   "scripts": {
     "check-types": "tsc --noEmit",
     "test:fire": "tsx --test src/fire-engine.test.ts",
-    "test:tax": "tsx --test src/income-tax-parser.test.ts"
+    "test:tax": "tsx --test src/income-tax-parser.test.ts",
+    "test:nl-tax": "tsx --test src/netherlands-tax-parser.test.ts"
   },
   "dependencies": {
     "@portfolio/auth": "workspace:*",

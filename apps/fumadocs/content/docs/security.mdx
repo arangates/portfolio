@@ -20,6 +20,7 @@ Every portfolio, salary, household and FIRE table carries a required owner ID li
 - Bank records accept only a safe label and optional last four digits—never full account numbers or credentials.
 - Salary PDFs are parsed in memory. The database stores a file hash and normalized financial rows, but not the PDF, extracted text, home address, birth date, payroll number or bank account.
 - ITR JSON is parsed in memory and discarded. The application stores normalized tax totals, filing metadata and a fingerprint, but not the raw JSON, PAN, address, bank details or verification payload. UI queries expose only the last four acknowledgement digits.
+- Dutch final-assessment PDFs are parsed in memory and discarded. The application stores normalized accepted tax values, a fingerprint and a masked assessment-reference suffix, but not the PDF, extracted text, taxpayer name, address or full assessment reference.
 - Household imports omit service client numbers and login identifiers. Contracts retain only the provider, service, financial terms and non-sensitive operational notes needed for planning.
 - Metals imports store normalized inventory and an audit fingerprint, not the source CSV. Source remarks are treated as provenance and never interpreted as account ownership.
 - Broker files and personal workbook values are data, not source code, and must never be committed to Git.

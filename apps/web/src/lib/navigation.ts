@@ -111,6 +111,13 @@ export const dashboardNavigation = [
         icon: ReceiptTextIcon,
         keywords: "india itr tax return refund assessment year tds",
       },
+      {
+        title: "Dutch income tax",
+        shortTitle: "Dutch tax",
+        url: "/dashboard/tax/netherlands",
+        icon: LandmarkIcon,
+        keywords: "netherlands belastingdienst definitieve aanslag box 1 2 3 refund",
+      },
     ],
   },
   {

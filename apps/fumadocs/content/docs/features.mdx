@@ -49,6 +49,15 @@ Global-equity valuations are based on the latest imported trade price and are ex
 - Annual charts show reported income composition and tax settlement history; gaps between imported assessment years are disclosed.
 - This is a history of values declared in the ITR JSON. Government acceptance still requires the corresponding processing intimation when independent confirmation matters.
 
+## Dutch income-tax history
+
+- Bulk PDF import supports official **Definitieve aanslag inkomstenbelasting** and revised final-assessment notices across tax years. Exact files are deduplicated, while a genuinely changed notice for the same taxpayer and year remains an auditable revision.
+- An assessment can belong to the account owner or a configured family member. Every record and import remains scoped to the signed-in account.
+- The application normalizes accepted Box 1, Box 2 and Box 3 income and tax, social-insurance premiums, tax credits, payroll withholding, provisional refunds, tax interest and the final refund or amount payable.
+- Arithmetic reconciliation verifies both the final tax calculation and the assessment settlement. A notice that does not reconcile remains visible with a review warning.
+- Annual charts compare accepted income composition, final tax, withholding, credits and settlement. Current analytics use only the latest successful revision for each taxpayer and tax year.
+- The PDF is parsed in memory and discarded. Names, addresses and the full assessment reference are not retained.
+
 ## Household costs
 
 - **Monthly budget** separates gross expenses from government or other refunds, then shows the true household cost, annual run rate and per-adult share.

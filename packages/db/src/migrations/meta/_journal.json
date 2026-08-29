@@ -85,6 +85,13 @@
       "when": 1788016098855,
       "tag": "0011_careless_mongoose",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788024965854,
+      "tag": "0012_crazy_bloodstrike",
+      "breakpoints": true
     }
   ]
 }
