@@ -1,0 +1,386 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Selvam runtime architecture",
+    "locale": "en",
+    "output": "public/architecture/selvam-system-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/arangates/portfolio",
+      "revision": "43238d2e90ee30632724c0a213a3995748539ca2"
+    },
+    "viewBox": [1380, 650]
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [40, 40],
+    "cols": 7,
+    "gapX": 70,
+    "gapY": 38,
+    "cellW": 120,
+    "cellH": 70
+  },
+  "components": [
+    {
+      "id": "broker_files",
+      "type": "external",
+      "label": "Financial exports",
+      "sublabel": "XLSX · CSV · PDF",
+      "row": 0,
+      "col": 0,
+      "sources": [
+        {
+          "path": "apps/web/src/app/api/portfolio/imports/route.ts",
+          "line": 5,
+          "label": "Upload contract"
+        },
+        {
+          "path": "apps/web/src/app/api/salary/imports/route.ts",
+          "line": 1,
+          "label": "Payslip endpoint"
+        }
+      ]
+    },
+    {
+      "id": "docs_site",
+      "type": "frontend",
+      "label": "Fumadocs handbook",
+      "sublabel": "Engineering docs",
+      "row": 4,
+      "col": 1,
+      "sources": [
+        {
+          "path": "apps/fumadocs/content/docs/meta.json",
+          "line": 1,
+          "label": "Docs navigation"
+        },
+        {
+          "path": "apps/fumadocs/src/app/docs/[[...slug]]/page.tsx",
+          "line": 14,
+          "label": "Docs route"
+        }
+      ]
+    },
+    {
+      "id": "google_oauth",
+      "type": "external",
+      "label": "Google OAuth",
+      "sublabel": "Identity provider",
+      "row": 0,
+      "col": 2,
+      "sources": [
+        {
+          "path": "packages/auth/src/index.ts",
+          "line": 42,
+          "label": "Social provider"
+        }
+      ]
+    },
+    {
+      "id": "user_browser",
+      "type": "frontend",
+      "label": "User browser",
+      "sublabel": "Dashboard + charts",
+      "row": 2,
+      "col": 0,
+      "sources": [
+        {
+          "path": "apps/web/src/app/dashboard/page.tsx",
+          "line": 21,
+          "label": "Portfolio dashboard"
+        }
+      ]
+    },
+    {
+      "id": "next_app",
+      "type": "cloud",
+      "label": "Vercel / Next.js 16",
+      "sublabel": "App Router + APIs",
+      "tag": "HTTPS",
+      "row": 2,
+      "col": 1,
+      "sources": [
+        {
+          "path": "apps/web/src/app/dashboard/layout.tsx",
+          "line": 8,
+          "label": "Protected layout"
+        },
+        {
+          "path": "apps/web/src/app/api/portfolio/imports/route.ts",
+          "line": 8,
+          "label": "Import handler"
+        }
+      ]
+    },
+    {
+      "id": "better_auth",
+      "type": "security",
+      "label": "Better Auth",
+      "sublabel": "Sessions + limits",
+      "tag": "server session",
+      "row": 2,
+      "col": 2,
+      "sources": [
+        {
+          "path": "packages/auth/src/index.ts",
+          "line": 10,
+          "label": "Auth configuration"
+        },
+        {
+          "path": "apps/web/src/app/api/auth/[...all]/route.ts",
+          "line": 1,
+          "label": "Auth endpoint"
+        }
+      ]
+    },
+    {
+      "id": "domain_services",
+      "type": "backend",
+      "label": "@portfolio/api",
+      "sublabel": "Server services",
+      "row": 2,
+      "col": 3,
+      "sources": [
+        {
+          "path": "packages/api/src/portfolio-queries.ts",
+          "line": 1,
+          "label": "Read services"
+        },
+        {
+          "path": "packages/api/src/portfolio-mutations.ts",
+          "line": 1,
+          "label": "Write services"
+        }
+      ]
+    },
+    {
+      "id": "import_adapters",
+      "type": "backend",
+      "label": "Import adapters",
+      "sublabel": "Broker parsers",
+      "row": 2,
+      "col": 4,
+      "sources": [
+        {
+          "path": "packages/api/src/portfolio-import.ts",
+          "line": 828,
+          "label": "Broker dispatcher"
+        },
+        {
+          "path": "packages/api/src/salary-parser.ts",
+          "line": 1,
+          "label": "Payslip parser"
+        }
+      ]
+    },
+    {
+      "id": "drizzle_access",
+      "type": "backend",
+      "label": "Drizzle data access",
+      "sublabel": "Typed owner scope",
+      "row": 2,
+      "col": 5,
+      "sources": [
+        {
+          "path": "packages/db/src/index.ts",
+          "line": 1,
+          "label": "Database client"
+        },
+        {
+          "path": "packages/api/src/portfolio-queries.ts",
+          "line": 28,
+          "label": "Scoped query"
+        }
+      ]
+    },
+    {
+      "id": "neon_postgres",
+      "type": "database",
+      "label": "Neon Postgres",
+      "sublabel": "History + audit",
+      "tag": "source of truth",
+      "row": 2,
+      "col": 6,
+      "sources": [
+        {
+          "path": "packages/db/src/index.ts",
+          "line": 8,
+          "label": "Neon HTTP driver"
+        },
+        {
+          "path": "packages/db/src/schema/portfolio.ts",
+          "line": 19,
+          "label": "History schema"
+        }
+      ]
+    },
+    {
+      "id": "analytics_engines",
+      "type": "backend",
+      "label": "Analytics & FIRE",
+      "sublabel": "FX + simulations",
+      "row": 4,
+      "col": 4,
+      "sources": [
+        {
+          "path": "packages/api/src/fire-engine.ts",
+          "line": 439,
+          "label": "FIRE calculation"
+        },
+        {
+          "path": "packages/api/src/zerodha-tradebook-queries.ts",
+          "line": 1,
+          "label": "Tradebook analytics"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "External providers / user-controlled files",
+      "wraps": ["broker_files", "google_oauth"],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "Vercel application trust boundary",
+      "wraps": [
+        "docs_site",
+        "next_app",
+        "better_auth",
+        "domain_services",
+        "import_adapters",
+        "drizzle_access",
+        "analytics_engines"
+      ],
+      "pad": 28
+    },
+    {
+      "kind": "security-group",
+      "label": "Authenticated account boundary",
+      "wraps": ["better_auth", "domain_services", "import_adapters", "drizzle_access", "analytics_engines"],
+      "pad": 16
+    },
+    {
+      "kind": "region",
+      "label": "Managed data boundary",
+      "wraps": ["neon_postgres"],
+      "pad": 26
+    }
+  ],
+  "connections": [
+    {
+      "id": "files_to_browser",
+      "from": "broker_files",
+      "to": "user_browser",
+      "label": "selected locally",
+      "variant": "dashed",
+      "labelAt": [100, 194]
+    },
+    {
+      "id": "browser_to_docs",
+      "from": "user_browser",
+      "to": "docs_site",
+      "label": "docs",
+      "variant": "dashed"
+    },
+    {
+      "id": "browser_to_next",
+      "from": "user_browser",
+      "to": "next_app",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "next_to_auth",
+      "from": "next_app",
+      "to": "better_auth",
+      "label": "session",
+      "variant": "security"
+    },
+    {
+      "id": "google_to_auth",
+      "from": "google_oauth",
+      "to": "better_auth",
+      "label": "OAuth",
+      "variant": "security",
+      "labelAt": [480, 194]
+    },
+    {
+      "id": "auth_to_domain",
+      "from": "better_auth",
+      "to": "domain_services",
+      "label": "userId",
+      "variant": "security"
+    },
+    {
+      "id": "domain_to_imports",
+      "from": "domain_services",
+      "to": "import_adapters",
+      "label": "bytes",
+      "variant": "emphasis"
+    },
+    {
+      "id": "imports_to_drizzle",
+      "from": "import_adapters",
+      "to": "drizzle_access",
+      "label": "rows",
+      "variant": "emphasis"
+    },
+    {
+      "id": "drizzle_to_neon",
+      "from": "drizzle_access",
+      "to": "neon_postgres",
+      "label": "SQL",
+      "variant": "emphasis"
+    },
+    {
+      "id": "domain_to_analytics",
+      "from": "domain_services",
+      "to": "analytics_engines",
+      "label": "read inputs"
+    },
+    {
+      "id": "analytics_to_drizzle",
+      "from": "analytics_engines",
+      "to": "drizzle_access",
+      "label": "owned reads"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Trust and ownership",
+      "items": [
+        "Route handlers derive userId from the Better Auth server session; clients never choose an owner.",
+        "Financial rows carry user_id, and composite foreign keys keep child history with the same owner."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Historical ingestion",
+      "items": [
+        "SHA-256 file and row hashes make repeated broker uploads idempotent.",
+        "Raw imports, normalized ledger entries, and dated snapshots preserve provenance instead of overwriting history."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Calculation and presentation",
+      "items": [
+        "Server-only services aggregate account-scoped Postgres data and disclose missing FX conversions.",
+        "Pure FIRE and analytics logic produces derived series; the browser renders tables and ECharts visualizations."
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Operational boundary",
+      "items": [
+        "The Vercel runtime receives only the pooled DATABASE_URL and application secrets.",
+        "Direct database credentials stay outside the deployed application and are reserved for trusted migrations."
+      ]
+    }
+  ]
+}

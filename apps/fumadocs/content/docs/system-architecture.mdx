@@ -1,0 +1,51 @@
+---
+title: System architecture
+description: Runtime components, the primary import path, trust boundaries and repository evidence.
+full: true
+---
+
+Selvam is a server-backed financial application. The browser presents account-scoped data, while authentication, imports, calculations and database access remain inside the application boundary.
+
+<div className="not-prose my-6 overflow-hidden rounded-xl border bg-fd-card shadow-sm">
+  <iframe
+    src="/architecture/selvam-system-architecture.html"
+    title="Interactive Selvam runtime architecture"
+    className="h-[760px] w-full bg-fd-background"
+    loading="lazy"
+  />
+</div>
+
+[Open the interactive architecture diagram in a full page](/architecture/selvam-system-architecture.html)
+
+## Primary request and data path
+
+The emphasized path is the normal financial import flow:
+
+1. A signed-in user selects an XLSX, CSV or PDF export in the browser.
+2. A Next.js route handler verifies the Better Auth server session.
+3. The handler passes the session-derived `userId` and file bytes to `@portfolio/api`.
+4. A provider-specific adapter parses the file into normalized records.
+5. Drizzle writes owner-scoped rows, snapshots and import evidence to Neon Postgres.
+
+Reads take the reverse server-side route. Analytics and FIRE calculations operate on account-scoped database records, disclose missing FX conversions and return derived series for tables and ECharts visualizations.
+
+## Trust and ownership boundaries
+
+| Boundary                     | Responsibility                                                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| External providers and files | Google supplies identity; broker and payroll exports remain user-controlled until explicitly selected.                               |
+| Vercel application           | Next.js owns request routing, protected layouts and authenticated API endpoints.                                                     |
+| Authenticated account        | Better Auth establishes the session. Clients do not submit or choose the financial-data owner.                                       |
+| Managed data                 | Neon is the source of truth. Financial tables carry `user_id`, and composite foreign keys keep related history under the same owner. |
+
+The deployed web runtime receives the pooled `DATABASE_URL` and application secrets. Direct database credentials stay outside the application and are reserved for trusted migrations.
+
+## Historical integrity
+
+Imports are additive and auditable rather than destructive. SHA-256 file and row hashes make repeat uploads idempotent, while import batches, normalized ledger entries and dated snapshots preserve provenance and history. Raw imported content is retained with its batch so a normalized result can be traced back to the supplied source.
+
+## Repository evidence
+
+The diagram is generated from a typed Archify specification pinned to repository revision `43238d2e90ee30632724c0a213a3995748539ca2`. Each component exposes its supporting source references inside the interactive viewer. The evidence covers the web routes, Better Auth configuration, server-only API services, import parsers, Drizzle schema, Neon client and FIRE/analytics engines.
+
+For technology choices and trade-offs, see [Technical architecture](./architecture). For deployment secrets and database operations, see [Deployment and operations](./deployment).
