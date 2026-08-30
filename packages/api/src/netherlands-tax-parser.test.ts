@@ -83,3 +83,35 @@ test("marks an inconsistent settlement for review", () => {
   assert.equal(result.validationStatus, "needs_review");
   assert.match(result.validationIssues.join(" "), /refund or payable amount/i);
 });
+
+test("supports definitive headings and below-threshold payable relief", () => {
+  const result = parseNetherlandsTaxAssessmentLines(
+    verifiedLines
+      .map((line) =>
+        line === "Aanslag 2024"
+          ? "A RATHINAVELU Definitieve aanslag 2025"
+          : line === "2024"
+            ? "2025"
+            : line === "Te ontvangen of te verrekenen € 4.530"
+              ? "Te betalen € 0"
+              : line === "Loonheffing € 17.435"
+                ? "Loonheffing € 9.484"
+                : line === "Dividendbelasting en/of kansspelbelasting € 12"
+                  ? "Dividendbelasting en/of kansspelbelasting € 0"
+                  : line === "Eerder verleende voorlopige teruggave(n) af € 3.364"
+                    ? "Eerder verleende voorlopige teruggave(n) af € 0"
+                    : line,
+      )
+      .concat(
+        "Saldo te betalen € 69",
+        "Dit saldo is niet hoger dan € 69. Daarom is het bedrag van de",
+        "aanslag vastgesteld op € 0.",
+      ),
+    "definitieve_aanslag_inkomstenbelasting_2025.pdf",
+  );
+  assert.equal(result.taxYear, 2025);
+  assert.equal(result.outcomeType, "zero");
+  assert.equal(result.settlementAmount, 0);
+  assert.equal(result.collectionThresholdRelief, 69);
+  assert.equal(result.validationStatus, "verified");
+});

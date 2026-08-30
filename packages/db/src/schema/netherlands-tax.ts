@@ -69,6 +69,12 @@ export const netherlandsTaxAssessment = pgTable(
       precision: 30,
       scale: 2,
     }).notNull(),
+    collectionThresholdRelief: numeric("collection_threshold_relief", {
+      precision: 30,
+      scale: 2,
+    })
+      .default("0")
+      .notNull(),
     taxInterest: numeric("tax_interest", { precision: 30, scale: 2 }).notNull(),
     finalTaxAndSocialInsurance: numeric("final_tax_and_social_insurance", {
       precision: 30,

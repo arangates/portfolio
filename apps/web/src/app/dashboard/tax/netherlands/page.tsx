@@ -193,6 +193,11 @@ export default async function NetherlandsTaxPage() {
                         {row.outcomeType === "payable" ? "−" : "+"}
                         {formatCurrency(row.settlementAmount, "EUR")}
                       </span>
+                      {row.collectionThresholdRelief > 0 ? (
+                        <div className="text-xs text-muted-foreground">
+                          {formatCurrency(row.collectionThresholdRelief, "EUR")} below threshold
+                        </div>
+                      ) : null}
                     </TableCell>
                     <TableCell>
                       <Badge

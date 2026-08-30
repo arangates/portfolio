@@ -1,6 +1,6 @@
 import { extractTextItems, type StructuredTextItem } from "unpdf";
 
-export const NETHERLANDS_TAX_PARSER_VERSION = "belastingdienst-final-assessment-v1";
+export const NETHERLANDS_TAX_PARSER_VERSION = "belastingdienst-final-assessment-v2";
 
 export type ParsedNetherlandsTaxAssessment = {
   parserVersion: typeof NETHERLANDS_TAX_PARSER_VERSION;
@@ -14,6 +14,7 @@ export type ParsedNetherlandsTaxAssessment = {
   dividendGamingTaxWithheld: number;
   provisionalRefunds: number;
   priorBalanceAdjustment: number;
+  collectionThresholdRelief: number;
   taxInterest: number;
   finalTaxAndSocialInsurance: number;
   box1TaxableIncome: number;
@@ -143,7 +144,7 @@ export function parseNetherlandsTaxAssessmentLines(
   const text = lines.join("\n");
   if (
     !text.includes("Belastingdienst") ||
-    (!/Aanslag\s+\d{4}/.test(text) && !text.includes("Vermindering")) ||
+    (!/(?:Definitieve\s+)?aanslag\s+\d{4}/i.test(text) && !text.includes("Vermindering")) ||
     !text.includes("Aanslagnummer") ||
     !text.includes("Verzamelinkomen")
   ) {
@@ -151,8 +152,8 @@ export function parseNetherlandsTaxAssessmentLines(
       "This is not a supported Definitieve aanslag inkomstenbelasting from Belastingdienst.",
     );
   }
-  const yearText =
-    valueAfter(lines, "Jaar") ?? lines.find((line) => /^Aanslag \d{4}$/.test(line))?.slice(-4);
+  const headingYear = /(?:Definitieve\s+)?aanslag\s+(\d{4})/i.exec(text)?.[1];
+  const yearText = valueAfter(lines, "Jaar") ?? headingYear;
   const taxYear = Number(yearText);
   if (!Number.isInteger(taxYear) || taxYear < 2000 || taxYear > 2200) {
     throw new Error("Could not identify the Dutch tax year.");
@@ -162,13 +163,21 @@ export function parseNetherlandsTaxAssessmentLines(
 
   const refund = amountFor(lines, "Te ontvangen of te verrekenen");
   const payable = amountFor(lines, "Te betalen");
-  const outcomeType = refund !== null ? "refund" : payable !== null ? "payable" : "zero";
-  const settlementAmount = refund ?? payable ?? 0;
+  const outcomeType = refund && refund > 0 ? "refund" : payable && payable > 0 ? "payable" : "zero";
+  const settlementAmount =
+    outcomeType === "refund" ? (refund ?? 0) : outcomeType === "payable" ? (payable ?? 0) : 0;
   const payrollTaxWithheld = amountFor(lines, "Loonheffing") ?? 0;
   const dividendGamingTaxWithheld =
     amountFor(lines, "Dividendbelasting en/of kansspelbelasting") ?? 0;
   const provisionalRefunds = amountFor(lines, "Eerder verleende voorlopige teruggave(n)") ?? 0;
   const priorBalanceAdjustment = amountFor(lines, "Saldo (eerder)") ?? 0;
+  const calculatedPayableBeforeThreshold = amountFor(lines, "Saldo te betalen") ?? 0;
+  const collectionThresholdRelief =
+    outcomeType === "zero" &&
+    calculatedPayableBeforeThreshold > 0 &&
+    /aanslag\s+vastgesteld\s+op\s+€\s*0/i.test(text)
+      ? calculatedPayableBeforeThreshold
+      : 0;
   const interestLine = lines.find(
     (line) => line.startsWith("Belastingrente") && line.includes("€"),
   );
@@ -208,7 +217,8 @@ export function parseNetherlandsTaxAssessmentLines(
     finalTaxAndSocialInsurance -
     provisionalRefunds -
     priorBalanceAdjustment -
-    taxInterest;
+    taxInterest +
+    collectionThresholdRelief;
   const signedSettlement = outcomeType === "payable" ? -settlementAmount : settlementAmount;
   if (!approximately(signedSettlement, calculatedSettlement)) {
     issues.push("The refund or payable amount does not reconcile with the assessment calculation.");
@@ -234,6 +244,7 @@ export function parseNetherlandsTaxAssessmentLines(
     dividendGamingTaxWithheld: roundMoney(dividendGamingTaxWithheld),
     provisionalRefunds: roundMoney(provisionalRefunds),
     priorBalanceAdjustment: roundMoney(priorBalanceAdjustment),
+    collectionThresholdRelief: roundMoney(collectionThresholdRelief),
     taxInterest: roundMoney(taxInterest),
     finalTaxAndSocialInsurance: roundMoney(finalTaxAndSocialInsurance),
     box1TaxableIncome: roundMoney(box1TaxableIncome),

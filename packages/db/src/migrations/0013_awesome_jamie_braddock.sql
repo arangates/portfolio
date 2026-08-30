@@ -1,0 +1,1 @@
+ALTER TABLE "netherlands_tax_assessment" ADD COLUMN "collection_threshold_relief" numeric(30, 2) DEFAULT '0' NOT NULL;

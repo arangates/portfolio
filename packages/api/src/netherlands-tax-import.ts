@@ -188,6 +188,7 @@ export async function processNetherlandsTaxImport(input: {
     dividendGamingTaxWithheld: parsed.dividendGamingTaxWithheld.toString(),
     provisionalRefunds: parsed.provisionalRefunds.toString(),
     priorBalanceAdjustment: parsed.priorBalanceAdjustment.toString(),
+    collectionThresholdRelief: parsed.collectionThresholdRelief.toString(),
     taxInterest: parsed.taxInterest.toString(),
     finalTaxAndSocialInsurance: parsed.finalTaxAndSocialInsurance.toString(),
     box1TaxableIncome: parsed.box1TaxableIncome.toString(),
