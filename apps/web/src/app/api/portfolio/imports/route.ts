@@ -3,6 +3,8 @@ import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
 
+import { archiveImportedFile, type ArchiveSourceType } from "@/lib/google-drive-archive";
+
 const kindSchema = z.enum(["zerodha_holdings", "zerodha_tradebook", "degiro"]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -43,18 +45,35 @@ export async function POST(request: Request) {
       }
     }
 
+    const importFiles = await Promise.all(
+      files.map(async (file) => ({
+        name: file.name.replace(/^.*[\\/]/, "").slice(0, 255),
+        type: file.type,
+        bytes: new Uint8Array(await file.arrayBuffer()),
+      })),
+    );
     const results = await processPortfolioImport({
       userId: session.user.id,
       kind,
-      files: await Promise.all(
-        files.map(async (file) => ({
-          name: file.name.replace(/^.*[\\/]/, "").slice(0, 255),
-          type: file.type,
-          bytes: new Uint8Array(await file.arrayBuffer()),
-        })),
-      ),
+      // Some parsers transfer or mutate buffers. Keep the exact upload bytes for Drive.
+      files: importFiles.map((file) => ({ ...file, bytes: file.bytes.slice() })),
     });
-    return Response.json({ results });
+    const resultsWithArchive = await Promise.all(
+      results.map(async (result, index) => {
+        const file = importFiles[index];
+        if (!file) return { ...result, archive: { status: "failed" as const } };
+        const archive = await archiveImportedFile({
+          userId: session.user.id,
+          sourceType: result.kind as ArchiveSourceType,
+          sourceId: result.batchId,
+          fileName: file.name,
+          mimeType: file.type,
+          bytes: file.bytes,
+        });
+        return { ...result, archive };
+      }),
+    );
+    return Response.json({ results: resultsWithArchive });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Import failed";
     return Response.json({ error: message }, { status: 400 });

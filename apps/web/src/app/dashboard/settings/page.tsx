@@ -1,5 +1,7 @@
 import { PageHeader } from "@/components/page-header";
 import { SettingsTabs } from "@/components/settings-tabs";
+import { GoogleDriveArchiveCard } from "@/components/google-drive-archive-card";
+import { getDriveArchiveState } from "@/lib/google-drive-archive";
 import { FireSettingsCard } from "@/components/fire-settings-card";
 import {
   AccountForm,
@@ -23,14 +25,34 @@ import {
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
-  const [preference, rates, fireSettings] = await Promise.all([
+  const [preference, rates, fireSettings, driveArchive] = await Promise.all([
     getPortfolioPreference(session.user.id),
     getLatestExchangeRates(session.user.id),
     getFireSettings(session.user.id),
+    getDriveArchiveState(session.user.id),
   ]);
+  const requestedTab = (await searchParams).tab;
+  const defaultTab =
+    requestedTab === "portfolio" || requestedTab === "planning" || requestedTab === "security"
+      ? requestedTab
+      : "account";
+  const driveSummary = {
+    available: driveArchive.available,
+    connected: driveArchive.connected,
+    refreshReady: driveArchive.refreshReady,
+    enabled: driveArchive.enabled,
+    rootFolderReady: driveArchive.rootFolderReady,
+    documentCount: driveArchive.documentCount,
+    storedCount: driveArchive.storedCount,
+    failedCount: driveArchive.failedCount,
+  };
   return (
     <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
       <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
@@ -39,6 +61,7 @@ export default async function SettingsPage() {
           description="Manage your account, portfolio defaults, family planning and data security."
         />
         <SettingsTabs
+          defaultValue={defaultTab}
           account={<AccountForm name={session.user.name} email={session.user.email} />}
           portfolio={
             <>
@@ -82,6 +105,7 @@ export default async function SettingsPage() {
           }
           dataAndSecurity={
             <>
+              <GoogleDriveArchiveCard summary={driveSummary} />
               <DataControls />
               <SecurityForm />
               <div className="xl:col-span-2">

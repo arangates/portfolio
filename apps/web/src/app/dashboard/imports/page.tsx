@@ -35,7 +35,7 @@ export default async function ImportsPage() {
       <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title="Import history"
-          description="Every source file is retained with a SHA-256 fingerprint, raw rows, import counts, and completion status. Re-uploading the same file never duplicates portfolio history."
+          description="Every import retains a SHA-256 fingerprint, normalized raw rows, counts, and completion status. Exact source files can be kept in your private Google Drive archive."
           action={
             <>
               <UploadDialog
@@ -78,7 +78,7 @@ export default async function ImportsPage() {
               }
             />
           ) : (
-            <TableCard title="Recent imports" description="Latest 20 archived source files.">
+            <TableCard title="Recent imports" description="Latest 20 normalized import batches.">
               <Table>
                 <TableHeader>
                   <TableRow>

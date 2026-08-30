@@ -2,6 +2,8 @@ import { processIncomeTaxImport } from "@portfolio/api/income-tax-import";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 
+import { archiveImportedFile } from "@/lib/google-drive-archive";
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
@@ -27,15 +29,25 @@ export async function POST(request: Request) {
       );
     }
 
+    const name = file.name.replace(/^.*[\\/]/, "").slice(0, 255);
+    const bytes = new Uint8Array(await file.arrayBuffer());
     const result = await processIncomeTaxImport({
       userId: session.user.id,
       file: {
-        name: file.name.replace(/^.*[\\/]/, "").slice(0, 255),
+        name,
         type: file.type,
-        bytes: new Uint8Array(await file.arrayBuffer()),
+        bytes: bytes.slice(),
       },
     });
-    return Response.json({ result });
+    const archive = await archiveImportedFile({
+      userId: session.user.id,
+      sourceType: "india_income_tax",
+      sourceId: result.importId,
+      fileName: name,
+      mimeType: file.type,
+      bytes,
+    });
+    return Response.json({ result: { ...result, archive } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "ITR import failed";
     return Response.json({ error: message }, { status: 400 });

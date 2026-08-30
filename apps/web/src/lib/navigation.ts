@@ -14,6 +14,7 @@ import {
   ReceiptTextIcon,
   SettingsIcon,
   TrendingUpIcon,
+  FilesIcon,
 } from "lucide-react";
 
 export const dashboardNavigation = [
@@ -145,6 +146,12 @@ export const dashboardNavigation = [
         url: "/dashboard/imports",
         icon: DatabaseIcon,
         keywords: "upload files batches",
+      },
+      {
+        title: "Source documents",
+        url: "/dashboard/documents",
+        icon: FilesIcon,
+        keywords: "files archive google drive download originals source documents",
       },
       {
         title: "Settings & data",

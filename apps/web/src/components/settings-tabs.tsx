@@ -8,14 +8,16 @@ export function SettingsTabs({
   portfolio,
   planning,
   dataAndSecurity,
+  defaultValue = "account",
 }: {
   account: React.ReactNode;
   portfolio: React.ReactNode;
   planning: React.ReactNode;
   dataAndSecurity: React.ReactNode;
+  defaultValue?: "account" | "portfolio" | "planning" | "security";
 }) {
   return (
-    <Tabs defaultValue="account" className="min-w-0 gap-4 px-4 lg:px-6">
+    <Tabs defaultValue={defaultValue} className="min-w-0 gap-4 px-4 lg:px-6">
       <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 group-data-horizontal/tabs:h-auto sm:inline-grid sm:w-auto sm:grid-cols-4">
         <TabsTrigger value="account" className="h-9 gap-2 px-3">
           <UserRoundIcon className="size-4" />

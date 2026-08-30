@@ -1,5 +1,6 @@
 "use client";
 
+import type { DriveArchiveStatus } from "@/lib/drive-archive-shared";
 import { Button } from "@portfolio/ui/components/button";
 import {
   Dialog,
@@ -58,6 +59,7 @@ export function UploadDialog({
         duplicate: boolean;
         insertedRows: number;
         rowCount: number;
+        archive?: { status: DriveArchiveStatus };
       }> = [];
       const groups =
         kind === "zerodha_tradebook" ? selectedFiles.map((file) => [file]) : [selectedFiles];
@@ -69,7 +71,12 @@ export function UploadDialog({
         const response = await fetch("/api/portfolio/imports", { method: "POST", body });
         const result = (await response.json()) as {
           error?: string;
-          results?: Array<{ duplicate: boolean; insertedRows: number; rowCount: number }>;
+          results?: Array<{
+            duplicate: boolean;
+            insertedRows: number;
+            rowCount: number;
+            archive?: { status: DriveArchiveStatus };
+          }>;
         };
         if (!response.ok) throw new Error(result.error ?? `Import failed for ${group[0]?.name}`);
         allResults.push(...(result.results ?? []));
@@ -77,13 +84,23 @@ export function UploadDialog({
       }
       const inserted = allResults.reduce((total, item) => total + item.insertedRows, 0);
       const duplicateFiles = allResults.filter((item) => item.duplicate).length;
+      const driveStored = allResults.filter(
+        (item) => item.archive?.status === "stored" || item.archive?.status === "already_stored",
+      ).length;
+      const driveFailed = allResults.filter((item) => item.archive?.status === "failed").length;
+      const driveNote =
+        driveStored > 0
+          ? ` ${driveStored} source file${driveStored === 1 ? " is" : "s are"} safely stored in Google Drive.${driveFailed > 0 ? ` ${driveFailed} archive needs attention.` : ""}`
+          : driveFailed > 0
+            ? " The financial import succeeded, but the Drive archive needs attention."
+            : " Connect Google Drive in Settings to retain exact source files.";
       const duplicate = allResults.length > 0 && duplicateFiles === allResults.length;
       setMessage(
         duplicate
-          ? "All selected trade data was imported earlier. No history was duplicated."
+          ? `All selected trade data was imported earlier. No history was duplicated.${driveNote}`
           : kind === "zerodha_tradebook"
-            ? `${inserted} unique trades were added from ${allResults.length} file${allResults.length === 1 ? "" : "s"}.${duplicateFiles > 0 ? ` ${duplicateFiles} file${duplicateFiles === 1 ? " was" : "s were"} fully overlapping.` : ""}`
-            : `${inserted} new historical rows were added. The source files and raw rows were archived.`,
+            ? `${inserted} unique trades were added from ${allResults.length} file${allResults.length === 1 ? "" : "s"}.${duplicateFiles > 0 ? ` ${duplicateFiles} file${duplicateFiles === 1 ? " was" : "s were"} fully overlapping.` : ""}${driveNote}`
+            : `${inserted} new historical rows were added.${driveNote}`,
       );
       router.refresh();
     } catch (caught) {

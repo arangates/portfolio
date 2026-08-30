@@ -1,5 +1,6 @@
 "use client";
 
+import { driveArchiveResultText, type DriveArchiveStatus } from "@/lib/drive-archive-shared";
 import { Button } from "@portfolio/ui/components/button";
 import {
   Dialog,
@@ -45,6 +46,7 @@ async function uploadFile(file: File): Promise<UploadResult> {
         assessmentYearLabel: string;
         formType: string;
         validationStatus: string;
+        archive?: { status: DriveArchiveStatus };
       };
     };
     if (!response.ok || !payload.result) throw new Error(payload.error ?? "Import failed");
@@ -52,9 +54,11 @@ async function uploadFile(file: File): Promise<UploadResult> {
     return {
       fileName: file.name,
       status: payload.result.duplicate ? "duplicate" : "imported",
-      message: payload.result.duplicate
-        ? `${label} was already imported.`
-        : `${label} imported and ${payload.result.validationStatus.replace("_", " ")}.`,
+      message:
+        (payload.result.duplicate
+          ? `${label} was already imported.`
+          : `${label} imported and ${payload.result.validationStatus.replace("_", " ")}.`) +
+        driveArchiveResultText(payload.result.archive?.status),
     };
   } catch (error) {
     return {
@@ -139,8 +143,8 @@ export function IncomeTaxUploadDialog() {
                 aria-invalid={Boolean(error)}
               />
               <FieldDescription>
-                Maximum 20 files and 10 MB each. Exact duplicates are skipped. Raw JSON is not
-                retained.
+                Maximum 20 files and 10 MB each. Exact duplicates are skipped. When Drive archive is
+                enabled, the exact JSON stays in your private Selvam folder.
               </FieldDescription>
               {error ? <FieldError>{error}</FieldError> : null}
             </Field>

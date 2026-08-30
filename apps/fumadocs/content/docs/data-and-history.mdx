@@ -16,6 +16,8 @@ Editing an item updates appropriate identity metadata and inserts a new snapshot
 
 Each import creates an account-owned batch containing the source, file hash, statement date, status and row statistics. Raw source rows and normalized records are linked to that batch.
 
+New browser imports do not store the original broker workbook or CSV in Postgres. When the optional Google Drive archive is active, the exact upload is stored privately in the user's `Selvam` Drive folder and Postgres retains only owner-scoped Drive metadata, checksum and import linkage. Legacy import rows may still contain the historical source payload created before this boundary changed.
+
 ### Zerodha
 
 A holdings workbook becomes a complete dated position snapshot. Re-uploading the identical file returns the existing batch because uniqueness is enforced by user, import type and file hash.
@@ -34,6 +36,8 @@ Salary imports use a separate account-owned model: a file fingerprint records pr
 
 The browser queues each selected PDF as an individual authenticated request. This allows a 50-file selection without creating one oversized Vercel request, and makes partial failures retryable without reprocessing successful files.
 
+The PDF is parsed from an isolated byte copy. If Drive archive is active, the untouched original is uploaded only after the financial import succeeds; an archive failure is reported separately and never rolls back normalized salary history.
+
 ## Income-tax JSON imports
 
 Indian ITR imports use an account-owned fingerprint record plus a normalized return record. The parser supports ITR-2 and ITR-3 schemas across the imported years, including older nested representations of business income, capital gains, other-source income and Chapter VI-A deductions.
@@ -42,7 +46,7 @@ The browser sends each selected JSON as an individual authenticated request. Exa
 
 Validation reconciles taxes paid with advance tax, TDS, TCS and self-assessment tax; aggregate liability with net liability plus interest; and mutually exclusive refund and balance-payable outcomes. "Verified" means the imported JSON is internally consistent, not that the return was accepted by the tax authority.
 
-The source JSON is parsed in memory and discarded. The database retains normalized financial values, a SHA-256 fingerprint, parser version, limited filing metadata and only the last four acknowledgement digits in application responses.
+The source JSON is parsed in memory. Postgres retains normalized financial values, a SHA-256 fingerprint, parser version, limited filing metadata and only the last four acknowledgement digits in application responses. If Drive archive is active, the untouched JSON is retained in the user's private Drive instead of the application database.
 
 ## Dutch final-assessment PDF imports
 
@@ -52,7 +56,13 @@ Each selected PDF is sent as an individual authenticated request. Exact duplicat
 
 Validation independently reconciles the component taxes and credits to the final tax amount, then reconciles withholding, provisional refunds, earlier balances, interest and any explicitly documented collection-threshold relief to the final refund or amount payable. "Verified" means the notice is internally consistent; records that fail either check remain visible as needing review.
 
-The source PDF and extracted text are discarded after parsing. The database retains normalized financial values, a SHA-256 fingerprint, parser version, assessment type and date, and only a masked suffix of the assessment reference. It does not retain the taxpayer's name, address or full reference number.
+The source PDF and extracted text are not stored in Postgres. The database retains normalized financial values, a SHA-256 fingerprint, parser version, assessment type and date, and only a masked suffix of the assessment reference. If Drive archive is active, the untouched PDF is retained in the user's private Drive; Selvam still does not extract or index the taxpayer's name, address or full reference number.
+
+## Google Drive source documents
+
+Drive archiving is optional and non-blocking. A successful financial import remains successful when Drive is paused, disconnected or temporarily unavailable. The response states whether the source was stored, already stored, skipped or needs attention; re-importing the same source retries a failed archive without duplicating financial history.
+
+Files are organized under a visible `Selvam` folder by source type. Exact-file SHA-256 fingerprints prevent duplicate uploads, and every document row is linked to both the authenticated owner and its normalized import. The **Source documents** page provides owner-checked Open and Download actions. Disabling archiving stops future uploads but does not delete files from the user's Drive.
 
 ## Metals inventory
 

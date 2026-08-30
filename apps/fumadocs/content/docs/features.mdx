@@ -81,7 +81,8 @@ The model is designed for early-retirement horizons, not only a fixed 30-year re
 ## Data management
 
 - Import history with row counts, deduplication results and processing status.
-- Account-scoped JSON export containing portfolio, salary, income-tax, household and FIRE records with relevant history.
+- Optional Google Drive source archive with incremental permission, private source folders, checksum deduplication, separate failure status, and authenticated Open/Download actions.
+- Account-scoped JSON export containing portfolio, salary, income-tax, household, FIRE and source-document archive metadata with relevant history. OAuth tokens and Google Drive file contents are never included.
 - Archival that removes an item from current views without deleting its historical snapshots.
 - User preferences for base currency, locale and time zone.
 - Dated exchange rates for multi-currency aggregation.

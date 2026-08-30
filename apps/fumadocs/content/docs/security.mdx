@@ -28,6 +28,8 @@ Every portfolio, salary, household and FIRE table carries a required owner ID li
 - Family names, dates of birth, income, expenses and retirement assumptions are private account data. They are stored only in Postgres and never embedded as product defaults or source code.
 - Production secrets live in Vercel environment variables; local secrets live in ignored `.env` files.
 - Google OAuth client secrets are server-only and never exposed through `NEXT_PUBLIC_` variables.
+- Google Drive uses the incremental non-sensitive `drive.file` scope, not broad Drive access. Files remain private in the user's own account, and Better Auth encrypts Google access and refresh tokens at rest.
+- Original browser-imported source files are never returned from Neon. Drive downloads are authenticated, owner-checked, non-cacheable and streamed through a response with content sniffing disabled.
 - The web runtime uses Neon's pooled `DATABASE_URL`. The direct connection credential is reserved for trusted migration execution and is not configured in the deployed application.
 - Private exports use authenticated, non-cacheable responses.
 

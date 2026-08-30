@@ -42,7 +42,7 @@ The deployed web runtime receives the pooled `DATABASE_URL` and application secr
 
 ## Historical integrity
 
-Imports are additive and auditable rather than destructive. SHA-256 file and row hashes make repeat uploads idempotent, while import batches, normalized ledger entries and dated snapshots preserve provenance and history. Raw imported content is retained with its batch so a normalized result can be traced back to the supplied source.
+Imports are additive and auditable rather than destructive. SHA-256 file and row hashes make repeat uploads idempotent, while import batches, normalized ledger entries and dated snapshots preserve provenance and history. New original source files can be retained in the user's optional private Google Drive archive; Postgres keeps the owner-scoped checksum, Drive metadata and import link rather than a second raw copy.
 
 ## Repository evidence
 

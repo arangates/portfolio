@@ -52,7 +52,9 @@ export const importBatch = pgTable(
     kind: text("kind").notNull(),
     fileName: text("file_name").notNull(),
     fileHash: text("file_hash").notNull(),
-    fileContentsBase64: text("file_contents_base64").notNull(),
+    // Legacy imports may retain this value. New browser imports archive the original in the
+    // user's Google Drive and keep only normalized rows plus provenance in Postgres.
+    fileContentsBase64: text("file_contents_base64"),
     statementDate: date("statement_date"),
     status: text("status").default("processing").notNull(),
     rowCount: integer("row_count").default(0).notNull(),

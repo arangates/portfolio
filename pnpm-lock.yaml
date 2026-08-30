@@ -200,6 +200,9 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@neondatabase/serverless@1.1.0)(kysely@0.29.5)
       lucide-react:
         specifier: 'catalog:'
         version: 1.31.0(react@19.2.8)

@@ -212,7 +212,6 @@ async function createBatch(
       kind,
       fileName: file.name,
       fileHash,
-      fileContentsBase64: Buffer.from(file.bytes).toString("base64"),
     })
     .returning();
   if (!created) throw new Error("Could not create import batch");

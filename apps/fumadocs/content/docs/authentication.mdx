@@ -28,6 +28,12 @@ Copy the generated values to local `.env` or Vercel environment variables as `GO
 
 If the Google consent screen is in **Testing**, add each permitted Google account as a test user. Production access requires a published consent screen configured for the intended audience.
 
+## Google Drive archive permission
+
+The source-document archive uses the same Google Cloud project and OAuth client. Enable the **Google Drive API** in that project; no additional redirect URI is required. A signed-in user connects Drive separately from **Settings → Data & security**, so ordinary Google sign-in does not request file access.
+
+Selvam requests only `drive.file`, a non-sensitive incremental scope that lets it manage files and folders it creates. It does not request access to browse or modify the user's other Drive content. OAuth access and refresh tokens are encrypted in Postgres by Better Auth, and offline access keeps the archive working after a short-lived access token expires.
+
 ## Persistent sessions
 
 Sessions are stored in Postgres and use a persistent secure cookie in production. The session lifetime is one year and rolls forward after a day of activity. This keeps an active user signed in across tabs, browser restarts and deployments until they explicitly sign out.

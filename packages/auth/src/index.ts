@@ -40,11 +40,18 @@ export function createAuth() {
     user: {
       deleteUser: { enabled: true },
     },
+    account: {
+      // Better Auth can read existing plaintext tokens and encrypts every new token write.
+      encryptOAuthTokens: true,
+    },
     socialProviders: googleAuthEnabled
       ? {
           google: {
             clientId: env.GOOGLE_CLIENT_ID!,
             clientSecret: env.GOOGLE_CLIENT_SECRET!,
+            // Drive access is requested incrementally in Settings. Offline access lets the
+            // archive continue after Google's short-lived access token expires.
+            accessType: "offline",
           },
         }
       : {},

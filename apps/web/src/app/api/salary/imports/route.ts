@@ -2,6 +2,8 @@ import { processSalaryImport } from "@portfolio/api/salary-import";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 
+import { archiveImportedFile } from "@/lib/google-drive-archive";
+
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
@@ -25,15 +27,25 @@ export async function POST(request: Request) {
       return Response.json({ error: "Only PDF payslips are supported" }, { status: 415 });
     }
 
+    const name = file.name.replace(/^.*[\\/]/, "").slice(0, 255);
+    const bytes = new Uint8Array(await file.arrayBuffer());
     const result = await processSalaryImport({
       userId: session.user.id,
       file: {
-        name: file.name.replace(/^.*[\\/]/, "").slice(0, 255),
+        name,
         type: file.type,
-        bytes: new Uint8Array(await file.arrayBuffer()),
+        bytes: bytes.slice(),
       },
     });
-    return Response.json({ result });
+    const archive = await archiveImportedFile({
+      userId: session.user.id,
+      sourceType: "salary_payslip",
+      sourceId: result.importId,
+      fileName: name,
+      mimeType: file.type,
+      bytes,
+    });
+    return Response.json({ result: { ...result, archive } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Payslip import failed";
     return Response.json({ error: message }, { status: 400 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { driveArchiveResultText, type DriveArchiveStatus } from "@/lib/drive-archive-shared";
 import { Button } from "@portfolio/ui/components/button";
 import {
   Dialog,
@@ -41,7 +42,12 @@ async function uploadFile(file: File): Promise<UploadResult> {
     const response = await fetch("/api/salary/imports", { method: "POST", body });
     const payload = (await response.json()) as {
       error?: string;
-      result?: { duplicate: boolean; periodLabel: string; validationStatus: string };
+      result?: {
+        duplicate: boolean;
+        periodLabel: string;
+        validationStatus: string;
+        archive?: { status: DriveArchiveStatus };
+      };
     };
     if (!response.ok || !payload.result) {
       throw new Error(payload.error ?? "Import failed");
@@ -49,9 +55,11 @@ async function uploadFile(file: File): Promise<UploadResult> {
     return {
       fileName: file.name,
       status: payload.result.duplicate ? "duplicate" : "imported",
-      message: payload.result.duplicate
-        ? `${payload.result.periodLabel} was already imported.`
-        : `${payload.result.periodLabel} imported and ${payload.result.validationStatus.replace("_", " ")}.`,
+      message:
+        (payload.result.duplicate
+          ? `${payload.result.periodLabel} was already imported.`
+          : `${payload.result.periodLabel} imported and ${payload.result.validationStatus.replace("_", " ")}.`) +
+        driveArchiveResultText(payload.result.archive?.status),
     };
   } catch (error) {
     return {
