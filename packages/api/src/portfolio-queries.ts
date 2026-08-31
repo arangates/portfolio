@@ -89,6 +89,7 @@ export async function getLatestZerodhaPortfolio(userId: string) {
 
   const rows = await db
     .select({
+      instrumentId: instrument.id,
       name: instrument.name,
       isin: instrument.isin,
       category: instrument.assetClass,
@@ -111,6 +112,7 @@ export async function getLatestZerodhaPortfolio(userId: string) {
     statementDate: latestImport.statementDate,
     createdAt: latestImport.createdAt,
     holdings: rows.map((row) => ({
+      instrumentId: row.instrumentId,
       name: row.name,
       isin: row.isin,
       category: row.category,

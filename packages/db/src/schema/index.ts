@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./capital-deployment";
 export * from "./document-archive";
 export * from "./fire";
 export * from "./household";

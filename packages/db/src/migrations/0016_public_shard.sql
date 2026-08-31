@@ -1,0 +1,1 @@
+ALTER TABLE "capital_deployment_policy" ADD COLUMN "include_bank_cash" boolean DEFAULT false NOT NULL;

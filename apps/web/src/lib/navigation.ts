@@ -12,6 +12,7 @@ import {
   LandmarkIcon,
   LayoutDashboardIcon,
   ReceiptTextIcon,
+  RouteIcon,
   SettingsIcon,
   TrendingUpIcon,
   FilesIcon,
@@ -125,6 +126,13 @@ export const dashboardNavigation = [
     label: "Planning",
     items: [
       {
+        title: "Capital deployment",
+        shortTitle: "Deployment",
+        url: "/dashboard/deployment",
+        icon: RouteIcon,
+        keywords: "capital deployment allocation targets drift stp liquidity action plan",
+      },
+      {
         title: "Household",
         url: "/dashboard/household",
         icon: HouseIcon,
@@ -169,6 +177,29 @@ export const dashboardPages = dashboardNavigation.flatMap((group) =>
 );
 
 export const dashboardChartNavigation = [
+  {
+    label: "Capital deployment charts",
+    items: [
+      {
+        title: "Current allocation versus policy",
+        url: "/dashboard/deployment#deployment-allocation",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "target allocation drift policy investment buckets",
+      },
+      {
+        title: "Purchase and redemption flow",
+        url: "/dashboard/deployment#capital-flow-history",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "investment flow purchases redemptions contributions",
+      },
+      {
+        title: "Fixed-deposit liquidity ladder",
+        url: "/dashboard/deployment#scheduled-liquidity",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "fd maturities scheduled liquidity ladder",
+      },
+    ],
+  },
   {
     label: "Analytics charts",
     items: [

@@ -64,6 +64,12 @@ Drive archiving is optional and non-blocking. A successful financial import rema
 
 Files are organized under a visible `Selvam` folder by source type. Exact-file SHA-256 fingerprints prevent duplicate uploads, and every document row is linked to both the authenticated owner and its normalized import. The **Source documents** page provides owner-checked Open and Download actions. Disabling archiving stops future uploads but does not delete files from the user's Drive.
 
+## Capital deployment policy
+
+Allocation targets, acceptable ranges, the selected staging instrument and deployment cadence are account-owned instructions. Current allocation and action amounts are recomputed from the latest imported positions, broker cash, bank snapshots, fixed deposits and stored FX rates; recommendations are not persisted as facts.
+
+The engine keeps four evidence grades distinct: exact source values, independently reconciled values, deterministic derivations and inferred staging-transfer candidates. A same-window redemption and purchase can suggest an STP, but remains inferred until independently confirmed. Property and reserved physical assets are excluded from the deployable investment universe.
+
 ## Metals inventory
 
 Commodity holdings remain the authoritative valued totals. Physical inventory items and their dated snapshots provide the supporting breakdown; they are not added to net worth again. Unknown purity, weight, ownership or appraisal stays `null` rather than being silently treated as zero or estimated.
