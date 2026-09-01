@@ -1,0 +1,37 @@
+---
+title: Verified financial twin
+description: How Selvam connects verified household and investment evidence into decisions without double counting wealth.
+---
+
+The Verified Financial Twin is Selvam's decision layer. It connects recent salary, recurring household cost, the capital-deployment policy, fixed-deposit liquidity, verified returns, accepted tax history and FIRE assumptions while preserving the confidence boundary of every source.
+
+## Core calculation
+
+Typical take-home is the median of the latest six imported payslips. This is intentionally resistant to a single bonus or supplemental-pay month. Observed owner-only surplus is:
+
+```text
+typical imported net pay − current recurring household cost
+```
+
+Current household cost is gross recurring expense minus recurring refunds. One-time purchases remain outside this calculation. The supported monthly deployment is the lower of observed surplus and the user's saved deployment amount. If either income or household evidence is missing, the engine withholds the result rather than estimating it.
+
+## Accounting boundary
+
+Existing broker cash, an ultra-short-duration staging fund and fixed-deposit maturity proceeds are already owned assets. Moving them changes allocation and liquidity; it does not create income, increase net worth or reduce the current FIRE corpus gap.
+
+Only externally funded savings become new FIRE contributions. The twin therefore keeps these concepts separate:
+
+- **Observed surplus:** capacity supported by imported pay and the current budget.
+- **Available capital:** existing wealth that can be reallocated.
+- **Scheduled liquidity:** an owned fixed deposit expected to become cash.
+- **Verified return:** performance supported by broker cash flows and reconciliation.
+
+## FIRE sensitivity
+
+The saved FIRE plan remains authoritative. The twin runs a separate owner-only sensitivity with observed annual surplus as the contribution. It never overwrites the user's assumptions and never treats reallocation as a contribution. Partner income that is not present in imported salary evidence must be confirmed separately.
+
+## Decision and trust model
+
+Actions are ordered with data-integrity blockers first, followed by tax-payable records, maturity checks, allocation gaps and contribution opportunities. Each recommendation is labelled **Exact source**, **Reconciled**, **Derived** or **Limited**.
+
+The readiness count reports how many required inputs exist. It is not a probability, financial-advice score or prediction of future returns. The engine does not place trades, renew deposits, mark taxes paid or mutate FIRE assumptions.

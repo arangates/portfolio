@@ -1,5 +1,6 @@
 import {
   BanknoteIcon,
+  BrainCircuitIcon,
   Building2Icon,
   ChartNoAxesCombinedIcon,
   CoinsIcon,
@@ -14,6 +15,7 @@ import {
   ReceiptTextIcon,
   RouteIcon,
   SettingsIcon,
+  ShieldCheckIcon,
   TrendingUpIcon,
   FilesIcon,
 } from "lucide-react";
@@ -133,6 +135,13 @@ export const dashboardNavigation = [
     label: "Planning",
     items: [
       {
+        title: "Verified financial twin",
+        shortTitle: "Financial twin",
+        url: "/dashboard/twin",
+        icon: BrainCircuitIcon,
+        keywords: "intelligence decision engine salary surplus allocation fire tax evidence",
+      },
+      {
         title: "Capital deployment",
         shortTitle: "Deployment",
         url: "/dashboard/deployment",
@@ -184,6 +193,29 @@ export const dashboardPages = dashboardNavigation.flatMap((group) =>
 );
 
 export const dashboardChartNavigation = [
+  {
+    label: "Financial twin",
+    items: [
+      {
+        title: "Salary to investment policy",
+        url: "/dashboard/twin#twin-monthly-flow",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "salary household surplus deployment flow sankey",
+      },
+      {
+        title: "Contribution reality check",
+        url: "/dashboard/twin#twin-capacity-check",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "fire savings observed surplus policy supported contribution",
+      },
+      {
+        title: "Financial twin evidence ledger",
+        url: "/dashboard/twin#evidence-ledger",
+        icon: ShieldCheckIcon,
+        keywords: "evidence confidence data readiness audit",
+      },
+    ],
+  },
   {
     label: "Verified return charts",
     items: [
