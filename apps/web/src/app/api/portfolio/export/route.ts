@@ -22,6 +22,7 @@ import { getIncomeTaxExport } from "@portfolio/api/income-tax-queries";
 import { getNetherlandsTaxExport } from "@portfolio/api/netherlands-tax-queries";
 import { getZerodhaTradebookExport } from "@portfolio/api/zerodha-tradebook-queries";
 import { getCapitalDeploymentEngine } from "@portfolio/api/capital-deployment-queries";
+import { getVerifiedReturnsExport } from "@portfolio/api/verified-returns-queries";
 import { headers } from "next/headers";
 import { getDriveArchiveState } from "@/lib/google-drive-archive";
 
@@ -53,6 +54,7 @@ export async function GET() {
     netherlandsTax,
     sourceDocuments,
     capitalDeployment,
+    verifiedReturns,
   ] = await Promise.all([
     getPortfolioPreference(userId),
     getLatestExchangeRates(userId),
@@ -76,6 +78,7 @@ export async function GET() {
     getNetherlandsTaxExport(userId),
     getDriveArchiveState(userId),
     getCapitalDeploymentEngine(userId),
+    getVerifiedReturnsExport(userId),
   ]);
 
   const body = JSON.stringify(
@@ -110,6 +113,7 @@ export async function GET() {
         documents: sourceDocuments.documents,
       },
       capitalDeployment,
+      verifiedReturns,
     },
     null,
     2,

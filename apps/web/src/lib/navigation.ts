@@ -72,6 +72,13 @@ export const dashboardNavigation = [
         keywords: "zerodha holdings shares mutual funds",
       },
       {
+        title: "Verified returns",
+        shortTitle: "Returns",
+        url: "/dashboard/returns",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "performance xirr money weighted return realized unrealized pnl fees dividends",
+      },
+      {
         title: "Tradebook insights",
         shortTitle: "Tradebook",
         url: "/dashboard/tradebook",
@@ -177,6 +184,35 @@ export const dashboardPages = dashboardNavigation.flatMap((group) =>
 );
 
 export const dashboardChartNavigation = [
+  {
+    label: "Verified return charts",
+    items: [
+      {
+        title: "Indian investor cash flows",
+        url: "/dashboard/returns#verified-indian-cash-flows",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "zerodha return contributions redemptions xirr",
+      },
+      {
+        title: "Degiro external cash flows",
+        url: "/dashboard/returns#global-account-cash-flows",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "degiro deposits withdrawals account return",
+      },
+      {
+        title: "Return by instrument",
+        url: "/dashboard/returns#instrument-money-weighted-returns",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "fund stock instrument xirr performance",
+      },
+      {
+        title: "Snapshot interval returns",
+        url: "/dashboard/returns#snapshot-linked-return",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "modified dietz linked return valuation intervals",
+      },
+    ],
+  },
   {
     label: "Capital deployment charts",
     items: [

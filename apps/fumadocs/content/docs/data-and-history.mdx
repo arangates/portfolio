@@ -70,6 +70,12 @@ Allocation targets, acceptable ranges, the selected staging instrument and deplo
 
 The engine keeps four evidence grades distinct: exact source values, independently reconciled values, deterministic derivations and inferred staging-transfer candidates. A same-window redemption and purchase can suggest an STP, but remains inferred until independently confirmed. Property and reserved physical assets are excluded from the deployable investment universe.
 
+## Verified return calculations
+
+Return results are recomputed from account-owned imports rather than stored as portfolio facts. Zerodha money-weighted return includes only instruments whose net trade units match the latest holdings snapshot. Degiro account return uses external deposits and withdrawals, terminal broker cash, and holdings valued at the last imported trade price; it remains labelled derived until current valuation evidence exists.
+
+The XIRR solver searches for multiple valid roots and withholds ambiguous results. Cross-currency returns are withheld without historical FX for every dated flow, and true time-weighted return is withheld without valuations around external flows. Snapshot-linked Modified Dietz results are estimates, average-cost realized attribution is not tax-lot accounting, and missing broker fees or dividends remain visible limitations.
+
 ## Metals inventory
 
 Commodity holdings remain the authoritative valued totals. Physical inventory items and their dated snapshots provide the supporting breakdown; they are not added to net worth again. Unknown purity, weight, ownership or appraisal stays `null` rather than being silently treated as zero or estimated.

@@ -13,6 +13,7 @@
     "check-types": "tsc --noEmit",
     "test:fire": "tsx --test src/fire-engine.test.ts",
     "test:deployment": "tsx --test src/capital-deployment-calculations.test.ts",
+    "test:returns": "tsx --test src/verified-returns-calculations.test.ts",
     "test:tax": "tsx --test src/income-tax-parser.test.ts",
     "test:nl-tax": "tsx --test src/netherlands-tax-parser.test.ts"
   },
