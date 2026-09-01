@@ -11,6 +11,7 @@ import {
   HouseIcon,
   LandmarkIcon,
   LayoutDashboardIcon,
+  LightbulbIcon,
   ReceiptTextIcon,
   RouteIcon,
   SettingsIcon,
@@ -33,7 +34,14 @@ export const dashboardNavigation = [
         title: "Analytics",
         url: "/dashboard/analytics",
         icon: ChartNoAxesCombinedIcon,
-        keywords: "charts trends intelligence wealth cash flow analysis",
+        keywords: "charts trends wealth cash flow analysis",
+      },
+      {
+        title: "Financial intelligence",
+        shortTitle: "Intelligence",
+        url: "/dashboard/intelligence",
+        icon: LightbulbIcon,
+        keywords: "briefing insights recommendations decisions risk fire",
       },
       {
         title: "Fixed deposits",

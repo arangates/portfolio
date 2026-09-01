@@ -1,4 +1,5 @@
 import { DataTable } from "@/components/data-table";
+import { FinancialIntelligencePanel } from "@/components/financial-intelligence-panel";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioCharts } from "@/components/portfolio-charts";
@@ -6,6 +7,7 @@ import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { UploadDialog } from "@/components/upload-dialog";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
+import { getFinancialIntelligence } from "@portfolio/api/financial-intelligence-queries";
 import { getPortfolioOverview } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -23,7 +25,10 @@ export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
 
-  const overview = await getPortfolioOverview(session.user.id);
+  const [overview, intelligence] = await Promise.all([
+    getPortfolioOverview(session.user.id),
+    getFinancialIntelligence(session.user.id),
+  ]);
   const { baseCurrency } = overview.preference;
   const hasAssets = overview.assets.length > 0;
   const equityReturn =
@@ -46,6 +51,8 @@ export default async function DashboardPage() {
             />
           }
         />
+
+        <FinancialIntelligencePanel data={intelligence} compact />
 
         {!hasAssets ? (
           <div className="px-4 lg:px-6">
