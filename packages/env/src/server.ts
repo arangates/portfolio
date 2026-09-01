@@ -4,6 +4,12 @@ import { z } from "zod";
 
 const runtimeEnv = {
   ...process.env,
+  DATABASE_URL:
+    process.env.DATABASE_URL ??
+    process.env.NEON_DATABASE_URL ??
+    process.env.NEON_POSTGRES_URL ??
+    process.env.NEON_POSTGRES_PRISMA_URL,
+  BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
   BETTER_AUTH_URL:
     process.env.BETTER_AUTH_URL ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
