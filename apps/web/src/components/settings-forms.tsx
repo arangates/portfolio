@@ -21,10 +21,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@portfolio/ui/components/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@portfolio/ui/components/dialog";
 import { Field, FieldGroup, FieldLabel } from "@portfolio/ui/components/field";
 import { Input } from "@portfolio/ui/components/input";
 import { Spinner } from "@portfolio/ui/components/spinner";
-import { DownloadIcon, SaveIcon, ShieldCheckIcon } from "lucide-react";
+import {
+  CheckCircle2Icon,
+  DownloadIcon,
+  FileSpreadsheetIcon,
+  FileTextIcon,
+  SaveIcon,
+  ShieldCheckIcon,
+  UploadIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -209,24 +227,160 @@ export function AccountForm({ name, email }: { name: string; email: string }) {
 }
 
 export function DataControls() {
+  const [file, setFile] = useState<File | null>(null);
+  const [pending, setPending] = useState(false);
+  const [result, setResult] = useState<{
+    created: number;
+    updated: number;
+    profilesMerged: number;
+    rows: number;
+    datasets: number;
+  } | null>(null);
+  const router = useRouter();
+
+  async function importFile() {
+    if (!file) return;
+    setPending(true);
+    setResult(null);
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      const response = await fetch("/api/manual-data/import", { method: "POST", body: form });
+      const body = (await response.json()) as {
+        error?: string;
+        result?: {
+          created: number;
+          updated: number;
+          profilesMerged: number;
+          rows: number;
+          datasets: number;
+        };
+      };
+      if (!response.ok || !body.result) throw new Error(body.error ?? "Could not import data");
+      setResult(body.result);
+      toast.success(`Merged ${body.result.rows} manual records`);
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not import manual data");
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Export your data</CardTitle>
-        <CardDescription>Download a complete machine-readable portfolio backup.</CardDescription>
+        <CardTitle>Portable manual data</CardTitle>
+        <CardDescription>
+          Back up or move every user-maintained record without re-exporting source documents.
+        </CardDescription>
       </CardHeader>
-      <CardContent className="flex items-start gap-3 text-sm text-muted-foreground">
-        <ShieldCheckIcon />
-        <p>Your export is created on demand and is available only to your signed-in account.</p>
+      <CardContent className="space-y-4">
+        <div className="flex items-start gap-3 text-sm text-muted-foreground">
+          <ShieldCheckIcon className="mt-0.5 size-4 shrink-0" />
+          <p>
+            Includes manual assets, bank and deposit history, household records, FIRE inputs,
+            commodities, real estate, preferences and deployment policy. Broker, salary and tax
+            imports are excluded because their original files remain the source of truth.
+          </p>
+        </div>
+        <div className="rounded-md border bg-muted/20 p-3 text-sm">
+          <p className="font-medium">Safe merge</p>
+          <p className="mt-1 text-muted-foreground">
+            Re-importing adds missing rows and updates matching account-owned rows. It never deletes
+            records or copies an owner ID from the file.
+          </p>
+        </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex flex-wrap gap-2">
         <Button
           variant="outline"
+          render={<a href="/api/manual-data/export?format=xlsx" download />}
+          nativeButton={false}
+        >
+          <FileSpreadsheetIcon data-icon="inline-start" />
+          Export XLSX
+        </Button>
+        <Button
+          variant="outline"
+          render={<a href="/api/manual-data/export?format=csv" download />}
+          nativeButton={false}
+        >
+          <FileTextIcon data-icon="inline-start" />
+          Export CSV
+        </Button>
+        <Dialog
+          onOpenChange={(open) => {
+            if (open) return;
+            setFile(null);
+            setResult(null);
+          }}
+        >
+          <DialogTrigger render={<Button />}>
+            <UploadIcon data-icon="inline-start" />
+            Import backup
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Import manual data</DialogTitle>
+              <DialogDescription>
+                Select an XLSX or CSV previously exported by Selvam. The file is validated before
+                account-scoped records are merged.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <Input
+                type="file"
+                accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+                disabled={pending}
+                onChange={(event) => {
+                  setFile(event.target.files?.[0] ?? null);
+                  setResult(null);
+                }}
+              />
+              {file ? (
+                <div className="rounded-md border px-3 py-2 text-sm">
+                  <p className="truncate font-medium">{file.name}</p>
+                  <p className="text-muted-foreground">
+                    {(file.size / 1024).toLocaleString(undefined, { maximumFractionDigits: 1 })} KB
+                  </p>
+                </div>
+              ) : null}
+              {result ? (
+                <div className="flex gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
+                  <CheckCircle2Icon className="mt-0.5 size-4 shrink-0 text-emerald-500" />
+                  <div>
+                    <p className="font-medium">Import complete</p>
+                    <p className="text-muted-foreground">
+                      {result.created} added · {result.updated} matched and updated ·{" "}
+                      {result.profilesMerged} settings profiles merged across {result.datasets}{" "}
+                      datasets.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            <DialogFooter>
+              <DialogClose render={<Button variant="outline" />}>Close</DialogClose>
+              <Button onClick={importFile} disabled={!file || pending || Boolean(result)}>
+                {pending ? (
+                  <Spinner data-icon="inline-start" />
+                ) : (
+                  <UploadIcon data-icon="inline-start" />
+                )}
+                {pending ? "Importing…" : "Import and merge"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Button
+          className="sm:ms-auto"
+          variant="ghost"
           render={<a href="/api/portfolio/export" download />}
           nativeButton={false}
         >
           <DownloadIcon data-icon="inline-start" />
-          Download JSON export
+          Full JSON archive
         </Button>
       </CardFooter>
     </Card>

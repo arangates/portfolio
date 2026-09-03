@@ -64,6 +64,14 @@ Drive archiving is optional and non-blocking. A successful financial import rema
 
 Files are organized under a visible `Selvam` folder by source type. Exact-file SHA-256 fingerprints prevent duplicate uploads, and every document row is linked to both the authenticated owner and its normalized import. The **Source documents** page provides owner-checked Open and Download actions. Disabling archiving stops future uploads but does not delete files from the user's Drive.
 
+## Portable manual-data backup
+
+**Settings → Data & security** can export all user-maintained data as a versioned XLSX workbook or canonical CSV. This includes portfolio preferences, exchange rates, manual bank balances, fixed deposits, commodities and their inventory, manual assets, real estate, household records, FIRE inputs and capital-deployment policy. Every dated snapshot and archived record is included; broker, salary and tax imports are excluded because their original files remain authoritative.
+
+The XLSX format uses one readable worksheet per domain and stores decimal values as text to avoid spreadsheet precision loss. The CSV format is a lossless transport container with a dataset identifier and one JSON record per line. Both formats are accepted by the same importer.
+
+Import is an account-scoped merge: matching records are updated, missing records are inserted, relationships are remapped to the destination account, and nothing is deleted. The importer ignores file ownership, validates the format version and columns, caps file size and row count, and records a summary audit event. Importing deployment policy into another account clears a staging-instrument reference unless that instrument is already owned by the destination account.
+
 ## Capital deployment policy
 
 Allocation targets, acceptable ranges, the selected staging instrument and deployment cadence are account-owned instructions. Current allocation and action amounts are recomputed from the latest imported positions, broker cash, bank snapshots, fixed deposits and stored FX rates; recommendations are not persisted as facts.
