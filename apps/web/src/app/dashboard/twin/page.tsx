@@ -5,7 +5,6 @@ import { TableCard } from "@/components/table-card";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
 import { getFinancialTwin } from "@portfolio/api/financial-twin-queries";
 import { auth } from "@portfolio/auth";
-import { db, user } from "@portfolio/db";
 import { Badge } from "@portfolio/ui/components/badge";
 import { buttonVariants } from "@portfolio/ui/components/button";
 import {
@@ -37,7 +36,6 @@ import {
   WalletCardsIcon,
 } from "lucide-react";
 import type { Route } from "next";
-import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -66,18 +64,8 @@ function targetLabel(years: number | null) {
 
 export default async function FinancialTwinPage() {
   const session = await auth.api.getSession({ headers: await headers() });
-  let userId = session?.user.id;
-  if (!userId && process.env.NODE_ENV === "development") {
-    userId = (
-      await db
-        .select({ id: user.id })
-        .from(user)
-        .where(eq(user.email, "arangates@gmail.com"))
-        .limit(1)
-    )[0]?.id;
-  }
-  if (!userId) redirect("/login");
-  const twin = await getFinancialTwin(userId);
+  if (!session?.user) redirect("/login");
+  const twin = await getFinancialTwin(session.user.id);
   const currency = twin.baseCurrency;
   const primary = twin.fire.primary;
   const observed = twin.fire.observedPrimary;
