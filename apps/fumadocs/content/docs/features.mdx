@@ -25,6 +25,8 @@ EUR bank cash is intentionally separate from Degiro investments and broker activ
 ## Listed investments
 
 - **Indian investments** combine Zerodha holdings and tradebooks without mixing their roles. Holdings create immutable current-valuation snapshots. Users can select up to ten annual tradebooks; the browser processes them sequentially and overlapping trades are deduplicated across files.
+- **Mutual-fund intelligence** links each current Zerodha scheme to MFAPI by exact ISIN, caches its dated NAV history and renders allocation, P&L, trailing and rolling returns, risk/return, drawdown, horizon and return-correlation views with ECharts. Sub-year returns are point-to-point; one year and longer use actual-day CAGR. Correlation aligns common NAV dates and requires at least 60 observations.
+- MFAPI does not contain scheme constituents, sector weights, company-group mappings, AUM or total expense-ratio history. Stock-overlap, look-through sector exposure and expense-drag panels therefore remain explicit evidence gates until a dated official AMC portfolio disclosure or factsheet is available; the application never substitutes NAV correlation for stock overlap.
 - Tradebook intelligence shows monthly purchases and redemptions, net invested cash, financial-year coverage, contribution consistency, fund concentration and history-quality gaps. Realized return, CAGR and XIRR stay hidden until every redemption has sufficient earlier acquisition history.
 - **Global equity** imports Degiro Transactions and Account CSV exports. The application reconstructs open quantities, moving-average cost basis, realized results, dividends, fees and recent activity from the retained ledger.
 

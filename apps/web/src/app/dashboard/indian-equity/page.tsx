@@ -81,6 +81,13 @@ export default async function IndianEquityPage() {
             <Button
               variant="outline"
               size="sm"
+              render={<Link href={"/dashboard/mutual-funds" as Route} />}
+            >
+              Fund intelligence
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               render={<Link href={"/dashboard/tradebook" as Route} />}
             >
               Tradebook insights

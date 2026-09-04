@@ -3,6 +3,7 @@ export * from "./capital-deployment";
 export * from "./document-archive";
 export * from "./fire";
 export * from "./household";
+export * from "./mutual-funds";
 export * from "./portfolio";
 export * from "./salary";
 export * from "./tax";

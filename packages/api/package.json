@@ -16,7 +16,8 @@
     "test:returns": "tsx --test src/verified-returns-calculations.test.ts",
     "test:twin": "tsx --test src/financial-twin-calculations.test.ts",
     "test:tax": "tsx --test src/income-tax-parser.test.ts",
-    "test:nl-tax": "tsx --test src/netherlands-tax-parser.test.ts"
+    "test:nl-tax": "tsx --test src/netherlands-tax-parser.test.ts",
+    "test:mutual-funds": "tsx --test src/mutual-fund-calculations.test.ts"
   },
   "dependencies": {
     "@portfolio/auth": "workspace:*",

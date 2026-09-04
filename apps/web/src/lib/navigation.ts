@@ -16,6 +16,7 @@ import {
   RouteIcon,
   SettingsIcon,
   ShieldCheckIcon,
+  SparklesIcon,
   TrendingUpIcon,
   FilesIcon,
 } from "lucide-react";
@@ -72,6 +73,13 @@ export const dashboardNavigation = [
         url: "/dashboard/indian-equity",
         icon: TrendingUpIcon,
         keywords: "zerodha holdings shares mutual funds",
+      },
+      {
+        title: "Mutual fund intelligence",
+        shortTitle: "Fund intelligence",
+        url: "/dashboard/mutual-funds",
+        icon: SparklesIcon,
+        keywords: "mfapi mutual fund nav risk drawdown correlation performance overlap",
       },
       {
         title: "Verified returns",
