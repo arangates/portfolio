@@ -104,7 +104,7 @@ export default async function FinancialTwinPage() {
                 ? "—"
                 : formatCurrency(twin.capacity.observedMonthlySurplus, currency),
             badge: gradeLabels[twin.capacity.evidenceGrade],
-            note: `${twin.capacity.incomeMonths} recent pay months`,
+            note: `${twin.incomeEvidence.incomeMonths}/6 validated completed months`,
             detail: "Median take-home minus recurring household cost",
             icon: WalletCardsIcon,
             href: "/dashboard/twin#twin-monthly-flow" as Route,

@@ -161,3 +161,14 @@ test("a retirement override beyond the original end year still has a valid proje
   assert.ok(result.requiredCorpus > 0);
   assert.equal(result.deterministic.at(-1)?.year, 2080);
 });
+
+test("a negative observed contribution depletes assets during accumulation", () => {
+  const result = plan({
+    currentInvestableAssets: 100_000,
+    profile: { ...profile, annualSavings: -12_000, expectedReturnRate: 0 },
+  });
+  const firstYear = result.deterministic[0]!;
+  assert.equal(firstYear.phase, "accumulation");
+  assert.equal(firstYear.contributions, -12_000);
+  assert.equal(firstYear.closingBalance, 88_000);
+});

@@ -86,7 +86,7 @@ export function FinancialTwinCharts({
     links.push({ source: 0, target: expenseIndex, value: coveredCost });
   }
   if (uncovered > 0) {
-    const fundingIndex = addNode("untracked", "Untracked funding", { colors: flowColors.gap });
+    const fundingIndex = addNode("untracked", "Funding gap", { colors: flowColors.gap });
     const expenseIndex = nodes.findIndex((node) => node.name === "household");
     const target =
       expenseIndex >= 0
@@ -118,11 +118,11 @@ export function FinancialTwinCharts({
   }
 
   const capacityData = [
-    { name: "FIRE plan", value: Math.max(0, fireMonthlySavings ?? 0) },
-    { name: "Observed surplus", value: surplus },
+    { name: "FIRE plan", value: fireMonthlySavings },
+    { name: "Observed surplus", value: observedSurplus },
     { name: "Policy amount", value: Math.max(0, policyDeployment) },
-    { name: "Supported now", value: supported },
-  ];
+    { name: "Supported now", value: supportedDeployment },
+  ].filter((row): row is { name: string; value: number } => row.value !== null);
 
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 px-4 xl:grid-cols-2 lg:px-6">
@@ -130,10 +130,16 @@ export function FinancialTwinCharts({
         id="twin-monthly-flow"
         title="From salary to investment policy"
         description="A monthly flow using median imported take-home and the current household budget."
-        metric={observedSurplus === null ? "—" : formatCurrency(surplus, currency)}
+        metric={observedSurplus === null ? "—" : formatCurrency(observedSurplus, currency)}
         metricLabel="owner-only observed surplus"
       >
-        {nodes.length > 1 && links.length > 0 ? (
+        {observedSurplus !== null &&
+        typicalNetIncome !== null &&
+        typicalNetIncome >= 0 &&
+        householdCost !== null &&
+        householdCost >= 0 &&
+        nodes.length > 1 &&
+        links.length > 0 ? (
           <EChartsSankeyChart
             data={{ nodes, links }}
             config={config}
@@ -154,8 +160,8 @@ export function FinancialTwinCharts({
           </EChartsSankeyChart>
         ) : (
           <div className="flex h-[360px] items-center justify-center px-6 text-center text-sm text-muted-foreground">
-            Import recent payslips and configure the household budget to activate the verified
-            monthly flow.
+            The flow requires validated recent income and a household budget. For negative net
+            income or net refunds, use the signed surplus in the amount comparison.
           </div>
         )}
       </AnalyticsChartCard>
@@ -163,7 +169,7 @@ export function FinancialTwinCharts({
       <AnalyticsChartCard
         id="twin-capacity-check"
         title="Contribution reality check"
-        description="Configured intentions are shown beside evidence-backed owner-only capacity; no amount is silently substituted."
+        description="Configured intentions are shown beside evidence-backed owner-only capacity; unavailable amounts are omitted."
         metric={supportedDeployment === null ? "—" : formatCurrency(supported, currency)}
         metricLabel="supported monthly deployment"
       >

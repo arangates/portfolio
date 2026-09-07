@@ -1,5 +1,42 @@
 export type TwinEvidenceGrade = "exact" | "reconciled" | "derived" | "limited";
 
+/** Input rows must already contain only the latest revision per employer and period. */
+export function summarizeMonthlyIncome<
+  Row extends { payPeriod: string; netPay: number | null; validationStatus: string },
+>(rows: Row[], asOf: Date, convert: (row: Row) => number | null = (row) => row.netPay) {
+  const currentMonth = asOf.getUTCFullYear() * 12 + asOf.getUTCMonth();
+  const months = new Map<number, { total: number; valid: boolean }>();
+  for (const row of rows) {
+    const date = new Date(row.payPeriod);
+    if (!Number.isFinite(date.getTime())) continue;
+    const month = date.getUTCFullYear() * 12 + date.getUTCMonth();
+    // A partial current month is not comparable with completed payroll months.
+    if (month < currentMonth - 6 || month >= currentMonth) continue;
+    const entry = months.get(month) ?? { total: 0, valid: true };
+    const netPay = convert(row);
+    if (row.validationStatus !== "verified" || netPay === null || !Number.isFinite(netPay)) {
+      entry.valid = false;
+    } else {
+      entry.total += netPay;
+    }
+    months.set(month, entry);
+  }
+  const validMonths = [...months.entries()]
+    .filter(([, entry]) => entry.valid)
+    .sort(([left], [right]) => left - right);
+  const invalidMonths = [...months.values()].filter((entry) => !entry.valid).length;
+  return {
+    monthlyNetIncome: validMonths.map(([, entry]) => entry.total),
+    incomeMonths: validMonths.length,
+    missingMonths: 6 - months.size,
+    invalidMonths,
+    ready:
+      validMonths.length >= 3 &&
+      months.get(currentMonth - 1)?.valid === true &&
+      invalidMonths === 0,
+  };
+}
+
 export type MonthlyCapacityInput = {
   monthlyNetIncome: number[];
   monthlyHouseholdCost: number | null;
@@ -20,12 +57,8 @@ export type MonthlyCapacity = {
   evidenceGrade: TwinEvidenceGrade;
 };
 
-function finiteNonNegative(values: number[]) {
-  return values.filter((value) => Number.isFinite(value) && value >= 0);
-}
-
 export function median(values: number[]) {
-  const sorted = finiteNonNegative(values).sort((left, right) => left - right);
+  const sorted = values.filter(Number.isFinite).sort((left, right) => left - right);
   if (sorted.length === 0) return null;
   const middle = Math.floor(sorted.length / 2);
   if (sorted.length % 2 === 1) return sorted[middle]!;
@@ -33,22 +66,22 @@ export function median(values: number[]) {
 }
 
 export function calculateMonthlyCapacity(input: MonthlyCapacityInput): MonthlyCapacity {
-  const income = finiteNonNegative(input.monthlyNetIncome);
+  const income = input.monthlyNetIncome.filter(Number.isFinite);
   const typicalNetIncome = median(income);
   const householdCost =
     input.monthlyHouseholdCost === null || !Number.isFinite(input.monthlyHouseholdCost)
       ? null
-      : Math.max(0, input.monthlyHouseholdCost);
+      : input.monthlyHouseholdCost;
   const observedMonthlySurplus =
-    typicalNetIncome === null || householdCost === null
-      ? null
-      : Math.max(0, typicalNetIncome - householdCost);
-  const policyMonthlyDeployment = Math.max(0, input.policyMonthlyDeployment);
+    typicalNetIncome === null || householdCost === null ? null : typicalNetIncome - householdCost;
+  const policyMonthlyDeployment = Number.isFinite(input.policyMonthlyDeployment)
+    ? Math.max(0, input.policyMonthlyDeployment)
+    : 0;
   const supportedMonthlyDeployment =
     observedMonthlySurplus === null
       ? null
       : policyMonthlyDeployment > 0
-        ? Math.min(observedMonthlySurplus, policyMonthlyDeployment)
+        ? Math.min(Math.max(0, observedMonthlySurplus), policyMonthlyDeployment)
         : 0;
   const retainedMonthlyCash =
     observedMonthlySurplus === null || supportedMonthlyDeployment === null
@@ -72,12 +105,7 @@ export function calculateMonthlyCapacity(input: MonthlyCapacityInput): MonthlyCa
       observedMonthlySurplus === null || firePlannedMonthlySavings === null
         ? null
         : observedMonthlySurplus - firePlannedMonthlySavings,
-    evidenceGrade:
-      typicalNetIncome === null || householdCost === null
-        ? "limited"
-        : income.length >= 6
-          ? "reconciled"
-          : "derived",
+    evidenceGrade: typicalNetIncome === null || householdCost === null ? "limited" : "derived",
   };
 }
 

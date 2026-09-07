@@ -6,6 +6,7 @@ import {
   calculateMonthlyCapacity,
   readinessScore,
   scaleContributionPlan,
+  summarizeMonthlyIncome,
   type TwinEvidenceGrade,
 } from "./financial-twin-calculations";
 import { getCapitalDeploymentEngine } from "./capital-deployment-queries";
@@ -61,11 +62,11 @@ export async function getFinancialTwin(userId: string) {
     return amount * rate;
   };
 
-  const recentPayslips = payslips.filter((payslip) => payslip.netPay > 0).slice(-6);
-  const monthlyNetIncome = recentPayslips.flatMap((payslip) => {
-    const converted = convert(payslip.netPay, payslip.currency);
-    return converted === null ? [] : [converted];
-  });
+  const asOf = new Date();
+  const incomeEvidence = summarizeMonthlyIncome(payslips, asOf, (payslip) =>
+    convert(payslip.netPay, payslip.currency),
+  );
+  const monthlyNetIncome = incomeEvidence.ready ? incomeEvidence.monthlyNetIncome : [];
   const householdCost = household.configured
     ? convert(household.metrics.netMonthly, household.currency)
     : null;
@@ -83,7 +84,7 @@ export async function getFinancialTwin(userId: string) {
   const observedFireResults =
     fire.configured && capacity.observedMonthlySurplus !== null
       ? calculateFirePlan({
-          currentYear: new Date().getUTCFullYear(),
+          currentYear: asOf.getUTCFullYear(),
           currentInvestableAssets: fire.currentInvestableAssets,
           profile: { ...fire.profile, annualSavings: capacity.observedMonthlySurplus * 12 },
           expenses: fire.expenses.flatMap((expense) =>
@@ -109,18 +110,6 @@ export async function getFinancialTwin(userId: string) {
   const latestDutchTax = dutchTax.at(-1) ?? null;
   const actions: TwinAction[] = [];
 
-  if (missingCurrencies.size > 0) {
-    actions.push({
-      key: "missing-fx",
-      domain: "data",
-      severity: "attention",
-      title: "Complete the currency bridge",
-      description: `Stored FX rates are missing for ${[...missingCurrencies].join(", ")}; affected amounts are excluded from connected decisions.`,
-      amount: null,
-      confidence: "exact",
-      href: "/dashboard/settings",
-    });
-  }
   if (capacity.observedMonthlySurplus === null) {
     actions.push({
       key: "cashflow-evidence",
@@ -128,10 +117,22 @@ export async function getFinancialTwin(userId: string) {
       severity: "attention",
       title: "Complete the monthly cash-flow evidence",
       description:
-        "Both recent payslips and a current household budget are required before the twin will calculate deployable monthly surplus.",
+        "Capacity requires at least three validated months within the last six completed calendar months, including the previous month, no unresolved payroll months in that window, and a household budget with available FX.",
       amount: null,
       confidence: "exact",
-      href: payslips.length === 0 ? "/dashboard/salary" : "/dashboard/household",
+      href: !incomeEvidence.ready ? "/dashboard/salary" : "/dashboard/household",
+    });
+  } else if (capacity.observedMonthlySurplus < 0) {
+    actions.push({
+      key: "monthly-deficit",
+      domain: "cashflow",
+      severity: "attention",
+      title: "Review the monthly funding gap",
+      description:
+        "The recurring household budget exceeds evidenced owner income. Monthly deployment is zero; the deficit remains visible in the FIRE sensitivity.",
+      amount: Math.abs(capacity.observedMonthlySurplus),
+      confidence: "derived",
+      href: "/dashboard/household",
     });
   } else if (!capital.policy.configured || !capital.targetsConfigured) {
     actions.push({
@@ -163,9 +164,17 @@ export async function getFinancialTwin(userId: string) {
     });
   }
 
-  for (const action of capital.actions.slice(0, 3)) {
-    if (actions.some((item) => item.key === action.key || item.key === "deployment-policy"))
-      continue;
+  // The twin's contribution plan is capacity-capped. Do not repeat uncapped
+  // policy contribution amounts as independent funding recommendations.
+  const capitalActions = capital.actions.filter(
+    (action) =>
+      !action.key.startsWith("underweight-") &&
+      !(
+        action.key === "configure-targets" &&
+        actions.some((item) => item.key === "deployment-policy")
+      ),
+  );
+  for (const action of capitalActions.slice(0, 3)) {
     actions.push({
       key: `capital-${action.key}`,
       domain: action.key === "fd-due" ? "cashflow" : "allocation",
@@ -220,7 +229,7 @@ export async function getFinancialTwin(userId: string) {
       href: "/dashboard/tax/netherlands",
     });
   }
-  if (returns.summary.verifiedValueCoverage < 0.95 && returns.scopes.length > 0) {
+  if (returns.summary.verifiedValueCoverage < 0.95 && returns.summary.excludedClosingValue > 0) {
     actions.push({
       key: "return-coverage",
       domain: "performance",
@@ -228,14 +237,27 @@ export async function getFinancialTwin(userId: string) {
       title: "Close the verified-return history gap",
       description:
         "Some current Indian value lacks matching opening trade units. Import earlier tradebooks before relying on the excluded instruments' returns.",
-      amount: returns.summary.excludedClosingValue,
+      amount: convert(returns.summary.excludedClosingValue, "INR"),
       confidence: "reconciled",
       href: "/dashboard/returns",
     });
   }
 
+  if (missingCurrencies.size > 0) {
+    actions.unshift({
+      key: "missing-fx",
+      domain: "data",
+      severity: "attention",
+      title: "Complete the currency bridge",
+      description: `Stored FX rates are missing for ${[...missingCurrencies].join(", ")}; affected amounts are excluded from connected decisions.`,
+      amount: null,
+      confidence: "exact",
+      href: "/dashboard/settings",
+    });
+  }
+
   const readiness = readinessScore([
-    capacity.incomeMonths >= 3,
+    incomeEvidence.ready,
     household.configured,
     capital.policy.configured && capital.targetsConfigured,
     fire.configured,
@@ -247,11 +269,10 @@ export async function getFinancialTwin(userId: string) {
     {
       key: "income",
       label: "Recurring take-home",
-      grade: capacity.incomeMonths >= 6 ? ("reconciled" as const) : ("limited" as const),
-      status: capacity.incomeMonths >= 3 ? ("ready" as const) : ("limited" as const),
-      value: `${capacity.incomeMonths} recent month${capacity.incomeMonths === 1 ? "" : "s"}`,
-      detail:
-        "Typical income is the median of the latest six imported net-pay amounts, which limits distortion from bonus months.",
+      grade: incomeEvidence.ready ? ("derived" as const) : ("limited" as const),
+      status: incomeEvidence.ready ? ("ready" as const) : ("limited" as const),
+      value: `${incomeEvidence.incomeMonths}/6 validated completed months`,
+      detail: `Monthly totals combine employers before taking the median. ${incomeEvidence.missingMonths} missing and ${incomeEvidence.invalidMonths} unresolved months in the last six completed calendar months. Current-month payroll is excluded. This is a budget-based estimate, not bank-reconciled cash flow.`,
       href: "/dashboard/salary",
     },
     {
@@ -282,9 +303,20 @@ export async function getFinancialTwin(userId: string) {
     {
       key: "returns",
       label: "Return evidence",
-      grade: "reconciled" as const,
+      grade:
+        returns.scopes.length > 0 &&
+        returns.scopes.every(
+          (scope) =>
+            scope.evidenceGrade === "reconciled" && scope.metrics.moneyWeightedReturn !== null,
+        )
+          ? ("reconciled" as const)
+          : ("limited" as const),
       status: returns.scopes.length > 0 ? ("ready" as const) : ("blocked" as const),
-      value: `${(returns.summary.verifiedValueCoverage * 100).toFixed(2)}% Indian value coverage`,
+      value: returns.scopes.some((scope) => scope.id === "zerodha")
+        ? `${(returns.summary.verifiedValueCoverage * 100).toFixed(2)}% Indian value coverage`
+        : returns.scopes.length > 0
+          ? "Derived global return evidence"
+          : "No return evidence",
       detail:
         "Only unit-reconciled Zerodha positions enter verified return calculations; Degiro remains clearly labelled derived.",
       href: "/dashboard/returns",
@@ -303,13 +335,17 @@ export async function getFinancialTwin(userId: string) {
     },
     {
       key: "tax",
-      label: "Accepted tax history",
-      grade: "reconciled" as const,
+      label: "Imported tax history",
+      grade:
+        [...indiaTax, ...dutchTax].length > 0 &&
+        [...indiaTax, ...dutchTax].every((record) => record.validationStatus === "verified")
+          ? ("reconciled" as const)
+          : ("limited" as const),
       status:
         indiaTax.length > 0 || dutchTax.length > 0 ? ("ready" as const) : ("blocked" as const),
       value: `${indiaTax.length + dutchTax.length} annual record${indiaTax.length + dutchTax.length === 1 ? "" : "s"}`,
       detail:
-        "Tax records inform historical cash settlements only; they are not converted into a future tax forecast.",
+        "Indian records are filed returns; Dutch records are final assessments. Arithmetic reconciliation does not confirm payment or receipt, and these records are not future tax forecasts.",
       href: latestDutchTax ? "/dashboard/tax/netherlands" : "/dashboard/tax",
     },
   ];
@@ -318,11 +354,12 @@ export async function getFinancialTwin(userId: string) {
     baseCurrency,
     asOf: maxDate([
       capital.asOf,
-      recentPayslips.at(-1)?.payPeriod,
+      payslips.at(-1)?.payPeriod,
       latestDutchTax?.assessmentDate,
       latestIndiaTax?.sourceCreatedOn,
     ]),
     capacity,
+    incomeEvidence,
     household: {
       configured: household.configured,
       currency: household.currency,

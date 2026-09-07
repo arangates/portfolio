@@ -7,13 +7,15 @@ The Verified Financial Twin is Selvam's decision layer. It connects recent salar
 
 ## Core calculation
 
-Typical take-home is the median of the latest six imported payslips. This is intentionally resistant to a single bonus or supplemental-pay month. Observed owner-only surplus is:
+Typical take-home is the median of validated monthly net-pay totals within the last six completed UTC calendar months. Multiple employers are combined within each month, and zero or negative net pay is retained. The incomplete current month and future or older periods are excluded. This limits distortion from a single bonus month; it does not remove reimbursements or establish bank-reconciled cash flow.
+
+Capacity requires at least three validated months, including the previous calendar month, and no unresolved payroll month in the window. A failed validation or missing currency conversion invalidates the whole month, preventing partial employer income from appearing complete. Missing months are disclosed, never filled with zero. Capacity remains unavailable when these requirements are not met. Observed owner-only surplus is:
 
 ```text
 typical imported net pay − current recurring household cost
 ```
 
-Current household cost is gross recurring expense minus recurring refunds. One-time purchases remain outside this calculation. The supported monthly deployment is the lower of observed surplus and the user's saved deployment amount. If either income or household evidence is missing, the engine withholds the result rather than estimating it.
+Current household cost is gross recurring expense minus recurring refunds. One-time purchases remain outside this calculation. Negative surplus remains visible as a funding gap. Supported monthly deployment is the lower of nonnegative surplus and the user's saved deployment amount; it is zero during a deficit. If either income or household evidence is missing, the engine withholds the result rather than estimating it.
 
 ## Accounting boundary
 
@@ -28,10 +30,12 @@ Only externally funded savings become new FIRE contributions. The twin therefore
 
 ## FIRE sensitivity
 
-The saved FIRE plan remains authoritative. The twin runs a separate owner-only sensitivity with observed annual surplus as the contribution. It never overwrites the user's assumptions and never treats reallocation as a contribution. Partner income that is not present in imported salary evidence must be confirmed separately.
+The saved FIRE plan remains authoritative. The twin runs a separate owner-only sensitivity with observed annual surplus as the contribution. It never overwrites the user's assumptions and never treats reallocation as a contribution. Partner income that is not present in imported salary evidence must be confirmed separately. A negative observed surplus remains a negative annual contribution in the sensitivity, reflecting depletion during accumulation.
 
 ## Decision and trust model
 
 Actions are ordered with data-integrity blockers first, followed by tax-payable records, maturity checks, allocation gaps and contribution opportunities. Each recommendation is labelled **Exact source**, **Reconciled**, **Derived** or **Limited**.
 
 The readiness count reports how many required inputs exist. It is not a probability, financial-advice score or prediction of future returns. The engine does not place trades, renew deposits, mark taxes paid or mutate FIRE assumptions.
+
+Capacity is labelled **Derived**, even when source payslips reconcile: a median and a user-entered budget are not independently verified bank cash flow. Tax evidence distinguishes filed Indian returns from Dutch final assessments; neither establishes that a settlement was paid or received.
