@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/page-header";
 import { SettingsTabs } from "@/components/settings-tabs";
 import { GoogleDriveArchiveCard } from "@/components/google-drive-archive-card";
+import { ExchangeRateSyncCard } from "@/components/exchange-rate-sync-card";
 import { getDriveArchiveState } from "@/lib/google-drive-archive";
 import { FireSettingsCard } from "@/components/fire-settings-card";
 import {
@@ -13,6 +14,7 @@ import {
 } from "@/components/settings-forms";
 import { getLatestExchangeRates, getPortfolioPreference } from "@portfolio/api/portfolio-queries";
 import { getFireSettings } from "@portfolio/api/fire-queries";
+import { getEurInrExchangeRateStatus } from "@portfolio/api/exchange-rate-sync";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
 import {
@@ -32,9 +34,10 @@ export default async function SettingsPage({
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
-  const [preference, rates, fireSettings, driveArchive] = await Promise.all([
+  const [preference, rates, exchangeRateStatus, fireSettings, driveArchive] = await Promise.all([
     getPortfolioPreference(session.user.id),
     getLatestExchangeRates(session.user.id),
+    getEurInrExchangeRateStatus(session.user.id),
     getFireSettings(session.user.id),
     getDriveArchiveState(session.user.id),
   ]);
@@ -66,12 +69,13 @@ export default async function SettingsPage({
           portfolio={
             <>
               <PreferenceForm preference={preference} />
+              <ExchangeRateSyncCard status={exchangeRateStatus} />
               <ExchangeRateForm baseCurrency={preference.baseCurrency} />
               <Card className="xl:col-span-2">
                 <CardHeader>
                   <CardTitle>Stored exchange rates</CardTitle>
                   <CardDescription>
-                    Latest rates used for base-currency portfolio totals.
+                    Latest eligible rate for each pair, with stale intraday quotes excluded.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -90,7 +94,8 @@ export default async function SettingsPage({
                             {rate.baseCurrency} / {rate.quoteCurrency}
                           </span>
                           <Badge variant="secondary" className="shrink-0 font-mono font-normal">
-                            {rate.rate.toLocaleString("en", { maximumFractionDigits: 6 })}
+                            {rate.rate.toLocaleString("en", { maximumFractionDigits: 6 })} ·{" "}
+                            {rate.source}
                           </Badge>
                         </div>
                       ))}

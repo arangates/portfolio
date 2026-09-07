@@ -29,6 +29,7 @@ import {
   getLatestZerodhaPortfolio,
   getPortfolioPreference,
 } from "./portfolio-queries";
+import { resolveConversionRate } from "./currency-conversion";
 
 type Confidence = "reconciled" | "exact" | "derived" | "inferred";
 
@@ -106,16 +107,10 @@ export async function getCapitalDeploymentEngine(userId: string) {
       .orderBy(asc(ledgerEntry.occurredAt), asc(ledgerEntry.createdAt)),
   ]);
 
-  const rateMap = new Map(
-    rates
-      .filter((rate) => rate.baseCurrency === preference.baseCurrency)
-      .map((rate) => [rate.quoteCurrency, rate.rate]),
-  );
-  rateMap.set(preference.baseCurrency, 1);
   const missingCurrencies = new Set<string>();
   const convert = (value: number, currency: string) => {
-    const rate = rateMap.get(currency);
-    if (rate === undefined) {
+    const rate = resolveConversionRate(currency, preference.baseCurrency, rates);
+    if (rate === null) {
       missingCurrencies.add(currency);
       return null;
     }

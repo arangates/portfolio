@@ -140,9 +140,9 @@ export function ExchangeRateForm({ baseCurrency }: { baseCurrency: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Exchange rates</CardTitle>
+        <CardTitle>Manual exchange-rate fallback</CardTitle>
         <CardDescription>
-          Add a dated rate for assets held outside your base currency.
+          Add a dated rate only when an automatic provider does not cover the currency.
         </CardDescription>
       </CardHeader>
       <form onSubmit={submit}>

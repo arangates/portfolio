@@ -72,6 +72,14 @@ The XLSX format uses one readable worksheet per domain and stores decimal values
 
 Import is an account-scoped merge: matching records are updated, missing records are inserted, relationships are remapped to the destination account, and nothing is deleted. The importer ignores file ownership, validates the format version and columns, caps file size and row count, and records a summary audit event. Importing deployment policy into another account clears a staging-instrument reference unless that instrument is already owned by the destination account.
 
+## Exchange-rate policy
+
+EUR/INR reference rates come directly from the European Central Bank's keyless daily feed. The first account sync backfills the available official history; later syncs import the newest business-day observation. Every observation retains its date, provider and rate type. Existing manual rates remain available for currencies outside ECB coverage.
+
+Current portfolio valuation prefers a Twelve Data EUR/INR quote only when a server-side `TWELVE_DATA_API_KEY` is configured and the quote is less than 24 hours old. Otherwise it uses the latest ECB rate. Twelve Data's free individual plan is for personal or internal non-commercial use; a production service must use data under terms that permit its intended display and commercial use.
+
+FIRE and other planning calculations intentionally use the latest ECB reference rate so a transient market quote cannot make a saved plan irreproducible. Historical calculations resolve the latest official observation on or before each event date, allowing a maximum seven-day weekend or holiday gap. They never substitute today's rate for an old transaction.
+
 ## Capital deployment policy
 
 Allocation targets, acceptable ranges, the selected staging instrument and deployment cadence are account-owned instructions. Current allocation and action amounts are recomputed from the latest imported positions, broker cash, bank snapshots, fixed deposits and stored FX rates; recommendations are not persisted as facts.
@@ -158,7 +166,7 @@ This prevents an application error from linking one user's snapshot or imported 
 
 - Portfolio totals use the latest snapshot for each current record.
 - Ownership-based assets use attributable value: full market value multiplied by ownership share.
-- Multi-currency totals use stored dated FX rates. Missing conversions are disclosed and excluded.
+- Current multi-currency valuations use a fresh eligible indicative rate when configured, otherwise the latest official ECB rate or a manual fallback. Planning uses the official reference rate. Missing conversions are disclosed and excluded.
 - FIRE corpus calculations use investable assets rather than total net worth and account for time-bounded expenses and income. The required corpus is the higher of (1) the year-by-year amount that remains solvent through the configured end age and (2) the recurring safe-withdrawal reserve plus the retirement-date present value of future one-time costs.
 - Inflation-linked one-time costs are first grown to their planned year and then discounted back to retirement at the scenario return rate. Costs before retirement affect the accumulation projection but do not enter the retirement-date life-event reserve.
 - Physical commodities are excluded from FIRE liquidity by default. An eligible item contributes at most its attributable liquidation value and can never cause its parent holding to be counted twice.

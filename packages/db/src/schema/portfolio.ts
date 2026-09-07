@@ -581,7 +581,10 @@ export const exchangeRateSnapshot = pgTable(
     baseCurrency: text("base_currency").notNull(),
     quoteCurrency: text("quote_currency").notNull(),
     rate: numeric("rate", { precision: 30, scale: 12 }).notNull(),
+    source: text("source").default("manual").notNull(),
+    rateType: text("rate_type").default("reference").notNull(),
     asOf: timestamp("as_of", { withTimezone: true }).defaultNow().notNull(),
+    retrievedAt: timestamp("retrieved_at", { withTimezone: true }).defaultNow().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [

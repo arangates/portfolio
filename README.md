@@ -9,7 +9,7 @@ A private, multi-currency portfolio SaaS built with Next.js 16, Better Auth, Dri
 - Idempotent Zerodha XLSX and Degiro CSV imports with archived source rows and SHA-256 deduplication.
 - Separate cash and investment surfaces: INR/EUR bank accounts, Indian equity and Global equity.
 - Generic CRUD and archival workflows; archived records retain their history.
-- Multi-currency net worth with user-managed, dated exchange rates.
+- Multi-currency net worth with official ECB EUR/INR history, optional intraday quotes and manual fallbacks.
 - Allocation, liquidity, equity history, concentration, fee, dividend and maturity analytics.
 - Private JSON data export, profile/security controls and account deletion.
 - Production security headers, server-only data access, validated mutations, masked financial identifiers and upload limits.

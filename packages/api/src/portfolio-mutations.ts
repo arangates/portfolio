@@ -473,6 +473,8 @@ export async function saveExchangeRate(userId: string, raw: unknown) {
       baseCurrency: input.baseCurrency,
       quoteCurrency: input.quoteCurrency,
       rate: input.rate.toString(),
+      source: "manual",
+      rateType: "reference",
       asOf: asOfDate(input.asOf),
     })
     .returning({ id: exchangeRateSnapshot.id });

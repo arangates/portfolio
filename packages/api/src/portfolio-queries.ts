@@ -24,6 +24,7 @@ import {
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 
 import { getCommodityInventoryDashboard } from "./commodity-inventory";
+import { convertCurrency } from "./currency-conversion";
 
 function latestBy<T>(rows: T[], key: (row: T) => string) {
   const latest = new Map<string, T>();
@@ -48,23 +49,65 @@ export async function getPortfolioPreference(userId: string) {
   return preference ?? { baseCurrency: "INR", locale: "en-IN", timeZone: "UTC" };
 }
 
-export async function getLatestExchangeRates(userId: string) {
+export type ExchangeRateMode = "valuation" | "reference";
+
+export async function getLatestExchangeRates(userId: string, mode: ExchangeRateMode = "valuation") {
   const rows = await db
     .select({
       id: exchangeRateSnapshot.id,
       baseCurrency: exchangeRateSnapshot.baseCurrency,
       quoteCurrency: exchangeRateSnapshot.quoteCurrency,
       rate: exchangeRateSnapshot.rate,
+      source: exchangeRateSnapshot.source,
+      rateType: exchangeRateSnapshot.rateType,
       asOf: exchangeRateSnapshot.asOf,
+      retrievedAt: exchangeRateSnapshot.retrievedAt,
     })
     .from(exchangeRateSnapshot)
     .where(eq(exchangeRateSnapshot.userId, userId))
     .orderBy(desc(exchangeRateSnapshot.asOf));
 
-  return latestBy(rows, (row) => `${row.baseCurrency}:${row.quoteCurrency}`).map((row) => ({
+  const byPair = new Map<string, typeof rows>();
+  for (const row of rows) {
+    const key = `${row.baseCurrency}:${row.quoteCurrency}`;
+    const current = byPair.get(key) ?? [];
+    current.push(row);
+    byPair.set(key, current);
+  }
+  const selected = [...byPair.values()].flatMap((pairRows) => {
+    const freshIndicative =
+      mode === "valuation"
+        ? pairRows.find(
+            (row) =>
+              row.rateType === "indicative" &&
+              Date.now() - row.asOf.getTime() <= 24 * 60 * 60 * 1000,
+          )
+        : undefined;
+    const official = pairRows.find((row) => row.source === "ecb");
+    const fallback = pairRows.find((row) => row.rateType !== "indicative");
+    const rate = freshIndicative ?? official ?? fallback;
+    return rate ? [rate] : [];
+  });
+  return selected.map((row) => ({
     ...row,
     rate: Number(row.rate),
   }));
+}
+
+export async function getHistoricalExchangeRates(userId: string) {
+  const rows = await db
+    .select({
+      baseCurrency: exchangeRateSnapshot.baseCurrency,
+      quoteCurrency: exchangeRateSnapshot.quoteCurrency,
+      rate: exchangeRateSnapshot.rate,
+      source: exchangeRateSnapshot.source,
+      rateType: exchangeRateSnapshot.rateType,
+      asOf: exchangeRateSnapshot.asOf,
+    })
+    .from(exchangeRateSnapshot)
+    .where(eq(exchangeRateSnapshot.userId, userId))
+    .orderBy(asc(exchangeRateSnapshot.asOf));
+  return rows.map((row) => ({ ...row, rate: Number(row.rate) }));
 }
 
 export async function getLatestZerodhaPortfolio(userId: string) {
@@ -695,16 +738,8 @@ export async function getRealEstateDashboard(userId: string) {
       .orderBy(asc(realEstateSnapshot.asOf), asc(realEstateSnapshot.createdAt)),
   ]);
 
-  const rateMap = new Map(
-    rates
-      .filter((rate) => rate.baseCurrency === preference.baseCurrency)
-      .map((rate) => [rate.quoteCurrency, rate.rate]),
-  );
-  rateMap.set(preference.baseCurrency, 1);
-  const convert = (value: number, currency: string) => {
-    const rate = rateMap.get(currency);
-    return rate === undefined ? null : value * rate;
-  };
+  const convert = (value: number, currency: string) =>
+    convertCurrency(value, currency, preference.baseCurrency, rates);
 
   const valuedProperties = properties.map((property) => ({
     ...property,
@@ -712,7 +747,9 @@ export async function getRealEstateDashboard(userId: string) {
     baseOwnedValue: convert(property.ownedValue, property.currency),
   }));
   const currencies = [...new Set(properties.map((property) => property.currency))].toSorted();
-  const missingCurrencies = currencies.filter((currency) => !rateMap.has(currency));
+  const missingCurrencies = currencies.filter(
+    (currency) => convertCurrency(1, currency, preference.baseCurrency, rates) === null,
+  );
   const grossValue = valuedProperties.reduce(
     (sum, property) => sum + (property.baseMarketValue ?? 0),
     0,
@@ -798,7 +835,10 @@ export type PortfolioAsset = {
   asOf: Date | string | null;
 };
 
-export async function getPortfolioOverview(userId: string) {
+export async function getPortfolioOverview(
+  userId: string,
+  rateMode: ExchangeRateMode = "valuation",
+) {
   const [
     preference,
     rates,
@@ -814,7 +854,7 @@ export async function getPortfolioOverview(userId: string) {
     manualAssets,
   ] = await Promise.all([
     getPortfolioPreference(userId),
-    getLatestExchangeRates(userId),
+    getLatestExchangeRates(userId, rateMode),
     getLatestZerodhaPortfolio(userId),
     getEquitySnapshotHistory(userId),
     getGlobalEquityPortfolio(userId),
@@ -827,16 +867,8 @@ export async function getPortfolioOverview(userId: string) {
     getManualAssets(userId),
   ]);
 
-  const rateMap = new Map(
-    rates
-      .filter((rate) => rate.baseCurrency === preference.baseCurrency)
-      .map((rate) => [rate.quoteCurrency, rate.rate]),
-  );
-  rateMap.set(preference.baseCurrency, 1);
-  const convert = (value: number, currency: string) => {
-    const rate = rateMap.get(currency);
-    return rate === undefined ? null : value * rate;
-  };
+  const convert = (value: number, currency: string) =>
+    convertCurrency(value, currency, preference.baseCurrency, rates);
 
   const assets: PortfolioAsset[] = [];
   if (equity && equity.holdings.length > 0) {

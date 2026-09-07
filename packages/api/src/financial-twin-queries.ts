@@ -1,6 +1,7 @@
 import "server-only";
 
 import { calculateFirePlan } from "./fire-engine";
+import { resolveConversionRate } from "./currency-conversion";
 import {
   calculateMonthlyCapacity,
   readinessScore,
@@ -27,22 +28,6 @@ type TwinAction = {
   href: string;
 };
 
-function conversionRate(
-  currency: string,
-  baseCurrency: string,
-  rates: Awaited<ReturnType<typeof getLatestExchangeRates>>,
-) {
-  if (currency === baseCurrency) return 1;
-  const direct = rates.find(
-    (rate) => rate.baseCurrency === baseCurrency && rate.quoteCurrency === currency,
-  );
-  if (direct) return direct.rate;
-  const inverse = rates.find(
-    (rate) => rate.baseCurrency === currency && rate.quoteCurrency === baseCurrency,
-  );
-  return inverse && inverse.rate !== 0 ? 1 / inverse.rate : null;
-}
-
 function maxDate(values: Array<Date | string | null | undefined>) {
   return (
     values
@@ -62,13 +47,13 @@ export async function getFinancialTwin(userId: string) {
       getSalaryPayslips(userId),
       getIncomeTaxReturns(userId),
       getNetherlandsTaxAssessments(userId),
-      getLatestExchangeRates(userId),
+      getLatestExchangeRates(userId, "reference"),
     ]);
 
   const baseCurrency = capital.preference.baseCurrency;
   const missingCurrencies = new Set(capital.missingCurrencies);
   const convert = (amount: number, currency: string) => {
-    const rate = conversionRate(currency, baseCurrency, rates);
+    const rate = resolveConversionRate(currency, baseCurrency, rates);
     if (rate === null) {
       missingCurrencies.add(currency);
       return null;

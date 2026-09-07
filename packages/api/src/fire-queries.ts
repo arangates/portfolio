@@ -12,29 +12,14 @@ import {
 import { and, asc, eq, isNull } from "drizzle-orm";
 
 import { calculateFirePlan } from "./fire-engine";
+import { resolveConversionRate } from "./currency-conversion";
 import { getLatestExchangeRates, getPortfolioOverview } from "./portfolio-queries";
-
-function conversionRate(
-  currency: string,
-  baseCurrency: string,
-  rates: Awaited<ReturnType<typeof getLatestExchangeRates>>,
-) {
-  if (currency === baseCurrency) return 1;
-  const direct = rates.find(
-    (rate) => rate.baseCurrency === baseCurrency && rate.quoteCurrency === currency,
-  );
-  if (direct) return direct.rate;
-  const inverse = rates.find(
-    (rate) => rate.baseCurrency === currency && rate.quoteCurrency === baseCurrency,
-  );
-  return inverse && inverse.rate !== 0 ? 1 / inverse.rate : null;
-}
 
 export async function getFirePlan(userId: string) {
   const [portfolio, rates, profiles, members, expenseRows, costRows, incomeRows, scenarioRows] =
     await Promise.all([
-      getPortfolioOverview(userId),
-      getLatestExchangeRates(userId),
+      getPortfolioOverview(userId, "reference"),
+      getLatestExchangeRates(userId, "reference"),
       db.select().from(fireProfile).where(eq(fireProfile.userId, userId)).limit(1),
       db
         .select()
@@ -67,7 +52,7 @@ export async function getFirePlan(userId: string) {
   const baseCurrency = portfolio.preference.baseCurrency;
   const currenciesMissing = new Set<string>();
   const convert = (amount: number, currency: string) => {
-    const rate = conversionRate(currency, baseCurrency, rates);
+    const rate = resolveConversionRate(currency, baseCurrency, rates);
     if (rate === null) {
       currenciesMissing.add(currency);
       return null;

@@ -27,8 +27,11 @@ Configure these variables for Production:
 | `CORS_ORIGIN`          | The same exact production origin.                               |
 | `GOOGLE_CLIENT_ID`     | Client ID from the Google Web application OAuth client.         |
 | `GOOGLE_CLIENT_SECRET` | Client secret from the same Google OAuth client.                |
+| `TWELVE_DATA_API_KEY`  | Optional server-only key for a fresh indicative EUR/INR quote.  |
 
 Do not configure `DATABASE_URL_DIRECT` in the Vercel web application. Keep it in a trusted migration environment only.
+
+`TWELVE_DATA_API_KEY` is not required for accurate daily or historical conversions: those use the free, keyless ECB feed. Configure it only when its data licence covers the application's intended personal, display or commercial use. The key must remain server-side and must never use a `NEXT_PUBLIC_` prefix.
 
 For the current Vercel domain, both `BETTER_AUTH_URL` and `CORS_ORIGIN` are `https://myselvam.vercel.app`. The Google client must allow `https://myselvam.vercel.app` as an origin and `https://myselvam.vercel.app/api/auth/callback/google` as a redirect URI. See [Authentication](/docs/authentication) for the complete Google setup.
 
