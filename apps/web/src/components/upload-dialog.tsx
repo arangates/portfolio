@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import type { DriveArchiveStatus } from "@/lib/drive-archive-shared";
 import { Button } from "@portfolio/ui/components/button";
 import {
@@ -41,6 +45,7 @@ export function UploadDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
@@ -68,7 +73,7 @@ export function UploadDialog({
         const body = new FormData();
         body.set("kind", kind);
         for (const file of group) body.append("files", file);
-        const response = await fetch("/api/portfolio/imports", { method: "POST", body });
+        const response = await appFetch("/api/portfolio/imports", { method: "POST", body });
         const result = (await response.json()) as {
           error?: string;
           results?: Array<{
@@ -121,7 +126,7 @@ export function UploadDialog({
         <UploadIcon data-icon="inline-start" />
         {triggerLabel}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent data-financial-dialog>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

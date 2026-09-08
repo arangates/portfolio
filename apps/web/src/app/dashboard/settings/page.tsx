@@ -1,3 +1,4 @@
+import { InstallApp } from "@/components/pwa-controls";
 import { PageHeader } from "@/components/page-header";
 import { SettingsTabs } from "@/components/settings-tabs";
 import { GoogleDriveArchiveCard } from "@/components/google-drive-archive-card";
@@ -61,6 +62,7 @@ export default async function SettingsPage({
       <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title="Settings"
+          action={<InstallApp alwaysShow />}
           description="Manage your account, portfolio defaults, family planning and data security."
         />
         <SettingsTabs

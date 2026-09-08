@@ -1,5 +1,7 @@
 "use client";
 
+import { appFetch } from "@/lib/app-activity";
+
 import { authClient } from "@/lib/auth-client";
 import { GOOGLE_DRIVE_FILE_SCOPE } from "@/lib/drive-archive-shared";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -60,7 +62,7 @@ export function GoogleDriveArchiveCard({ summary }: { summary: DriveArchiveSumma
   async function update(action: "initialize" | "enable" | "disable") {
     setPending(action);
     try {
-      const response = await fetch("/api/google-drive/settings", {
+      const response = await appFetch("/api/google-drive/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(

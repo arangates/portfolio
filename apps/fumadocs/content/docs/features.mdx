@@ -95,3 +95,17 @@ The model is designed for early-retirement horizons, not only a fixed 30-year re
 - Archival that removes an item from current views without deleting its historical snapshots.
 - User preferences for base currency, locale and time zone.
 - Automatic EUR/INR history from the European Central Bank, optional current indicative quotes and manual fallbacks for other currencies.
+
+
+## Installed app and mobile experience
+
+- **Installation:** an install control uses the browser's native prompt when available and provides platform-specific instructions otherwise. Dismissed installation guidance stays dismissed on that device; Settings keeps the option available. Installed windows hide the prompt.
+- **Mobile navigation:** Overview, Twin, Import and More stay within thumb reach. More opens the existing navigation drawer, which closes after selecting a destination. Desktop keeps its sidebar.
+- **Appearance:** dedicated maskable icons, Apple touch metadata, theme-aware browser colors and safe-area padding support installed windows and phones with notches. Manifest shortcuts link to Twin, Imports and Household where the browser supports them.
+- **Privacy screen:** the header eye control conceals the entire financial content area, including balances, charts and records. The non-sensitive preference is stored in a first-party cookie and applied on the server so a remembered hidden state does not flash financial details on reload. This is a display feature, not a replacement for authentication or device security.
+- **Chart performance:** analytics cards defer chart mounting until they approach the viewport, reserving space while they wait. Already revealed charts remain mounted for scrolling back. The generic ECharts renderer loads its library on demand.
+- **Connection feedback:** the dashboard reports offline state, refresh progress and when the current view loaded. View-load time is distinct from source statement and valuation dates. Refresh checks server reachability and does not claim to update external market feeds.
+- **Offline fallback:** production builds install a service worker that caches a generic offline page, app icons and eligible public framework assets. Authenticated pages, API responses, RSC payloads, imports and source documents are never added to that cache. Financial records and edits require a connection; nothing is queued for later submission.
+- **App updates:** a new production build offers an explicit Update app action. Open forms and active mutations block it; possible unsaved edits require confirmation. Other Selvam windows must be closed before activation. The application does not reload automatically during an import or edit.
+
+PWA support is progressive: installation menus and app-icon shortcuts vary by browser. Service-worker registration is disabled during development to avoid caching development bundles. Run `pnpm build` and the production web server to verify offline behavior. `pnpm --filter web test:pwa` checks the worker's cache and update boundaries.

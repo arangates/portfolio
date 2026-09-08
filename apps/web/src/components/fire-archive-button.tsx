@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import type { FireRecordKind } from "@/components/fire-record-dialog";
 import {
   AlertDialog,
@@ -30,11 +34,12 @@ export function FireArchiveButton({
   label: string;
 }) {
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const router = useRouter();
   async function archive() {
     setPending(true);
     try {
-      const response = await fetch(
+      const response = await appFetch(
         `/api/fire/records?kind=${encodeURIComponent(kind)}&id=${encodeURIComponent(id)}`,
         { method: "DELETE" },
       );

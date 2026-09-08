@@ -1,3 +1,4 @@
+import { DeferredChart } from "@/components/deferred-chart";
 import {
   Card,
   CardContent,
@@ -46,7 +47,9 @@ export function AnalyticsChartCard({
           ) : null}
         </div>
       </CardHeader>
-      <CardContent className="min-w-0 p-2 sm:p-3">{children}</CardContent>
+      <CardContent className="min-w-0 p-2 sm:p-3">
+        <DeferredChart>{children}</DeferredChart>
+      </CardContent>
     </Card>
   );
 }

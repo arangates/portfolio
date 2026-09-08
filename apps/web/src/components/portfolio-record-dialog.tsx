@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { Button } from "@portfolio/ui/components/button";
 import { Checkbox } from "@portfolio/ui/components/checkbox";
 import {
@@ -345,6 +349,7 @@ export function PortfolioRecordDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const editing = Boolean(values.id);
@@ -360,7 +365,7 @@ export function PortfolioRecordDialog({
     if (kind === "fixed_deposit") data.status = values.status ?? "active";
 
     try {
-      const response = await fetch("/api/portfolio/records", {
+      const response = await appFetch("/api/portfolio/records", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind, data }),
@@ -391,7 +396,7 @@ export function PortfolioRecordDialog({
           `Add ${copy[kind].title.toLowerCase()}`
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent data-financial-dialog className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {editing ? "Update" : "Add"} {copy[kind].title.toLowerCase()}

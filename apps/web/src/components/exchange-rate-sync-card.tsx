@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { formatDate } from "@/lib/format";
 import { Badge } from "@portfolio/ui/components/badge";
 import { Button } from "@portfolio/ui/components/button";
@@ -27,11 +31,12 @@ type ExchangeRateStatus = {
 export function ExchangeRateSyncCard({ status }: { status: ExchangeRateStatus }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
 
   async function sync() {
     setPending(true);
     try {
-      const response = await fetch("/api/exchange-rates/sync", { method: "POST" });
+      const response = await appFetch("/api/exchange-rates/sync", { method: "POST" });
       const payload = (await response.json()) as {
         error?: string;
         result?: {

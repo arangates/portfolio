@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,12 +23,13 @@ import { toast } from "sonner";
 
 export function CommodityInventoryArchiveButton({ id, label }: { id: string; label: string }) {
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const router = useRouter();
 
   async function archive() {
     setPending(true);
     try {
-      const response = await fetch(
+      const response = await appFetch(
         `/api/commodity-inventory/records?id=${encodeURIComponent(id)}`,
         {
           method: "DELETE",

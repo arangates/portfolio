@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { Button } from "@portfolio/ui/components/button";
 import { Checkbox } from "@portfolio/ui/components/checkbox";
 import {
@@ -445,6 +449,7 @@ export function HouseholdRecordDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const router = useRouter();
   const editing = Boolean(values.id) || kind === "household_profile";
 
@@ -456,7 +461,7 @@ export function HouseholdRecordDialog({
     for (const field of booleanFields[kind]) data[field] = formData.has(field);
     if (values.id) data.id = String(values.id);
     try {
-      const response = await fetch("/api/household/records", {
+      const response = await appFetch("/api/household/records", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind, data }),
@@ -479,7 +484,7 @@ export function HouseholdRecordDialog({
         {editing ? <PencilIcon data-icon="inline-start" /> : <PlusIcon data-icon="inline-start" />}
         {label ?? `${editing ? "Edit" : "Add"} ${titles[kind]}`}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent data-financial-dialog className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {editing ? "Edit" : "Add"} {titles[kind]}

@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3001",
-    "build": "next build",
+    "build": "node scripts/build-pwa.mjs && next build",
     "check-types": "tsc --noEmit",
-    "start": "next start"
+    "start": "next start",
+    "test:pwa": "node --test scripts/service-worker.test.mjs"
   },
   "dependencies": {
     "@portfolio/api": "workspace:*",

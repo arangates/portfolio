@@ -12,6 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@portfolio/ui/components/sidebar";
 
 export function NavMain({
@@ -22,6 +23,7 @@ export function NavMain({
   items: ReadonlyArray<{ title: string; url: string; icon: LucideIcon }>;
 }) {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <SidebarGroup>
@@ -35,6 +37,7 @@ export function NavMain({
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   isActive={isActive}
+                  onClick={() => setOpenMobile(false)}
                   tooltip={item.title}
                   render={<Link href={item.url as Route} />}
                 >

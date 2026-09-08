@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@portfolio/ui/components/button";
 import {
@@ -48,7 +52,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 async function saveRecord(kind: string, data: Record<string, unknown>) {
-  const response = await fetch("/api/portfolio/records", {
+  const response = await appFetch("/api/portfolio/records", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ kind, data }),
@@ -63,6 +67,7 @@ export function PreferenceForm({
   preference: { baseCurrency: string; locale: string; timeZone: string };
 }) {
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const router = useRouter();
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -122,6 +127,7 @@ export function PreferenceForm({
 
 export function ExchangeRateForm({ baseCurrency }: { baseCurrency: string }) {
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const router = useRouter();
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -181,6 +187,7 @@ export function ExchangeRateForm({ baseCurrency }: { baseCurrency: string }) {
 
 export function AccountForm({ name, email }: { name: string; email: string }) {
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const router = useRouter();
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -229,6 +236,7 @@ export function AccountForm({ name, email }: { name: string; email: string }) {
 export function DataControls() {
   const [file, setFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const [result, setResult] = useState<{
     created: number;
     updated: number;
@@ -245,7 +253,7 @@ export function DataControls() {
     try {
       const form = new FormData();
       form.set("file", file);
-      const response = await fetch("/api/manual-data/import", { method: "POST", body: form });
+      const response = await appFetch("/api/manual-data/import", { method: "POST", body: form });
       const body = (await response.json()) as {
         error?: string;
         result?: {
@@ -320,7 +328,7 @@ export function DataControls() {
             <UploadIcon data-icon="inline-start" />
             Import backup
           </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent data-financial-dialog className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Import manual data</DialogTitle>
               <DialogDescription>
@@ -389,6 +397,7 @@ export function DataControls() {
 
 export function SecurityForm() {
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
@@ -441,6 +450,7 @@ export function SecurityForm() {
 export function DeleteAccountCard() {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const router = useRouter();
   async function deleteAccount() {
     setPending(true);

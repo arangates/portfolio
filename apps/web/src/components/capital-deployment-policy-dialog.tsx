@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { Button } from "@portfolio/ui/components/button";
 import { Checkbox } from "@portfolio/ui/components/checkbox";
 import {
@@ -79,6 +83,7 @@ export function CapitalDeploymentPolicyDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const [targets, setTargets] = useState<Record<Bucket, number>>(() => initialTargets(allocation));
   const router = useRouter();
   const targetTotal = Object.values(targets).reduce((sum, value) => sum + Number(value || 0), 0);
@@ -105,7 +110,7 @@ export function CapitalDeploymentPolicyDialog({
       })),
     };
     try {
-      const response = await fetch("/api/capital-deployment/policy", {
+      const response = await appFetch("/api/capital-deployment/policy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -128,7 +133,7 @@ export function CapitalDeploymentPolicyDialog({
         <Settings2Icon data-icon="inline-start" />
         {policy.configured ? "Edit policy" : "Configure policy"}
       </DialogTrigger>
-      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-4xl">
+      <DialogContent data-financial-dialog className="max-h-[92vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Capital deployment policy</DialogTitle>
           <DialogDescription>

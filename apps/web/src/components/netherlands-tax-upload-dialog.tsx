@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { driveArchiveResultText, type DriveArchiveStatus } from "@/lib/drive-archive-shared";
 import { Button } from "@portfolio/ui/components/button";
 import {
@@ -40,7 +44,7 @@ async function uploadFile(file: File, taxpayerMemberId: string): Promise<UploadR
   body.set("file", file);
   body.set("taxpayerMemberId", taxpayerMemberId);
   try {
-    const response = await fetch("/api/tax/netherlands/imports", { method: "POST", body });
+    const response = await appFetch("/api/tax/netherlands/imports", { method: "POST", body });
     const payload = (await response.json()) as {
       error?: string;
       result?: {
@@ -74,6 +78,7 @@ async function uploadFile(file: File, taxpayerMemberId: string): Promise<UploadR
 export function NetherlandsTaxUploadDialog({ taxpayers }: { taxpayers: TaxpayerOption[] }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const [error, setError] = useState<string | null>(null);
   const [completed, setCompleted] = useState(0);
   const [total, setTotal] = useState(0);
@@ -126,7 +131,7 @@ export function NetherlandsTaxUploadDialog({ taxpayers }: { taxpayers: TaxpayerO
         <UploadIcon data-icon="inline-start" />
         Import assessments
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent data-financial-dialog className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Import Dutch final assessments</DialogTitle>
           <DialogDescription>

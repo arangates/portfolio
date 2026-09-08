@@ -6,15 +6,18 @@ import { Toaster } from "@portfolio/ui/components/sonner";
 
 import { queryClient } from "@/utils/trpc";
 
+import { PwaProvider } from "./pwa-controls";
 import { ThemeProvider } from "./theme-provider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      <QueryClientProvider client={queryClient}>
-        {children}
-        <ReactQueryDevtools />
-      </QueryClientProvider>
+      <PwaProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+          <ReactQueryDevtools />
+        </QueryClientProvider>
+      </PwaProvider>
       <Toaster richColors />
     </ThemeProvider>
   );

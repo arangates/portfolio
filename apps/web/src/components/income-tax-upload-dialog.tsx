@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { driveArchiveResultText, type DriveArchiveStatus } from "@/lib/drive-archive-shared";
 import { Button } from "@portfolio/ui/components/button";
 import {
@@ -38,7 +42,7 @@ async function uploadFile(file: File): Promise<UploadResult> {
   const body = new FormData();
   body.set("file", file);
   try {
-    const response = await fetch("/api/tax/imports", { method: "POST", body });
+    const response = await appFetch("/api/tax/imports", { method: "POST", body });
     const payload = (await response.json()) as {
       error?: string;
       result?: {
@@ -72,6 +76,7 @@ async function uploadFile(file: File): Promise<UploadResult> {
 export function IncomeTaxUploadDialog() {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const [error, setError] = useState<string | null>(null);
   const [completed, setCompleted] = useState(0);
   const [total, setTotal] = useState(0);
@@ -120,7 +125,7 @@ export function IncomeTaxUploadDialog() {
         <UploadIcon data-icon="inline-start" />
         Import ITR JSON
       </DialogTrigger>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent data-financial-dialog className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Import Indian income-tax history</DialogTitle>
           <DialogDescription>

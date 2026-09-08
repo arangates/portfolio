@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { Button } from "@portfolio/ui/components/button";
 import { Checkbox } from "@portfolio/ui/components/checkbox";
 import {
@@ -79,6 +83,7 @@ export function CommodityInventoryDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const editing = Boolean(values.id);
@@ -92,7 +97,7 @@ export function CommodityInventoryDialog({
     if (values.id) data.id = values.id;
     data.eligibleForFire = formData.has("eligibleForFire");
     try {
-      const response = await fetch("/api/commodity-inventory/records", {
+      const response = await appFetch("/api/commodity-inventory/records", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -119,7 +124,7 @@ export function CommodityInventoryDialog({
         {editing ? <PencilIcon /> : <PlusIcon data-icon="inline-start" />}
         {compact ? <span className="sr-only">Edit inventory item</span> : "Add inventory item"}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent data-financial-dialog className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{editing ? "Update" : "Add"} physical item</DialogTitle>
           <DialogDescription>

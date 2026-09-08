@@ -1,5 +1,9 @@
 "use client";
 
+import { useOperationBusy } from "@/hooks/use-operation-busy";
+
+import { appFetch } from "@/lib/app-activity";
+
 import { Button } from "@portfolio/ui/components/button";
 import { RefreshCwIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,11 +13,12 @@ import { toast } from "sonner";
 export function MutualFundSyncButton({ hasData }: { hasData: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  useOperationBusy(pending);
 
   async function sync() {
     setPending(true);
     try {
-      const response = await fetch("/api/mutual-funds/sync", { method: "POST" });
+      const response = await appFetch("/api/mutual-funds/sync", { method: "POST" });
       const payload = (await response.json()) as {
         error?: string;
         result?: { matched: number; synced: number; navRowsWritten: number; errors: unknown[] };
