@@ -1,3 +1,4 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { FireArchiveButton } from "@/components/fire-archive-button";
 import { FireCharts } from "@/components/fire-charts";
@@ -5,7 +6,7 @@ import { FireRecordDialog } from "@/components/fire-record-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import { getFirePlan } from "@portfolio/api/fire-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -61,6 +62,7 @@ function profileValues(
 }
 
 export default async function FirePage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const plan = await getFirePlan(session.user.id);
@@ -157,6 +159,27 @@ export default async function FirePage() {
             },
             {
               label: `${primary?.name ?? "Primary"} corpus`,
+              explanation: {
+                formula:
+                  "Maximum of the deterministic lifespan corpus and the policy corpus (recurring reserve + one-time reserve).",
+                inputs: [
+                  {
+                    label: "Lifespan corpus",
+                    value: formatCurrency(primary?.deterministicCorpus ?? 0, plan.baseCurrency),
+                  },
+                  {
+                    label: "Recurring reserve",
+                    value: formatCurrency(primary?.recurringReserve ?? 0, plan.baseCurrency),
+                  },
+                  {
+                    label: "One-time reserve",
+                    value: formatCurrency(primary?.oneTimeReserve ?? 0, plan.baseCurrency),
+                  },
+                ],
+                limitations:
+                  "A model output using saved expenses, income, inflation, return and withdrawal assumptions; not a guaranteed future requirement.",
+                sourceHref: "/dashboard/fire",
+              },
               value: formatCurrency(primary?.requiredCorpus ?? 0, plan.baseCurrency),
               badge: `SWR ${formatPercent(plan.profile.safeWithdrawalRate, 1)}`,
               note: `Gap ${formatCurrency(primary?.gap ?? 0, plan.baseCurrency)}`,
@@ -165,6 +188,23 @@ export default async function FirePage() {
             },
             {
               label: "Readiness",
+              explanation: {
+                formula:
+                  "Current investable assets ÷ required corpus. A zero corpus yields 100% readiness.",
+                inputs: [
+                  {
+                    label: "Investable assets",
+                    value: formatCurrency(plan.currentInvestableAssets, plan.baseCurrency),
+                  },
+                  {
+                    label: "Required corpus",
+                    value: formatCurrency(primary?.requiredCorpus ?? 0, plan.baseCurrency),
+                  },
+                ],
+                limitations:
+                  "May exceed 100%. This funding ratio is distinct from simulation success probability.",
+                sourceHref: "/dashboard/fire",
+              },
               value: formatPercent(primary?.progress ?? 0, 0),
               badge:
                 primary?.yearsToTarget === null

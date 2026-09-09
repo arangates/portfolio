@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatFullCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -40,6 +41,7 @@ type SalaryPoint = {
 };
 
 export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency: string }) {
+  const { formatCurrency } = useAmountFormat();
   const latest = data.at(-1);
   const totalDeductions = data.reduce(
     (sum, row) => sum + row.wageTax + row.pensionContribution + row.socialInsurance,

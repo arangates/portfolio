@@ -1,10 +1,11 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { SalaryCharts } from "@/components/salary-charts";
 import { SalaryUploadDialog } from "@/components/salary-upload-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import { getRecentSalaryImports } from "@portfolio/api/salary-import";
 import { getSalaryLineItemTotals, getSalaryPayslips } from "@portfolio/api/salary-queries";
 import { auth } from "@portfolio/auth";
@@ -58,6 +59,7 @@ function missingPeriods(periods: string[]) {
 }
 
 export default async function SalaryPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const [payslips, imports] = await Promise.all([

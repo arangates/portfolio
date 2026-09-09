@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatFullCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -35,6 +36,7 @@ export function RealEstateCharts({
   history: Array<{ date: string; value: number }>;
   currency: string;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const series = allocation
     .filter((item) => item.value > 0)
     .toSorted((left, right) => right.value - left.value)

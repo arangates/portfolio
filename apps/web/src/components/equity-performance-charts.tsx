@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -44,6 +45,7 @@ export function EquityPerformanceCharts({
   }>;
   history: Array<{ date: string; investedValue: number; marketValue: number }>;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const sorted = [...holdings].sort(
     (left, right) => Math.abs(right.unrealizedPnl) - Math.abs(left.unrealizedPnl),
   );

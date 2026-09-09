@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { AmountPreferences } from "@/components/amount-preferences";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -32,15 +34,19 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const amountMode =
+    (await cookies()).get("selvam-amount-mode")?.value === "exact" ? "exact" : "compact";
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AmountPreferences initialMode={amountMode}>{children}</AmountPreferences>
+        </Providers>
       </body>
     </html>
   );

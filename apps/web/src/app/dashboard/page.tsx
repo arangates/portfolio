@@ -1,3 +1,6 @@
+import { SnapshotChanges } from "@/components/snapshot-changes";
+import { getSnapshotChanges } from "@portfolio/api/snapshot-insights-queries";
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { DataTable } from "@/components/data-table";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
@@ -5,7 +8,7 @@ import { PortfolioCharts } from "@/components/portfolio-charts";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { UploadDialog } from "@/components/upload-dialog";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import { getPortfolioOverview } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -20,10 +23,14 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
 
-  const overview = await getPortfolioOverview(session.user.id);
+  const [overview, changes] = await Promise.all([
+    getPortfolioOverview(session.user.id),
+    getSnapshotChanges(session.user.id),
+  ]);
   const { baseCurrency } = overview.preference;
   const hasAssets = overview.assets.length > 0;
   const equityReturn =
@@ -75,6 +82,17 @@ export default async function DashboardPage() {
               items={[
                 {
                   label: "Net worth",
+                  explanation: {
+                    formula:
+                      "Sum of the latest asset values, adjusted for ownership and converted using stored FX rates.",
+                    inputs: overview.allocation.map((a) => ({
+                      label: a.category,
+                      value: formatCurrency(a.value, baseCurrency),
+                    })),
+                    limitations:
+                      "Asset total only: liabilities are not deducted. Source dates differ; this is not a synchronized live valuation. Assets with missing FX rates are excluded.",
+                    sourceHref: "/dashboard/analytics#wealth-flow",
+                  },
                   value: formatCurrency(overview.totals.netWorth, baseCurrency),
                   badge: `${overview.assets.length} positions`,
                   note: "Converted into your base currency",
@@ -86,6 +104,17 @@ export default async function DashboardPage() {
                 },
                 {
                   label: "Liquid assets",
+                  explanation: {
+                    formula:
+                      "Sum of the liquid portion of each asset, converted to the base currency.",
+                    inputs: overview.liquidAllocation.map((a) => ({
+                      label: a.category,
+                      value: formatCurrency(a.value, baseCurrency),
+                    })),
+                    limitations:
+                      "Liquidity follows saved classifications. It does not guarantee immediate access or account for sale costs.",
+                    sourceHref: "/dashboard/analytics#liquidity-structure",
+                  },
                   value: formatCurrency(overview.totals.liquidValue, baseCurrency),
                   badge: formatPercent(
                     overview.totals.netWorth === 0
@@ -101,6 +130,20 @@ export default async function DashboardPage() {
                 overview.equityBreakdown.length > 0
                   ? {
                       label: "Indian equity P&L",
+                      explanation: {
+                        formula:
+                          "Imported Indian equity market value minus invested value. Percentage = P&L ÷ invested value.",
+                        inputs: [
+                          {
+                            label: "Invested value",
+                            value: formatCurrency(overview.totals.equityInvested, "INR"),
+                          },
+                          { label: "P&L", value: formatCurrency(overview.totals.equityPnl, "INR") },
+                        ],
+                        limitations:
+                          "Snapshot unrealized P&L, not total return. This does not include every historical realized gain, dividend, fee or cash flow.",
+                        sourceHref: "/dashboard/indian-equity",
+                      },
                       value: formatCurrency(overview.totals.equityPnl, "INR"),
                       badge: formatPercent(equityReturn, 2),
                       note: "Latest imported position snapshot",
@@ -126,6 +169,22 @@ export default async function DashboardPage() {
                     },
                 {
                   label: "Long-term assets",
+                  explanation: {
+                    formula: "Maximum of zero and (net worth − liquid assets).",
+                    inputs: [
+                      {
+                        label: "Net worth",
+                        value: formatCurrency(overview.totals.netWorth, baseCurrency),
+                      },
+                      {
+                        label: "Liquid assets",
+                        value: formatCurrency(overview.totals.liquidValue, baseCurrency),
+                      },
+                    ],
+                    limitations:
+                      "A residual classification based on saved liquidity settings, not an estimate of liquidation proceeds.",
+                    sourceHref: "/dashboard/analytics#liquidity-structure",
+                  },
                   value: formatCurrency(longTermValue, baseCurrency),
                   badge: formatPercent(
                     overview.totals.netWorth === 0 ? 0 : longTermValue / overview.totals.netWorth,
@@ -153,6 +212,7 @@ export default async function DashboardPage() {
               allocationDescription={`Cash and readily sellable assets only, grouped by source in ${baseCurrency}.`}
               allocationMetricLabel="liquid value"
             />
+            <SnapshotChanges changes={changes} />
             <DataTable assets={overview.assets} baseCurrency={baseCurrency} />
           </>
         )}

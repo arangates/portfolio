@@ -1,8 +1,9 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -59,6 +60,7 @@ export function FinancialTwinCharts({
   fireMonthlySavings: number | null;
   contributionPlan: Contribution[];
 }) {
+  const { formatCurrency } = useAmountFormat();
   const isMobile = useIsMobile();
   const income = Math.max(0, typicalNetIncome ?? 0);
   const cost = Math.max(0, householdCost ?? 0);

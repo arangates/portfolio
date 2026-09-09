@@ -1,7 +1,8 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import { getSalaryPayslip } from "@portfolio/api/salary-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -26,6 +27,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 export default async function SalaryPayslipPage({ params }: { params: Promise<{ id: string }> }) {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const { id } = await params;

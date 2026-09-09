@@ -1,11 +1,7 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
-import {
-  formatCompactCurrency,
-  formatCurrency,
-  formatFullCurrency,
-  formatPercent,
-} from "@/lib/format";
+import { formatCompactCurrency, formatFullCurrency, formatPercent } from "@/lib/format";
 import {
   EChartsPieChart,
   type ChartConfig,
@@ -39,6 +35,7 @@ export function InstitutionConcentrationPieChart({
   institutions: Array<{ institution: string; amount: number }>;
   currency?: string;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const [selected, setSelected] = useState<string | null>(null);
   const total = institutions.reduce((sum, institution) => sum + institution.amount, 0);
   const series = institutions

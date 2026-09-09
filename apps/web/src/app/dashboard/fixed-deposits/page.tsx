@@ -1,3 +1,4 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { ArchiveRecordButton } from "@/components/archive-record-button";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { InstitutionConcentrationPieChart } from "@/components/evilcharts/blocks/market-share-echarts-pie-chart";
@@ -5,7 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import { getCurrentFixedDeposits } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -38,6 +39,7 @@ function maturityValue(deposit: {
 }
 
 export default async function FixedDepositsPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const deposits = await getCurrentFixedDeposits(session.user.id);

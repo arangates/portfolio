@@ -1,12 +1,14 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
-import { formatCurrency } from "@/lib/format";
+import { FreshnessBadge } from "./freshness-badge";
 import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { DataTable as ShadcnDataTable } from "@/components/data-table/data-table";
 import { Badge } from "@portfolio/ui/components/badge";
 import type { ColumnDef } from "@tanstack/react-table";
 
 export type AssetRow = {
+  asOf?: string | Date | null;
   key: string;
   name: string;
   category: string;
@@ -19,6 +21,7 @@ export type AssetRow = {
 };
 
 export function DataTable({ assets, baseCurrency }: { assets: AssetRow[]; baseCurrency: string }) {
+  const { formatCurrency } = useAmountFormat();
   const columns: ColumnDef<AssetRow>[] = [
     {
       accessorKey: "name",
@@ -39,6 +42,16 @@ export function DataTable({ assets, baseCurrency }: { assets: AssetRow[]; baseCu
       ),
     },
     { accessorKey: "category", header: "Category" },
+    {
+      accessorKey: "asOf",
+      header: "Source freshness",
+      cell: ({ row }) => (
+        <FreshnessBadge
+          asOf={row.original.asOf}
+          maxAgeDays={row.original.category === "Real estate" ? 365 : 31}
+        />
+      ),
+    },
     {
       accessorKey: "isLiquid",
       header: "Liquidity",

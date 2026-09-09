@@ -1,3 +1,4 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { ArchiveRecordButton } from "@/components/archive-record-button";
 import { CommodityInventoryArchiveButton } from "@/components/commodity-inventory-archive-button";
 import { CommodityInventoryDialog } from "@/components/commodity-inventory-dialog";
@@ -7,7 +8,7 @@ import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import { getCommodityInventoryDashboard } from "@portfolio/api/commodity-inventory";
 import { getCommodityHoldings } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
@@ -35,6 +36,7 @@ const statusLabel: Record<string, string> = {
 };
 
 export default async function CommoditiesPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const [holdings, inventory] = await Promise.all([

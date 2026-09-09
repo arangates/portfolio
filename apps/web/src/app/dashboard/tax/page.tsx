@@ -1,10 +1,11 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { IncomeTaxCharts } from "@/components/income-tax-charts";
 import { IncomeTaxUploadDialog } from "@/components/income-tax-upload-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import { getIncomeTaxReturns } from "@portfolio/api/income-tax-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -31,6 +32,7 @@ function assessmentYearGaps(years: number[]) {
 }
 
 export default async function IncomeTaxPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const returns = await getIncomeTaxReturns(session.user.id);

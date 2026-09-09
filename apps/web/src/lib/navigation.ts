@@ -1,4 +1,5 @@
 import {
+  CalendarDaysIcon,
   BanknoteIcon,
   BrainCircuitIcon,
   Building2Icon,
@@ -37,6 +38,12 @@ export const dashboardNavigation = [
         url: "/dashboard/analytics",
         icon: ChartNoAxesCombinedIcon,
         keywords: "charts trends intelligence wealth cash flow analysis",
+      },
+      {
+        title: "Calendar",
+        url: "/dashboard/calendar",
+        icon: CalendarDaysIcon,
+        keywords: "events bills maturity renewal salary tax goals calendar",
       },
       {
         title: "Fixed deposits",

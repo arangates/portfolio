@@ -1,8 +1,9 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { DataTable } from "@/components/data-table/data-table";
-import { formatCurrency } from "@/lib/format";
+
 import { Badge } from "@portfolio/ui/components/badge";
 import type { ColumnDef } from "@tanstack/react-table";
 
@@ -255,6 +256,7 @@ export function FundActivityDataTable({ data }: { data: FundActivity[] }) {
 }
 
 function Money({ value }: { value: number }) {
+  const { formatCurrency } = useAmountFormat();
   return <div className="text-right tabular-nums">{formatCurrency(value, "INR")}</div>;
 }
 

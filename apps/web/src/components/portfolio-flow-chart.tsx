@@ -1,8 +1,9 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/format";
+import { formatCompactCurrency, formatPercent } from "@/lib/format";
 import {
   EChartsSankeyChart,
   type ChartConfig,
@@ -56,6 +57,7 @@ export function PortfolioFlowChart({
   liquidValue: number;
   currency: string;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const isMobile = useIsMobile();
   const branches = new Map<string, number>();
   for (const asset of assets) {

@@ -1,9 +1,10 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { VerifiedReturnsCharts } from "@/components/verified-returns-charts";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import { getVerifiedReturnsEngine } from "@portfolio/api/verified-returns-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -55,6 +56,7 @@ function returnValue(value: number | null) {
 }
 
 export default async function VerifiedReturnsPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const engine = await getVerifiedReturnsEngine(session.user.id);

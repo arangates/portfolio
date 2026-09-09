@@ -1,8 +1,9 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { FinancialTwinCharts } from "@/components/financial-twin-charts";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import { getFinancialTwin } from "@portfolio/api/financial-twin-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -63,6 +64,7 @@ function targetLabel(years: number | null) {
 }
 
 export default async function FinancialTwinPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const twin = await getFinancialTwin(session.user.id);
@@ -99,6 +101,29 @@ export default async function FinancialTwinPage() {
         items={[
           {
             label: "Observed monthly surplus",
+            explanation: {
+              formula:
+                "Median validated monthly take-home in the six completed-month window − current recurring household cost.",
+              inputs: [
+                {
+                  label: "Median take-home",
+                  value:
+                    twin.capacity.typicalNetIncome === null
+                      ? "Unavailable"
+                      : formatCurrency(twin.capacity.typicalNetIncome, currency),
+                },
+                {
+                  label: "Recurring household cost",
+                  value:
+                    twin.capacity.monthlyHouseholdCost === null
+                      ? "Unavailable"
+                      : formatCurrency(twin.capacity.monthlyHouseholdCost, currency),
+                },
+              ],
+              limitations:
+                "Requires sufficient recent validated income evidence. This estimates capacity from saved income and budgets; it is not a reconciled bank cash-flow balance.",
+              sourceHref: "/dashboard/twin#evidence-ledger",
+            },
             value:
               twin.capacity.observedMonthlySurplus === null
                 ? "—"
@@ -111,6 +136,26 @@ export default async function FinancialTwinPage() {
           },
           {
             label: "Supported deployment",
+            explanation: {
+              formula:
+                "Minimum of non-negative observed monthly surplus and non-negative saved monthly deployment policy.",
+              inputs: [
+                {
+                  label: "Observed surplus",
+                  value:
+                    twin.capacity.observedMonthlySurplus === null
+                      ? "Unavailable"
+                      : formatCurrency(twin.capacity.observedMonthlySurplus, currency),
+                },
+                {
+                  label: "Policy amount",
+                  value: formatCurrency(twin.capacity.policyMonthlyDeployment, currency),
+                },
+              ],
+              limitations:
+                "Unavailable when income evidence is insufficient. Existing capital transfers are excluded from new monthly contributions.",
+              sourceHref: "/dashboard/twin#twin-capacity-check",
+            },
             value:
               twin.capacity.supportedMonthlyDeployment === null
                 ? "—"

@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/format";
+import { formatCompactCurrency, formatPercent } from "@/lib/format";
 import { EChartsVisualization } from "@portfolio/ui/components/echarts-visualization";
 import type { EChartsVisualizationOption } from "@portfolio/ui/components/echarts-visualization";
 import { useTheme } from "next-themes";
@@ -103,6 +104,7 @@ export function MutualFundIntelligenceCharts({
   categories: Category[];
   correlation: Correlation;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const { resolvedTheme } = useTheme();
   const dark = resolvedTheme === "dark";
   const theme = chartTheme(dark);

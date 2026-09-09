@@ -67,3 +67,15 @@ export function formatDate(value: string | Date) {
     year: "numeric",
   }).format(parsed);
 }
+
+export type AmountMode = "compact" | "exact";
+export function createAmountFormatter(mode: AmountMode) {
+  return {
+    formatCurrency: (value: number, currency: string) =>
+      Number.isFinite(value)
+        ? mode === "exact"
+          ? formatFullCurrency(value, currency)
+          : formatCompactCurrency(value, currency)
+        : "—",
+  };
+}

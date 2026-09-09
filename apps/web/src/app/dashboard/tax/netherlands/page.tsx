@@ -1,10 +1,11 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { NetherlandsTaxCharts } from "@/components/netherlands-tax-charts";
 import { NetherlandsTaxUploadDialog } from "@/components/netherlands-tax-upload-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import {
   getNetherlandsTaxAssessments,
   getNetherlandsTaxpayerOptions,
@@ -24,6 +25,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function NetherlandsTaxPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const [assessments, taxpayers] = await Promise.all([

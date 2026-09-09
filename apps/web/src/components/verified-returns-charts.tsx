@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/format";
+import { formatCompactCurrency, formatPercent } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -57,6 +58,7 @@ function FlowChart({
   data: FlowPoint[];
   currency: string;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const visible = data.slice(-48);
   const cumulative = visible.at(-1)?.cumulativeNetContributions ?? 0;
   return (

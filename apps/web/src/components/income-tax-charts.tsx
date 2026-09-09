@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatFullCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -41,6 +42,7 @@ export type IncomeTaxChartPoint = {
 };
 
 export function IncomeTaxCharts({ data }: { data: IncomeTaxChartPoint[] }) {
+  const { formatCurrency } = useAmountFormat();
   const latest = data.at(-1);
   const totalRefunds = data.reduce((sum, row) => sum + row.refundDue, 0);
   return (

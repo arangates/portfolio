@@ -1,3 +1,4 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { ArchiveRecordButton } from "@/components/archive-record-button";
 import { BankAccountCharts } from "@/components/bank-account-charts";
 import { EmptyDataState } from "@/components/empty-data-state";
@@ -5,7 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import { getBankAccounts, getBankBalanceHistory } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -22,6 +23,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function InrPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const [accounts, history] = await Promise.all([

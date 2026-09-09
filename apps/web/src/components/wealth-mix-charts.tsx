@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import {
   EChartsPieChart,
   type ChartConfig,
@@ -35,6 +36,7 @@ export function WealthMixCharts({
   liquidValue: number;
   currency: string;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const allocationData = allocation.map((item, index) => ({
     id: keyFor(item.category, index),
     value: item.value,

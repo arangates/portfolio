@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatFullCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsComposedChart,
   type ChartConfig as ComposedChartConfig,
@@ -53,6 +54,7 @@ const cashFlowConfig = {
 } satisfies ComposedChartConfig;
 
 export function FireCharts({ results, currency }: { results: ScenarioResult[]; currency: string }) {
+  const { formatCurrency } = useAmountFormat();
   const [selectedId, setSelectedId] = useState(results[0]?.id ?? "");
   const selected = results.find((result) => result.id === selectedId) ?? results[0];
   if (!selected) return null;

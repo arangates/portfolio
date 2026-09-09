@@ -1,3 +1,4 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
@@ -9,7 +10,7 @@ import {
   TradebookImportsDataTable,
 } from "@/components/zerodha-data-tables";
 import { ZerodhaTradebookCharts } from "@/components/zerodha-tradebook-charts";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import { getLatestZerodhaPortfolio } from "@portfolio/api/portfolio-queries";
 import { getZerodhaTradebookAnalytics } from "@portfolio/api/zerodha-tradebook-queries";
 import { auth } from "@portfolio/auth";
@@ -33,6 +34,7 @@ function TradebookImport() {
 }
 
 export default async function TradebookPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const [tradebook, portfolio] = await Promise.all([

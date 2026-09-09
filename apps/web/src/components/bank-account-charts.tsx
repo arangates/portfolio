@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -45,6 +46,7 @@ export function BankAccountCharts({
   }>;
   history: Array<{ date: string; value: number }>;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const data = [...accounts]
     .sort((left, right) => right.amount - left.amount)
     .map((account) => ({

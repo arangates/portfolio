@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatFullCurrency } from "@/lib/format";
+import { formatCompactCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -41,6 +42,7 @@ export type NetherlandsTaxChartPoint = {
 };
 
 export function NetherlandsTaxCharts({ data }: { data: NetherlandsTaxChartPoint[] }) {
+  const { formatCurrency } = useAmountFormat();
   const latest = data.at(-1);
   return (
     <div className="grid min-w-0 gap-4 px-4 xl:grid-cols-2 lg:px-6">

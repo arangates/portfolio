@@ -1,4 +1,5 @@
 "use client";
+import { AmountModeToggle } from "@/components/amount-preferences";
 
 import { PrivacyToggle } from "@/components/dashboard-experience";
 import { InstallApp } from "@/components/pwa-controls";
@@ -22,6 +23,7 @@ export function SiteHeader() {
         <Separator orientation="vertical" className="mx-2 h-4 data-vertical:self-auto" />
         <h1 className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">{title}</h1>
         <div className="flex shrink-0 items-center gap-2">
+          <AmountModeToggle />
           <InstallApp />
           <PrivacyToggle />
           <CommandSearch />

@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -37,6 +38,7 @@ export function ZerodhaTradebookCharts({
   monthly: Array<{ month: string; buys: number; sells: number; netInvested: number }>;
   funds: Array<{ name: string; buyAmount: number }>;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const topFunds = funds.slice(0, 8).map((fund) => ({
     ...fund,
     label: fund.name

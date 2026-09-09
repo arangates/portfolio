@@ -1,3 +1,7 @@
+import {
+  CalculationExplanationButton,
+  type CalculationExplanation,
+} from "./calculation-explanation";
 import { ArrowUpRightIcon, type LucideIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -13,6 +17,7 @@ import {
 } from "@portfolio/ui/components/card";
 
 export type MetricCard = {
+  explanation?: CalculationExplanation;
   label: string;
   value: string;
   badge?: string;
@@ -57,7 +62,7 @@ export function SectionCards({ items }: { items: MetricCard[] }) {
                   </Badge>
                 </CardAction>
               ) : null}
-              <div className="min-w-0 text-xs text-muted-foreground">
+              <div className="min-w-0 pr-5 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground/80">{item.note}</span>
                 {item.detail ? (
                   <span className="hidden @min-[260px]/card:inline"> · {item.detail}</span>
@@ -67,7 +72,7 @@ export function SectionCards({ items }: { items: MetricCard[] }) {
           </Card>
         );
 
-        return item.href ? (
+        const content = item.href ? (
           <Link
             href={item.href}
             key={item.label}
@@ -78,6 +83,16 @@ export function SectionCards({ items }: { items: MetricCard[] }) {
           </Link>
         ) : (
           <div key={item.label}>{card}</div>
+        );
+        return (
+          <div key={item.label} className="relative h-full">
+            {content}
+            {item.explanation ? (
+              <div className="absolute bottom-1 right-1">
+                <CalculationExplanationButton title={item.label} explanation={item.explanation} />
+              </div>
+            ) : null}
+          </div>
         );
       })}
     </div>

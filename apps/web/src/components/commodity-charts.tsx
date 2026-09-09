@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -39,6 +40,7 @@ export function CommodityCharts({
     itemizedGrossGrams: number;
   }>;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const inrHoldings = holdings
     .filter((holding) => holding.currency === "INR")
     .sort((left, right) => right.value - left.value)

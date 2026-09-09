@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -65,6 +66,7 @@ export function HouseholdCharts({
   essentialExpenses?: number;
   flexibleExpenses?: number;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const total = categories.reduce((sum, row) => sum + row.amount, 0);
   const current = scenarios[0];
   const mixData = [

@@ -1,12 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import {
-  formatCompactCurrency,
-  formatCurrency,
-  formatFullCurrency,
-  formatPercent,
-} from "@/lib/format";
+import { formatCompactCurrency, formatFullCurrency, formatPercent } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
@@ -69,6 +65,7 @@ export function PortfolioCharts({
   historyTitle?: string;
   historyDescription?: string;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const allocationItems = allocation
     .filter((item) => item.value > 0)
     .toSorted((left, right) => right.value - left.value);

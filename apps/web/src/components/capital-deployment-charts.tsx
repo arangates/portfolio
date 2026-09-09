@@ -1,7 +1,8 @@
 "use client";
+import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
-import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/format";
+import { formatCompactCurrency, formatPercent } from "@/lib/format";
 import {
   EChartsBarChart,
   type ChartConfig as BarChartConfig,
@@ -58,6 +59,7 @@ export function CapitalDeploymentCharts({
   maturityWindows: Array<{ days: number; value: number; deposits: number }>;
   currency: string;
 }) {
+  const { formatCurrency } = useAmountFormat();
   const allocationData = allocation.map((item) => ({
     name: item.label,
     current: item.currentWeight * 100,

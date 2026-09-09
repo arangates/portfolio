@@ -1,3 +1,4 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { HouseholdArchiveButton } from "@/components/household-archive-button";
 import { HouseholdCharts } from "@/components/household-charts";
@@ -5,7 +6,7 @@ import { HouseholdRecordDialog } from "@/components/household-record-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 import { getHouseholdDashboard } from "@portfolio/api/household-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -38,6 +39,7 @@ function healthLabel(health: string) {
 }
 
 export default async function HouseholdPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const data = await getHouseholdDashboard(session.user.id);

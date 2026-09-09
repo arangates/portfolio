@@ -1,10 +1,11 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { CapitalDeploymentCharts } from "@/components/capital-deployment-charts";
 import { CapitalDeploymentPolicyDialog } from "@/components/capital-deployment-policy-dialog";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import { getCapitalDeploymentEngine } from "@portfolio/api/capital-deployment-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
@@ -51,6 +52,7 @@ const statusLabels = {
 } as const;
 
 export default async function CapitalDeploymentPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const engine = await getCapitalDeploymentEngine(session.user.id);

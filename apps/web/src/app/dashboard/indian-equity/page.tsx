@@ -1,3 +1,4 @@
+import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioCharts } from "@/components/portfolio-charts";
@@ -5,7 +6,7 @@ import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { UploadDialog } from "@/components/upload-dialog";
 import { HoldingsDataTable } from "@/components/zerodha-data-tables";
-import { formatCurrency, formatDate, formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import {
   getEquitySnapshotHistory,
   getLatestZerodhaPortfolio,
@@ -33,6 +34,7 @@ function HoldingsImport() {
 }
 
 export default async function IndianEquityPage() {
+  const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
   const [portfolio, history] = await Promise.all([
