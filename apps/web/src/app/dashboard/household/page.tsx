@@ -106,6 +106,21 @@ export default async function HouseholdPage() {
           items={[
             {
               label: "Net monthly household cost",
+              explanation: {
+                formula:
+                  "Gross monthly recurring expenses − monthly allowances and refunds. Per-adult cost divides this result by the saved adult count.",
+                inputs: [
+                  {
+                    label: "Gross expenses",
+                    value: formatCurrency(data.metrics.grossExpenses, data.currency),
+                  },
+                  { label: "Refunds", value: formatCurrency(data.metrics.refunds, data.currency) },
+                  { label: "Adults", value: String(data.adultsCount) },
+                ],
+                limitations:
+                  "Based on current saved budget assumptions, not actual bank transactions. One-time purchases are excluded from recurring cost.",
+                sourceHref: "/dashboard/household",
+              },
               value: formatCurrency(data.metrics.netMonthly, data.currency),
               badge: `${data.adultsCount} adults`,
               note: `${formatCurrency(data.metrics.perAdult, data.currency)} per adult`,

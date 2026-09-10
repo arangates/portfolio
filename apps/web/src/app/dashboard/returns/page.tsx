@@ -138,6 +138,23 @@ export default async function VerifiedReturnsPage() {
         items={[
           {
             label: "Indian money-weighted return",
+            explanation: {
+              formula:
+                "XIRR solves for the annual rate at which dated investor cash flows and the ending valuation have zero net present value.",
+              inputs: [
+                {
+                  label: "Included current value",
+                  value: formatPercent(zerodha?.coverage.valueCoverage ?? 0, 2),
+                },
+                {
+                  label: "Evidence",
+                  value: zerodha ? gradeLabels[zerodha.evidenceGrade] : "No data",
+                },
+              ],
+              limitations:
+                "Includes only reconciled transaction histories. Missing opening units are excluded; absent, ambiguous or unsolved returns are withheld. This measures money-weighted performance, not snapshot price change.",
+              sourceHref: "/dashboard/returns#verified-indian-cash-flows",
+            },
             value: returnValue(zerodha?.metrics.moneyWeightedReturn ?? null),
             badge: zerodha ? gradeLabels[zerodha.evidenceGrade] : "No data",
             note: zerodha

@@ -153,6 +153,23 @@ export default async function DashboardPage() {
                     }
                   : {
                       label: "Largest allocation",
+                      explanation: {
+                        formula:
+                          "Highest base-currency category total. Share = category value ÷ net worth.",
+                        inputs: [
+                          {
+                            label: "Category value",
+                            value: formatCurrency(largestAllocation?.value ?? 0, baseCurrency),
+                          },
+                          {
+                            label: "Net worth",
+                            value: formatCurrency(overview.totals.netWorth, baseCurrency),
+                          },
+                        ],
+                        limitations:
+                          "Based on latest asset snapshots and stored FX rates. Assets lacking conversion rates are excluded.",
+                        sourceHref: "/dashboard/analytics#wealth-mix",
+                      },
                       value: largestAllocation?.category ?? "—",
                       badge: formatPercent(
                         overview.totals.netWorth === 0

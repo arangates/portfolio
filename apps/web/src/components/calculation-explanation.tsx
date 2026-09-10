@@ -36,7 +36,7 @@ export function CalculationExplanationButton({
       >
         <CircleHelpIcon />
       </DialogTrigger>
-      <DialogContent data-financial-dialog>
+      <DialogContent data-financial-dialog className="max-h-[85dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}: calculation</DialogTitle>
           <DialogDescription>{explanation.formula}</DialogDescription>
