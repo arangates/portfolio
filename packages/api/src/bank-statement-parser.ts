@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import Papa from "papaparse";
 import { extractTextItems, type StructuredTextItem } from "unpdf";
 
-export const BANK_STATEMENT_PARSER_VERSION = "bank-statements-v1";
+export const BANK_STATEMENT_PARSER_VERSION = "bank-statements-v2";
 
 export const BANK_CATEGORIES = [
   "salary",
@@ -66,6 +66,28 @@ export type ParsedBankStatement = {
 
 function sha(value: string | Uint8Array) {
   return createHash("sha256").update(value).digest("hex");
+}
+
+/**
+ * PDF text layers occasionally contain NUL/control characters (for example,
+ * an apostrophe encoded as NUL in older ABN AMRO statements). PostgreSQL does
+ * not allow NUL in text values, so normalize extracted text before it is used
+ * for display, hashing, categorization, or persistence.
+ */
+function databaseSafeText(value: string, preserveCsvLayout = false) {
+  return Array.from(value, (character) => {
+    const code = character.charCodeAt(0);
+    if (code === 0) return "'";
+    if (code < 32 || code === 127) {
+      if (preserveCsvLayout && (code === 9 || code === 10 || code === 13)) return character;
+      return " ";
+    }
+    return character;
+  }).join("");
+}
+
+function normalizedText(value: string) {
+  return databaseSafeText(value).replace(/\s+/g, " ").trim();
 }
 
 function euroAmount(value: string) {
@@ -149,7 +171,7 @@ function layoutLines(pages: StructuredTextItem[][]) {
       .map((row) =>
         row.items
           .sort((a, b) => a.x - b.x)
-          .map((item) => item.str)
+          .map((item) => normalizedText(item.str))
           .join(" ")
           .replace(/\s+/g, " ")
           .trim(),
@@ -190,7 +212,7 @@ export async function parseAbnAmroStatement(bytes: Uint8Array): Promise<ParsedBa
   const text = lines.join("\n");
   if (
     !/Statement of Account/i.test(text) ||
-    !text.includes("ABN AMRO") ||
+    !/(?:ABN AMRO|ABNANL2A)/i.test(text) ||
     !/Amount debit/i.test(text)
   ) {
     throw new Error("This is not a supported ABN AMRO Statement of Account.");
@@ -232,10 +254,10 @@ export async function parseAbnAmroStatement(bytes: Uint8Array): Promise<ParsedBa
           candidate.x >= 80 &&
           candidate.x < 360 &&
           !/^(Description|Account Type|Account number|Date|No of pages|Page|Stmt no|ABN AMRO Bank)/i.test(
-            candidate.str,
+            normalizedText(candidate.str),
           ),
       )
-      .map((candidate) => candidate.str.trim())
+      .map((candidate) => normalizedText(candidate.str))
       .filter(Boolean);
     const description = descriptionParts.join(" ").replace(/\s+/g, " ").slice(0, 2000);
     const name = descriptionParts[0] ?? "ABN AMRO transaction";
@@ -310,7 +332,7 @@ export async function parseAbnAmroStatement(bytes: Uint8Array): Promise<ParsedBa
 type IngRow = Record<string, string>;
 
 export function parseIngCsv(text: string): ParsedBankStatement {
-  const result = Papa.parse<IngRow>(text.replace(/^\uFEFF/, ""), {
+  const result = Papa.parse<IngRow>(databaseSafeText(text.replace(/^\uFEFF/, ""), true), {
     header: true,
     skipEmptyLines: "greedy",
   });

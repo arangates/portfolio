@@ -41,9 +41,10 @@ export async function POST(request: Request) {
     });
     return Response.json({ result: { ...result, archive } });
   } catch (error) {
-    return Response.json(
-      { error: error instanceof Error ? error.message : "Bank statement import failed" },
-      { status: 400 },
-    );
+    const rawMessage = error instanceof Error ? error.message : "";
+    const message = /(?:Failed query:|insert into|update .* set|delete from)/i.test(rawMessage)
+      ? "The statement was read, but its transactions could not be saved. No raw database details were exposed; please retry after updating the application."
+      : rawMessage || "Bank statement import failed";
+    return Response.json({ error: message }, { status: 400 });
   }
 }

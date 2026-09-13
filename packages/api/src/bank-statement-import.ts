@@ -130,79 +130,113 @@ export async function processBankStatementImport(input: {
   }
   if (!saved) throw new Error("Could not prepare the bank statement import.");
 
-  let insertedRows = 0;
-  for (let offset = 0; offset < parsed.transactions.length; offset += 200) {
-    const inserted = await db
-      .insert(bankTransaction)
-      .values(
-        parsed.transactions.slice(offset, offset + 200).map((row) => ({
-          userId: input.userId,
-          accountId: account.id,
-          importId: saved!.id,
-          transactionHash: row.transactionHash,
-          bookedAt: atNoon(row.bookedAt)!,
-          valueAt: atNoon(row.valueAt),
-          amount: row.amount.toString(),
-          currency: row.currency,
-          name: row.name,
-          description: row.description,
-          transactionType: row.transactionType,
-          providerCode: row.providerCode,
-          counterpartyName: row.counterpartyName,
-          counterpartyAccountLast4: row.counterpartyAccountLast4,
-          category: row.category,
-          categoryConfidence: row.categoryConfidence.toString(),
-        })),
-      )
-      .onConflictDoNothing()
-      .returning({ id: bankTransaction.id });
-    insertedRows += inserted.length;
-  }
-  const skippedRows = parsed.transactions.length - insertedRows;
-  if (parsed.closingBalance !== null && parsed.periodEnd) {
+  if (saved.status !== "processing" || saved.parserVersion !== BANK_STATEMENT_PARSER_VERSION) {
     await db
-      .insert(bankBalanceSnapshot)
-      .values({
-        userId: input.userId,
-        accountId: account.id,
-        asOf: atNoon(parsed.periodEnd)!,
-        amount: parsed.closingBalance.toString(),
-      })
-      .onConflictDoUpdate({
-        target: [bankBalanceSnapshot.accountId, bankBalanceSnapshot.asOf],
-        set: { amount: parsed.closingBalance.toString() },
-      });
-  }
-  await db.batch([
-    db
       .update(bankStatementImport)
-      .set({ status: "completed", insertedRows, skippedRows, completedAt: new Date() })
+      .set({
+        status: "processing",
+        parserVersion: BANK_STATEMENT_PARSER_VERSION,
+        errorMessage: null,
+        completedAt: null,
+      })
       .where(
         and(eq(bankStatementImport.id, saved.id), eq(bankStatementImport.userId, input.userId)),
-      ),
-    db.insert(auditEvent).values({
-      userId: input.userId,
-      action: "imported",
-      entityType: "bank_statement",
-      entityId: saved.id,
-      metadata: {
-        provider: parsed.provider,
-        rowCount: parsed.transactions.length,
-        insertedRows,
-        skippedRows,
-        validationStatus: parsed.validationStatus,
-        rawFileStoredInDatabase: false,
-      },
-    }),
-  ]);
-  return {
-    importId: saved.id,
-    duplicate: false,
-    provider: parsed.provider,
-    insertedRows,
-    skippedRows,
-    validationStatus: parsed.validationStatus,
-  };
+      );
+  }
+
+  let insertedRows = 0;
+  try {
+    for (let offset = 0; offset < parsed.transactions.length; offset += 200) {
+      const inserted = await db
+        .insert(bankTransaction)
+        .values(
+          parsed.transactions.slice(offset, offset + 200).map((row) => ({
+            userId: input.userId,
+            accountId: account.id,
+            importId: saved!.id,
+            transactionHash: row.transactionHash,
+            bookedAt: atNoon(row.bookedAt)!,
+            valueAt: atNoon(row.valueAt),
+            amount: row.amount.toString(),
+            currency: row.currency,
+            name: row.name,
+            description: row.description,
+            transactionType: row.transactionType,
+            providerCode: row.providerCode,
+            counterpartyName: row.counterpartyName,
+            counterpartyAccountLast4: row.counterpartyAccountLast4,
+            category: row.category,
+            categoryConfidence: row.categoryConfidence.toString(),
+          })),
+        )
+        .onConflictDoNothing()
+        .returning({ id: bankTransaction.id });
+      insertedRows += inserted.length;
+    }
+    const skippedRows = parsed.transactions.length - insertedRows;
+    if (parsed.closingBalance !== null && parsed.periodEnd) {
+      await db
+        .insert(bankBalanceSnapshot)
+        .values({
+          userId: input.userId,
+          accountId: account.id,
+          asOf: atNoon(parsed.periodEnd)!,
+          amount: parsed.closingBalance.toString(),
+        })
+        .onConflictDoUpdate({
+          target: [bankBalanceSnapshot.accountId, bankBalanceSnapshot.asOf],
+          set: { amount: parsed.closingBalance.toString() },
+        });
+    }
+    await db.batch([
+      db
+        .update(bankStatementImport)
+        .set({
+          status: "completed",
+          insertedRows,
+          skippedRows,
+          errorMessage: null,
+          completedAt: new Date(),
+        })
+        .where(
+          and(eq(bankStatementImport.id, saved.id), eq(bankStatementImport.userId, input.userId)),
+        ),
+      db.insert(auditEvent).values({
+        userId: input.userId,
+        action: "imported",
+        entityType: "bank_statement",
+        entityId: saved.id,
+        metadata: {
+          provider: parsed.provider,
+          rowCount: parsed.transactions.length,
+          insertedRows,
+          skippedRows,
+          validationStatus: parsed.validationStatus,
+          rawFileStoredInDatabase: false,
+        },
+      }),
+    ]);
+    return {
+      importId: saved.id,
+      duplicate: false,
+      provider: parsed.provider,
+      insertedRows,
+      skippedRows,
+      validationStatus: parsed.validationStatus,
+    };
+  } catch (error) {
+    await db
+      .update(bankStatementImport)
+      .set({
+        status: "failed",
+        errorMessage: "The parsed statement transactions could not be saved.",
+        completedAt: new Date(),
+      })
+      .where(
+        and(eq(bankStatementImport.id, saved.id), eq(bankStatementImport.userId, input.userId)),
+      );
+    throw error;
+  }
 }
 
 export async function getRecentBankStatementImports(userId: string) {
