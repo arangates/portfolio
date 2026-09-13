@@ -5,6 +5,7 @@ import {
   Building2Icon,
   ChartNoAxesCombinedIcon,
   CoinsIcon,
+  CircleDollarSignIcon,
   DatabaseIcon,
   EuroIcon,
   FlameIcon,
@@ -56,6 +57,12 @@ export const dashboardNavigation = [
   {
     label: "Cash accounts",
     items: [
+      {
+        title: "Cash flow",
+        url: "/dashboard/cash-flow",
+        icon: CircleDollarSignIcon,
+        keywords: "bank statements abn amro ing joint account salary spending transactions",
+      },
       {
         title: "INR accounts",
         shortTitle: "INR",

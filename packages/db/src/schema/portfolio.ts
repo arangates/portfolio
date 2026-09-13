@@ -239,6 +239,8 @@ export const bankAccount = pgTable(
     name: text("name").notNull(),
     accountType: text("account_type").notNull(),
     accountLast4: text("account_last4"),
+    ownershipType: text("ownership_type").default("personal").notNull(),
+    accountFingerprint: text("account_fingerprint"),
     minimumBalance: numeric("minimum_balance", { precision: 30, scale: 8 }),
     currency: text("currency").notNull(),
     notes: text("notes"),
@@ -254,6 +256,7 @@ export const bankAccount = pgTable(
       table.currency,
     ),
     uniqueIndex("bank_account_id_user_uidx").on(table.id, table.userId),
+    uniqueIndex("bank_account_user_fingerprint_uidx").on(table.userId, table.accountFingerprint),
   ],
 );
 

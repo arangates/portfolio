@@ -17,7 +17,8 @@ export type ArchiveSourceType =
   | "degiro_account"
   | "salary_payslip"
   | "india_income_tax"
-  | "netherlands_income_tax";
+  | "netherlands_income_tax"
+  | "bank_statement";
 
 export type DriveArchiveResult = {
   status: "stored" | "already_stored" | "not_connected" | "disabled" | "failed";
@@ -51,6 +52,7 @@ const folderNames: Record<ArchiveSourceType, string> = {
   salary_payslip: "Salary payslips",
   india_income_tax: "Indian income tax",
   netherlands_income_tax: "Dutch income tax",
+  bank_statement: "Bank statements",
 };
 
 function parseScopes(value: string | null) {
