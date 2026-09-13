@@ -10,6 +10,8 @@ import {
   fireIncomeStream,
   fireExpense,
   fireProfile,
+  bankAccount,
+  bankTransaction,
 } from "@portfolio/db";
 import { and, eq, isNull, gte, lt } from "drizzle-orm";
 import { getCurrentFixedDeposits, getPortfolioPreference } from "./portfolio-queries";
@@ -45,6 +47,7 @@ export async function getFinancialCalendar(userId: string, requestedMonth?: stri
     incomes,
     expenses,
     profiles,
+    bankTransactions,
   ] = await Promise.all([
     getCurrentFixedDeposits(userId),
     getHouseholdDashboard(userId),
@@ -107,6 +110,31 @@ export async function getFinancialCalendar(userId: string, requestedMonth?: stri
       .from(fireExpense)
       .where(and(eq(fireExpense.userId, userId), isNull(fireExpense.archivedAt))),
     db.select().from(fireProfile).where(eq(fireProfile.userId, userId)),
+    db
+      .select({
+        id: bankTransaction.id,
+        date: bankTransaction.bookedAt,
+        amount: bankTransaction.amount,
+        currency: bankTransaction.currency,
+        name: bankTransaction.name,
+        description: bankTransaction.description,
+        transactionCategory: bankTransaction.category,
+        accountName: bankAccount.name,
+        institution: bankAccount.institution,
+        ownershipType: bankAccount.ownershipType,
+      })
+      .from(bankTransaction)
+      .innerJoin(
+        bankAccount,
+        and(eq(bankAccount.id, bankTransaction.accountId), eq(bankAccount.userId, userId)),
+      )
+      .where(
+        and(
+          eq(bankTransaction.userId, userId),
+          gte(bankTransaction.bookedAt, start),
+          lt(bankTransaction.bookedAt, end),
+        ),
+      ),
   ]);
   const events: FinancialEvent[] = [];
   const add = (event: FinancialEvent) => {
@@ -215,6 +243,22 @@ export async function getFinancialCalendar(userId: string, requestedMonth?: stri
         "Imported broker ledger event. Amount is the recorded net amount; related internal transfers may have multiple ledger entries.",
       planned: false,
     });
+  for (const transaction of bankTransactions) {
+    const accountScope = transaction.ownershipType === "joint" ? "household" : "personal";
+    const description = transaction.description.trim();
+    add({
+      id: `bank-${transaction.id}`,
+      title: transaction.name || `${transaction.institution} transaction`,
+      date: calendarDay(transaction.date, preference.timeZone),
+      precision: "day",
+      category: "Bank transactions",
+      amount: Number(transaction.amount),
+      currency: transaction.currency,
+      href: `/dashboard/cash-flow/${accountScope}`,
+      detail: `${transaction.accountName} · ${transaction.transactionCategory.replaceAll("_", " ")}${description && description !== transaction.name ? ` · ${description}` : ""}`,
+      planned: false,
+    });
+  }
   for (const item of imports)
     add({
       id: `import-${item.id}`,
