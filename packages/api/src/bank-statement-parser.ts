@@ -189,14 +189,14 @@ export async function parseAbnAmroStatement(bytes: Uint8Array): Promise<ParsedBa
   const lines = layoutLines(pages);
   const text = lines.join("\n");
   if (
-    !text.includes("Statement of Account") ||
+    !/Statement of Account/i.test(text) ||
     !text.includes("ABN AMRO") ||
-    !text.includes("Amount debit")
+    !/Amount debit/i.test(text)
   ) {
     throw new Error("This is not a supported ABN AMRO Statement of Account.");
   }
   const iban = /\b(NL\d{2}ABNA\d{10})\b/.exec(text)?.[1];
-  const statementDateRaw = lines.find((line) => /^\d{2}-\d{2}-\d{4}$/.test(line));
+  const statementDateRaw = /\b\d{2}-\d{2}-\d{4}\b/.exec(text)?.[0];
   if (!iban || !statementDateRaw)
     throw new Error("Could not identify the ABN AMRO account or statement date.");
   const statementDate = isoDate(statementDateRaw);
@@ -220,17 +220,17 @@ export async function parseAbnAmroStatement(bytes: Uint8Array): Promise<ParsedBa
     const amountItem = pages[item.pageIndex]?.find(
       (candidate) =>
         Math.abs(candidate.y - item.y) <= 2 &&
-        candidate.x >= 400 &&
+        candidate.x >= 360 &&
         /^[\d.]+,\d{2}$/.test(candidate.str.trim()),
     );
     if (!amountItem)
       throw new Error(`Could not read the amount for ABN AMRO transaction ${item.str}.`);
-    const amount = euroAmount(amountItem.str) * (amountItem.x < 500 ? -1 : 1);
+    const amount = euroAmount(amountItem.str) * (amountItem.x < 480 ? -1 : 1);
     const descriptionParts = chunk
       .filter(
         (candidate) =>
-          candidate.x >= 90 &&
-          candidate.x < 400 &&
+          candidate.x >= 80 &&
+          candidate.x < 360 &&
           !/^(Description|Account Type|Account number|Date|No of pages|Page|Stmt no|ABN AMRO Bank)/i.test(
             candidate.str,
           ),

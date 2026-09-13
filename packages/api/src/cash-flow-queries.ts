@@ -3,7 +3,9 @@ import "server-only";
 import { bankAccount, bankTransaction, db, salaryPayslip } from "@portfolio/db";
 import { and, asc, eq } from "drizzle-orm";
 
-export async function getCashFlowDashboard(userId: string) {
+export type CashFlowScope = "all" | "personal" | "joint";
+
+export async function getCashFlowDashboard(userId: string, scope: CashFlowScope = "all") {
   const [rows, payslips] = await Promise.all([
     db
       .select({
@@ -37,7 +39,7 @@ export async function getCashFlowDashboard(userId: string) {
       .where(eq(salaryPayslip.userId, userId)),
   ]);
   const ownedSuffixes = new Set(rows.map((row) => row.accountLast4).filter(Boolean));
-  const transactions = rows.map((row) => {
+  const allTransactions = rows.map((row) => {
     const isOwnedTransfer =
       row.counterpartyAccountLast4 !== null &&
       ownedSuffixes.has(row.counterpartyAccountLast4) &&
@@ -50,10 +52,19 @@ export async function getCashFlowDashboard(userId: string) {
       bookedAt: row.bookedAt.toISOString().slice(0, 10),
     };
   });
+  const transactions = allTransactions.filter(
+    (row) => scope === "all" || row.ownershipType === scope,
+  );
   const external = transactions.filter((row) => row.category !== "internal_transfer");
   const expenses = external.filter((row) => row.amount < 0 && row.category !== "investment");
   const income = external.filter((row) => row.amount > 0);
   const investments = external.filter((row) => row.amount < 0 && row.category === "investment");
+  const internalTransfersOut = transactions.filter(
+    (row) => row.amount < 0 && row.category === "internal_transfer",
+  );
+  const internalTransfersIn = transactions.filter(
+    (row) => row.amount > 0 && row.category === "internal_transfer",
+  );
   const monthlyMap = new Map<
     string,
     { month: string; income: number; spending: number; invested: number; net: number }
@@ -76,6 +87,9 @@ export async function getCashFlowDashboard(userId: string) {
   const categoryMap = new Map<string, number>();
   for (const row of expenses)
     categoryMap.set(row.category, (categoryMap.get(row.category) ?? 0) - row.amount);
+  const merchantMap = new Map<string, number>();
+  for (const row of expenses)
+    merchantMap.set(row.name, (merchantMap.get(row.name) ?? 0) - row.amount);
   const accountMap = new Map<
     string,
     {
@@ -127,12 +141,20 @@ export async function getCashFlowDashboard(userId: string) {
       savingsRate: totalIncome ? (totalIncome - totalSpending) / totalIncome : 0,
       salaryMatches,
       salaryCredits: salaryCredits.length,
+      salaryReceived: salaryCredits.reduce((sum, row) => sum + row.amount, 0),
       lowConfidenceRows: transactions.filter((row) => row.categoryConfidence < 0.8).length,
+      internalTransfersOut: internalTransfersOut.reduce((sum, row) => sum - row.amount, 0),
+      internalTransfersIn: internalTransfersIn.reduce((sum, row) => sum + row.amount, 0),
+      transactionCount: transactions.length,
     },
     monthly: [...monthlyMap.values()],
     categories: [...categoryMap]
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value),
+    merchants: [...merchantMap]
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 12),
     accounts: [...accountMap.values()],
     transactions: [...transactions].reverse(),
   };

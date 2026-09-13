@@ -74,7 +74,7 @@ export function BankStatementUploadDialog() {
     setError(null);
     setResults([]);
     if (!files.length) return setError("Select at least one statement.");
-    if (files.length > 24) return setError("Select no more than 24 statements at once.");
+    if (files.length > 50) return setError("Select no more than 50 statements at once.");
     const invalid = files.find(
       (file) => !/\.(pdf|csv)$/i.test(file.name) || file.size > 15 * 1024 * 1024,
     );

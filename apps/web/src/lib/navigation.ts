@@ -58,10 +58,22 @@ export const dashboardNavigation = [
     label: "Cash accounts",
     items: [
       {
-        title: "Cash flow",
+        title: "Unified cash flow",
         url: "/dashboard/cash-flow",
         icon: CircleDollarSignIcon,
         keywords: "bank statements abn amro ing joint account salary spending transactions",
+      },
+      {
+        title: "Personal cash flow",
+        url: "/dashboard/cash-flow/personal",
+        icon: HandCoinsIcon,
+        keywords: "personal bank salary abn amro investment household funding",
+      },
+      {
+        title: "Household cash flow",
+        url: "/dashboard/cash-flow/household",
+        icon: HouseIcon,
+        keywords: "joint bank ing household actual spending merchants refunds",
       },
       {
         title: "INR accounts",

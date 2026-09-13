@@ -25,7 +25,13 @@ const label = (value: string) =>
     .map((part) => part[0]?.toUpperCase() + part.slice(1))
     .join(" ");
 
-export function CashFlowDashboard({ data }: { data: Dashboard }) {
+export function CashFlowDashboard({
+  data,
+  scope = "all",
+}: {
+  data: Dashboard;
+  scope?: "all" | "personal" | "joint";
+}) {
   const { formatCurrency } = useAmountFormat();
   const router = useRouter();
   const [saving, setSaving] = useState<string | null>(null);
@@ -118,6 +124,30 @@ export function CashFlowDashboard({ data }: { data: Dashboard }) {
     }),
     [data.accounts],
   );
+  const merchantOption = useMemo<EChartsVisualizationOption>(
+    () => ({
+      tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+      grid: { left: 12, right: 14, top: 12, bottom: 18, containLabel: true },
+      xAxis: { type: "value", ...axis },
+      yAxis: {
+        type: "category",
+        inverse: true,
+        data: data.merchants.map((row) =>
+          row.name.length > 24 ? `${row.name.slice(0, 23)}…` : row.name,
+        ),
+        ...axis,
+      },
+      series: [
+        {
+          name: "Spending",
+          type: "bar",
+          data: data.merchants.map((row) => row.value),
+          itemStyle: { color: "#a78bfa", borderRadius: [0, 5, 5, 0] },
+        },
+      ],
+    }),
+    [data.merchants],
+  );
   async function changeCategory(id: string, category: string) {
     setSaving(id);
     try {
@@ -205,7 +235,13 @@ export function CashFlowDashboard({ data }: { data: Dashboard }) {
       <div className="grid min-w-0 grid-cols-1 gap-4 px-4 xl:grid-cols-2 lg:px-6">
         <AnalyticsChartCard
           id="monthly-cash-flow"
-          title="Income, spending and investing"
+          title={
+            scope === "personal"
+              ? "Salary, personal spending and investing"
+              : scope === "joint"
+                ? "Household income and spending"
+                : "Income, spending and investing"
+          }
           description="Internal transfers are removed so money is counted once."
           metric={formatPercent(data.metrics.savingsRate, 1)}
           metricLabel="income retained before investing"
@@ -218,8 +254,8 @@ export function CashFlowDashboard({ data }: { data: Dashboard }) {
         </AnalyticsChartCard>
         <AnalyticsChartCard
           id="spending-by-category"
-          title="Where household cash went"
-          description="Actual external spending from imported accounts."
+          title={scope === "personal" ? "Where personal cash went" : "Where household cash went"}
+          description={`Actual external spending from ${scope === "all" ? "all imported" : scope} accounts.`}
           metric={formatCurrency(data.metrics.totalSpending, "EUR")}
           metricLabel="external spending"
         >
@@ -242,34 +278,51 @@ export function CashFlowDashboard({ data }: { data: Dashboard }) {
             ariaLabel="Cash inflows and outflows by account"
           />
         </AnalyticsChartCard>
-        <AnalyticsChartCard
-          id="salary-reconciliation"
-          title="Salary reconciliation"
-          description="Bank salary credits matched to imported payslip net pay in the same month."
-          metric={`${data.metrics.salaryMatches}/${data.metrics.salaryCredits}`}
-          metricLabel="salary credits matched"
-        >
-          <div className="flex h-[310px] items-center justify-center p-6 text-center">
-            <div>
-              <p className="text-5xl font-semibold tabular-nums">
-                {data.metrics.salaryCredits
-                  ? formatPercent(data.metrics.salaryMatches / data.metrics.salaryCredits, 0)
-                  : "—"}
-              </p>
-              <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-                A match requires the same month and an amount difference no greater than €0.02.
-                Unmatched credits remain visible for review.
-              </p>
+        {scope === "joint" ? (
+          <AnalyticsChartCard
+            id="top-household-merchants"
+            title="Largest household merchants"
+            description="Where repeated or high-value household payments accumulated."
+            metric={formatCurrency(data.merchants[0]?.value ?? 0, "EUR")}
+            metricLabel={data.merchants[0]?.name ?? "no merchant data"}
+          >
+            <EChartsVisualization
+              option={merchantOption}
+              className="h-[310px] w-full"
+              ariaLabel="Largest household merchants by total spending"
+            />
+          </AnalyticsChartCard>
+        ) : (
+          <AnalyticsChartCard
+            id="salary-reconciliation"
+            title="Salary reconciliation"
+            description="Bank salary credits matched to imported payslip net pay in the same month."
+            metric={`${data.metrics.salaryMatches}/${data.metrics.salaryCredits}`}
+            metricLabel="salary credits matched"
+          >
+            <div className="flex h-[310px] items-center justify-center p-6 text-center">
+              <div>
+                <p className="text-5xl font-semibold tabular-nums">
+                  {data.metrics.salaryCredits
+                    ? formatPercent(data.metrics.salaryMatches / data.metrics.salaryCredits, 0)
+                    : "—"}
+                </p>
+                <p className="mt-3 max-w-sm text-sm text-muted-foreground">
+                  A match requires the same month and an amount difference no greater than €0.02.
+                  Unmatched credits remain visible for review.
+                </p>
+              </div>
             </div>
-          </div>
-        </AnalyticsChartCard>
+          </AnalyticsChartCard>
+        )}
       </div>
       <div className="px-4 lg:px-6">
         <div className="overflow-hidden rounded-xl border bg-card">
           <div className="border-b px-4 py-4">
             <h2 className="font-semibold">Transactions</h2>
             <p className="text-sm text-muted-foreground">
-              Search all imported transactions and confirm categories when a rule is uncertain.
+              Search {scope === "all" ? "all imported" : scope} transactions and confirm categories
+              when a rule is uncertain.
             </p>
           </div>
           <DataTable
