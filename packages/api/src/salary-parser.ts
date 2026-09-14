@@ -48,7 +48,7 @@ export type ParsedSalaryPayslip = {
   lineItems: ParsedSalaryLineItem[];
 };
 
-export const SALARY_PARSER_VERSION = "euhreka-v2";
+export const SALARY_PARSER_VERSION = "salary-v3";
 const MONEY_PATTERN = /(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2}-?/g;
 const PAYROLL_DETAIL_END_MARKERS = [
   "Comm.distance",
@@ -91,8 +91,9 @@ const months = new Map(
 );
 
 function europeanNumber(value: string) {
-  const negative = value.endsWith("-");
-  const parsed = Number(value.replace(/-$/, "").replace(/\./g, "").replace(",", "."));
+  const negative = value.endsWith("-") && !value.endsWith(",-");
+  const normalized = value.endsWith(",-") ? value.slice(0, -2) : value.replace(/-$/, "");
+  const parsed = Number(normalized.replace(/\./g, "").replace(",", "."));
   if (!Number.isFinite(parsed)) throw new Error(`Invalid payroll amount: ${value}`);
   return negative ? -parsed : parsed;
 }
@@ -224,6 +225,167 @@ function revisionFrom(fileName: string) {
   return fileName.match(/_R(\d+)/i)?.[1] ?? null;
 }
 
+function firstPayrollAmount(text: string, pattern: RegExp) {
+  const match = text.match(pattern);
+  const value = match?.[1];
+  return value ? europeanNumber(value) : 0;
+}
+
+function allPayrollAmounts(text: string, pattern: RegExp) {
+  return [...text.matchAll(pattern)].map((match) => (match[1] ? europeanNumber(match[1]) : 0));
+}
+
+function bolooLineItem(
+  rowIndex: number,
+  description: string,
+  category: SalaryLineItemCategory,
+  amount: number,
+): ParsedSalaryLineItem {
+  return {
+    rowIndex,
+    description,
+    category,
+    amount,
+    components: [amount],
+    quantity: null,
+    unit: null,
+  };
+}
+
+function parseBolooPayslip(text: string, fileName: string): ParsedSalaryPayslip {
+  const dateMatch = text.match(/Salarisspecificatie\s+Datum\s+(\d{2})-(\d{2})-(\d{4})/i);
+  if (!dateMatch?.[2] || !dateMatch[3])
+    throw new Error("Could not identify the Boloo salary period.");
+  const month = Number(dateMatch[2]);
+  const year = Number(dateMatch[3]);
+  if (month < 1 || month > 12)
+    throw new Error("The Boloo salary period contains an invalid month.");
+
+  const payPeriod = `${year}-${String(month).padStart(2, "0")}-01`;
+  const englishMonthName =
+    [...months.entries()].find(([, number]) => number === month)?.[0] ?? "unknown";
+  const dutchMonthName = [
+    "januari",
+    "februari",
+    "maart",
+    "april",
+    "mei",
+    "juni",
+    "juli",
+    "augustus",
+    "september",
+    "oktober",
+    "november",
+    "december",
+  ][month - 1]!;
+  const periodLabel = `${englishMonthName[0]?.toUpperCase()}${englishMonthName.slice(1)} ${year}`;
+  const currentStart = text.search(new RegExp(`^Loon ${dutchMonthName} ${year}`, "im"));
+  if (currentStart < 0) throw new Error("Could not identify the current Boloo payroll section.");
+  const currentEnd = text.indexOf("Kosten werkgever", currentStart);
+  const current = text.slice(currentStart, currentEnd < 0 ? undefined : currentEnd);
+  const cumulativeStart = text.indexOf("Cumulatieven");
+  const cumulative = text.slice(cumulativeStart, currentStart);
+
+  const baseSalary = firstPayrollAmount(
+    current,
+    new RegExp(`^Loon ${dutchMonthName} ${year} € ([\\d.]+,(?:\\d{2}|-))`, "im"),
+  );
+  const supplementalGross = firstPayrollAmount(
+    current,
+    /^Uitbetaling vakantiegeldreservering\s+-?\s*([\d.]+,(?:\d{2}|-))/im,
+  );
+  const grossPay = roundMoney(baseSalary + supplementalGross);
+  const taxableWage = roundMoney(
+    allPayrollAmounts(
+      current,
+      /^Heffingsloon(?: bijzonder tarief)? € ([\d.]+,(?:\d{2}|-))/gim,
+    ).reduce((total, amount) => total + amount, 0),
+  );
+  const wageTax = roundMoney(
+    allPayrollAmounts(
+      current,
+      /^Loonheffing(?: met loonheffingskorting| bijzonder tarief)\s+(?:€\s+|-\s*)([\d.]+,(?:\d{2}|-))/gim,
+    ).reduce((total, amount) => total + Math.abs(amount), 0),
+  );
+  const socialInsurance = Math.abs(
+    firstPayrollAmount(current, /^\d+(?:,\d+)? % W\.G\.A\.\s+-?\s*([\d.]+,(?:\d{2}|-))/im),
+  );
+  const statedThirtyPercentAdjustment = Math.abs(
+    firstPayrollAmount(text, /^Aftrek 30% regeling € ([\d.]+,(?:\d{2}|-))/im),
+  );
+  const netPay = firstPayrollAmount(
+    current,
+    /^Netto loon, met loonheffingskorting € ([\d.]+,(?:\d{2}|-))/im,
+  );
+  const bankTransfer = firstPayrollAmount(
+    current,
+    /^€ ([\d.]+,(?:\d{2}|-)) Betaald op rekeningnummer/im,
+  );
+  const ytdTaxableWage = firstPayrollAmount(cumulative, /^Heffingsloon € ([\d.]+,(?:\d{2}|-))/im);
+  const ytdWageTax = firstPayrollAmount(cumulative, /^Loonheffing € ([\d.]+,(?:\d{2}|-))/im);
+  const ytdNetPay = firstPayrollAmount(cumulative, /^Netto loon € ([\d.]+,(?:\d{2}|-))/im);
+  const thirtyPercentAdjustment =
+    statedThirtyPercentAdjustment > 0
+      ? statedThirtyPercentAdjustment
+      : text.includes("30%-regeling toegepast over heffingsloon")
+        ? roundMoney(grossPay - taxableWage)
+        : 0;
+
+  const validationIssues: string[] = [];
+  if (baseSalary <= 0) validationIssues.push("Base salary was not found or is not positive.");
+  if (netPay <= 0) validationIssues.push("Net pay was not found or is not positive.");
+  if (!approximatelyEqual(grossPay - wageTax - socialInsurance, netPay)) {
+    validationIssues.push("Gross pay less employee deductions does not reconcile to net pay.");
+  }
+  if (!approximatelyEqual(bankTransfer, netPay)) {
+    validationIssues.push("Bank transfer does not reconcile to net pay.");
+  }
+  if (!approximatelyEqual(grossPay - thirtyPercentAdjustment, taxableWage)) {
+    validationIssues.push("The 30% ruling adjustment does not reconcile to taxable wage.");
+  }
+
+  const lineItems = [
+    bolooLineItem(1, "Base salary", "earning", baseSalary),
+    ...(supplementalGross > 0
+      ? [bolooLineItem(2, "Holiday allowance payout", "earning", supplementalGross)]
+      : []),
+    bolooLineItem(3, "30% ruling taxable-wage adjustment", "deduction", -thirtyPercentAdjustment),
+    bolooLineItem(4, "Taxable wage", "taxable_wage", taxableWage),
+    bolooLineItem(5, "Wage tax", "tax", -wageTax),
+    bolooLineItem(6, "W.G.A. contribution", "deduction", -socialInsurance),
+    bolooLineItem(7, "Net pay", "net", netPay),
+  ];
+
+  return {
+    parserVersion: "boloo-v1",
+    employerName: "Boloo B.V.",
+    payPeriod,
+    periodLabel,
+    currency: "EUR",
+    revision: revisionFrom(fileName),
+    baseSalary: roundMoney(baseSalary),
+    supplementalGross: roundMoney(supplementalGross),
+    grossPay,
+    taxableWage,
+    wageTax,
+    pensionContribution: 0,
+    socialInsurance: roundMoney(socialInsurance),
+    thirtyPercentAdjustment: roundMoney(thirtyPercentAdjustment),
+    thirtyPercentCompensation: 0,
+    expenseReimbursements: 0,
+    netPay: roundMoney(netPay),
+    annualSalary: null,
+    partTimePercentage: null,
+    ytdTaxableWage: ytdTaxableWage || null,
+    ytdWageTax: ytdWageTax || null,
+    ytdNetPay: ytdNetPay || null,
+    ytdPension: null,
+    validationStatus: validationIssues.length === 0 ? "verified" : "needs_review",
+    validationIssues,
+    lineItems,
+  };
+}
+
 function payrollDetailEnd(lines: string[], headerIndex: number) {
   return lines.findIndex(
     (line, index) =>
@@ -240,6 +402,9 @@ export async function parseSalaryPayslip(
     throw new Error("A payslip must contain between one and five pages.");
   }
   const text = extracted.text.replaceAll(String.fromCharCode(0), "").replace(/\r/g, "");
+  if (text.includes("Salarisspecificatie") && text.includes("Boloo B.V.")) {
+    return parseBolooPayslip(text, fileName);
+  }
   if (!text.includes("Produced by NorthgateArinso euHReka")) {
     throw new Error("This PDF layout is not yet supported. Expected a euHReka salary statement.");
   }
