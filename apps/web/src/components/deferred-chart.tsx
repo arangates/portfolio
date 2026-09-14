@@ -29,11 +29,11 @@ export function DeferredChart({ children }: { children: ReactNode }) {
     };
   }, []);
   return (
-    <div ref={ref} className="min-h-[360px] min-w-0 sm:min-h-[420px]" aria-busy={!ready}>
+    <div ref={ref} className={ready ? "min-w-0" : "min-h-[300px] min-w-0"} aria-busy={!ready}>
       {ready ? (
         children
       ) : (
-        <div className="flex h-[360px] items-center justify-center rounded-lg bg-muted/40 text-sm text-muted-foreground motion-safe:animate-pulse sm:h-[420px]">
+        <div className="flex h-[300px] items-center justify-center rounded-lg bg-muted/40 text-sm text-muted-foreground motion-safe:animate-pulse">
           Chart loads as you scroll
         </div>
       )}
