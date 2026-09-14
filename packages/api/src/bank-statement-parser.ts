@@ -113,7 +113,8 @@ function categoryFor(
 ): { category: BankCategory; confidence: number } {
   const text = value.toLowerCase();
   const rule = (category: BankCategory, confidence = 0.95) => ({ category, confidence });
-  if (/salaris|salary|payroll|loon\b|asml netherlands/.test(text)) return rule("salary", 0.99);
+  if (amount > 0 && /salaris|salary|payroll|loon\b|asml netherlands/.test(text))
+    return rule("salary", 0.99);
   if (/joint account/.test(text)) return rule("internal_transfer", 0.95);
   if (/flatex|degiro|zerodha|coin\b|mutual fund|cash order|beleg|invest/.test(text))
     return rule("investment", 0.97);
@@ -140,7 +141,7 @@ function categoryFor(
     return rule("healthcare");
   if (/belastingdienst|gemeente|government|tax\b|duo\b/.test(text))
     return amount > 0 ? rule("refund") : rule("government_tax");
-  if (/geldautomaat|cash withdrawal|atm\b/.test(text)) return rule("cash_withdrawal");
+  if (/geldautomaat|geldmaat|cash withdrawal|atm\b/.test(text)) return rule("cash_withdrawal");
   if (/basispakket betalen|bankkosten|bank fee|kosten betaalrekening/.test(text))
     return rule("bank_fees");
   if (amount > 0 && /refund|terugbetaling|restitutie/.test(text)) return rule("refund", 0.9);

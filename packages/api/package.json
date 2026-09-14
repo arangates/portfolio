@@ -20,6 +20,7 @@
     "test:mutual-funds": "tsx --test src/mutual-fund-calculations.test.ts",
     "test:fx": "tsx --test src/currency-conversion.test.ts src/exchange-rate-sync.test.ts",
     "test:bank-statements": "tsx --test src/bank-statement-parser.test.ts",
+    "test:salary-reconciliation": "tsx --test src/salary-reconciliation-calculations.test.ts",
     "test:insights": "tsx --test src/insight-calculations.test.ts src/calendar-calculations.test.ts ../../apps/web/src/lib/format.test.ts"
   },
   "dependencies": {

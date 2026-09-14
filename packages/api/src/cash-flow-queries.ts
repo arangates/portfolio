@@ -1,7 +1,10 @@
 import "server-only";
 
-import { bankAccount, bankTransaction, db, salaryPayslip } from "@portfolio/db";
+import { bankAccount, bankTransaction, db } from "@portfolio/db";
 import { and, asc, eq } from "drizzle-orm";
+
+import { getSalaryPayslips } from "./salary-queries";
+import { reconcileSalaryPayouts } from "./salary-reconciliation-calculations";
 
 export type CashFlowScope = "all" | "personal" | "joint";
 
@@ -33,10 +36,7 @@ export async function getCashFlowDashboard(userId: string, scope: CashFlowScope 
       )
       .where(eq(bankTransaction.userId, userId))
       .orderBy(asc(bankTransaction.bookedAt)),
-    db
-      .select({ payPeriod: salaryPayslip.payPeriod, netPay: salaryPayslip.netPay })
-      .from(salaryPayslip)
-      .where(eq(salaryPayslip.userId, userId)),
+    getSalaryPayslips(userId),
   ]);
   const ownedSuffixes = new Set(rows.map((row) => row.accountLast4).filter(Boolean));
   const allTransactions = rows.map((row) => {
@@ -115,14 +115,18 @@ export async function getCashFlowDashboard(userId: string, scope: CashFlowScope 
     item.net += row.amount;
     accountMap.set(row.accountId, item);
   }
-  const salaryCredits = transactions.filter((row) => row.category === "salary");
-  const salaryMatches = salaryCredits.filter((credit) =>
-    payslips.some(
-      (slip) =>
-        slip.payPeriod.slice(0, 7) === credit.bookedAt.slice(0, 7) &&
-        Math.abs(Number(slip.netPay) - credit.amount) <= 0.02,
-    ),
-  ).length;
+  const salaryCredits = transactions.filter((row) => row.category === "salary" && row.amount > 0);
+  const externalSalaryCredits = allTransactions.filter(
+    (row) => row.category === "salary" && row.amount > 0,
+  );
+  const salaryReconciliation = reconcileSalaryPayouts(
+    payslips.map((slip) => ({ id: slip.id, payPeriod: slip.payPeriod, netPay: slip.netPay })),
+    externalSalaryCredits.map((credit) => ({
+      id: credit.id,
+      bookedAt: credit.bookedAt,
+      amount: credit.amount,
+    })),
+  );
   const completeMonths = [...monthlyMap.values()].filter(
     (item) => item.income > 0 || item.spending > 0,
   );
@@ -139,7 +143,10 @@ export async function getCashFlowDashboard(userId: string, scope: CashFlowScope 
         totalIncome - totalSpending - investments.reduce((sum, row) => sum - row.amount, 0),
       averageMonthlySpending: completeMonths.length ? totalSpending / completeMonths.length : 0,
       savingsRate: totalIncome ? (totalIncome - totalSpending) / totalIncome : 0,
-      salaryMatches,
+      salaryMatches: salaryReconciliation.matched,
+      salaryPayslips: salaryReconciliation.payslips,
+      salaryMismatches: salaryReconciliation.mismatched,
+      salaryMissing: salaryReconciliation.missing,
       salaryCredits: salaryCredits.length,
       salaryReceived: salaryCredits.reduce((sum, row) => sum + row.amount, 0),
       lowConfidenceRows: transactions.filter((row) => row.categoryConfidence < 0.8).length,
@@ -156,6 +163,7 @@ export async function getCashFlowDashboard(userId: string, scope: CashFlowScope 
       .sort((a, b) => b.value - a.value)
       .slice(0, 12),
     accounts: [...accountMap.values()],
+    salaryReconciliation: salaryReconciliation.rows,
     transactions: [...transactions].reverse(),
   };
 }

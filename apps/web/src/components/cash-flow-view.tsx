@@ -49,8 +49,11 @@ export async function CashFlowView({ userId, scope }: { userId: string; scope: C
           {
             label: "Salary received",
             value: formatter.formatCurrency(data.metrics.salaryReceived, "EUR"),
-            badge: `${data.metrics.salaryMatches}/${data.metrics.salaryCredits} payslip matches`,
-            note: "Credits identified as payroll",
+            badge: `${data.metrics.salaryMatches}/${data.metrics.salaryPayslips} payslips verified`,
+            note:
+              data.metrics.salaryMissing || data.metrics.salaryMismatches
+                ? `${data.metrics.salaryMissing} missing · ${data.metrics.salaryMismatches} amount mismatches`
+                : "Every imported payslip matches an external bank credit",
             icon: HandCoinsIcon,
           },
           {

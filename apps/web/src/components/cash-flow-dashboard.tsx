@@ -296,20 +296,21 @@ export function CashFlowDashboard({
           <AnalyticsChartCard
             id="salary-reconciliation"
             title="Salary reconciliation"
-            description="Bank salary credits matched to imported payslip net pay in the same month."
-            metric={`${data.metrics.salaryMatches}/${data.metrics.salaryCredits}`}
-            metricLabel="salary credits matched"
+            description="One-to-one verification of imported payslips against original external payroll credits across every owned account."
+            metric={`${data.metrics.salaryMatches}/${data.metrics.salaryPayslips}`}
+            metricLabel="payslips verified"
           >
             <div className="flex h-[310px] items-center justify-center p-6 text-center">
               <div>
                 <p className="text-5xl font-semibold tabular-nums">
-                  {data.metrics.salaryCredits
-                    ? formatPercent(data.metrics.salaryMatches / data.metrics.salaryCredits, 0)
+                  {data.metrics.salaryPayslips
+                    ? formatPercent(data.metrics.salaryMatches / data.metrics.salaryPayslips, 0)
                     : "—"}
                 </p>
                 <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-                  A match requires the same month and an amount difference no greater than €0.02.
-                  Unmatched credits remain visible for review.
+                  Transfers between owned accounts and unrelated payroll credits are excluded. A
+                  match requires the same month and an amount difference no greater than €0.02.
+                  {` ${data.metrics.salaryMissing} missing · ${data.metrics.salaryMismatches} amount mismatches.`}
                 </p>
               </div>
             </div>
