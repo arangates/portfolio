@@ -199,10 +199,29 @@ function amountBelowLabel(pages: StructuredTextItem[][], label: string) {
 
 function dateForAbn(dayMonth: string, statementDate: string) {
   const [day, month] = dayMonth.split("-").map(Number);
+  if (!day || !month || month > 12 || day > 31)
+    throw new Error(`Invalid ABN AMRO transaction date: ${dayMonth}`);
   const statement = new Date(`${statementDate}T12:00:00Z`);
   let year = statement.getUTCFullYear();
   if ((month ?? 0) > statement.getUTCMonth() + 1) year -= 1;
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  const result = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  const parsed = new Date(`${result}T12:00:00Z`);
+  if (
+    parsed.getUTCFullYear() !== year ||
+    parsed.getUTCMonth() + 1 !== month ||
+    parsed.getUTCDate() !== day
+  )
+    throw new Error(`Invalid ABN AMRO transaction date: ${dayMonth}`);
+  return result;
+}
+
+function optionalDateForAbn(dayMonth: string | undefined, statementDate: string) {
+  if (!dayMonth || dayMonth === "00-00") return null;
+  try {
+    return dateForAbn(dayMonth, statementDate);
+  } catch {
+    return null;
+  }
 }
 
 export async function parseAbnAmroStatement(bytes: Uint8Array): Promise<ParsedBankStatement> {
@@ -276,7 +295,7 @@ export async function parseAbnAmroStatement(bytes: Uint8Array): Promise<ParsedBa
     return {
       transactionHash: transactionHash(["abn_amro", iban, bookedAt, amount, description]),
       bookedAt,
-      valueAt: valueDate ? dateForAbn(valueDate, statementDate) : null,
+      valueAt: optionalDateForAbn(valueDate, statementDate),
       amount,
       currency: "EUR",
       name,
