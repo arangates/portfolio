@@ -268,7 +268,7 @@ export async function getFinancialCalendar(userId: string, requestedMonth?: stri
       category: "Imports",
       amount: null,
       currency: null,
-      href: "/dashboard/imports",
+      href: "/dashboard/documents",
       detail: `Import received on this day. Status: ${item.status}. This is separate from the statement date.`,
       planned: false,
     });

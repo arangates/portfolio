@@ -442,7 +442,7 @@ export async function getGlobalEquityPortfolio(userId: string) {
 
 export async function getBankAccounts(userId: string, currency?: string) {
   const conditions = [eq(bankAccount.userId, userId), isNull(bankAccount.archivedAt)];
-  if (currency) conditions.push(eq(bankAccount.currency, currency));
+  if (currency) conditions.push(sql`${bankAccount.currency}::text = ${currency}`);
 
   const rows = await db
     .select({
@@ -493,7 +493,7 @@ export async function getBankBalanceHistory(userId: string, currency: string) {
     .where(
       and(
         eq(bankAccount.userId, userId),
-        eq(bankAccount.currency, currency),
+        sql`${bankAccount.currency}::text = ${currency}`,
         isNull(bankAccount.archivedAt),
       ),
     )

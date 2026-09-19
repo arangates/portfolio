@@ -18,6 +18,16 @@ import {
 } from "@portfolio/db";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import {
+  bankNameValues,
+  depositTypeValues,
+  currencyValues,
+  accountTypeValues,
+  commodityTypeValues,
+  assetTypeValues,
+  riskLevelValues,
+  normalizeBankName,
+} from "@portfolio/db/portfolio-enums";
 
 const optionalLast4 = z
   .string()
@@ -25,17 +35,15 @@ const optionalLast4 = z
   .regex(/^\d{4}$/)
   .optional()
   .or(z.literal(""));
-const currency = z
-  .string()
-  .trim()
-  .regex(/^[A-Z]{3}$/);
+const currency = z.enum(currencyValues);
+const bank = z.preprocess(normalizeBankName, z.enum(bankNameValues));
 const date = z.iso.date();
 
 export const bankAccountInput = z.object({
   id: z.uuid().optional(),
-  institution: z.string().trim().min(2).max(80),
+  institution: bank,
   name: z.string().trim().min(2).max(80),
-  accountType: z.string().trim().min(2).max(60),
+  accountType: z.enum(accountTypeValues),
   accountLast4: optionalLast4,
   minimumBalance: z.coerce.number().nonnegative().max(1_000_000_000_000).optional(),
   currency,
@@ -47,8 +55,8 @@ export const bankAccountInput = z.object({
 export const fixedDepositInput = z
   .object({
     id: z.uuid().optional(),
-    bank: z.string().trim().min(2).max(80),
-    depositType: z.string().trim().min(2).max(60),
+    bank,
+    depositType: z.enum(depositTypeValues),
     accountLast4: optionalLast4,
     currency,
     principal: z.coerce.number().positive().max(1_000_000_000_000),
@@ -67,7 +75,7 @@ export const fixedDepositInput = z
 export const commodityInput = z.object({
   id: z.uuid().optional(),
   name: z.string().trim().min(2).max(100),
-  commodityType: z.string().trim().min(2).max(50),
+  commodityType: z.enum(commodityTypeValues),
   location: z.string().trim().max(120).optional(),
   quantityGrams: z.coerce.number().positive().max(1_000_000_000),
   ownershipShare: z.coerce.number().positive().max(100),
@@ -79,9 +87,9 @@ export const commodityInput = z.object({
 export const manualAssetInput = z.object({
   id: z.uuid().optional(),
   name: z.string().trim().min(2).max(100),
-  assetType: z.string().trim().min(2).max(60),
+  assetType: z.enum(assetTypeValues),
   location: z.string().trim().max(120).optional(),
-  riskLevel: z.enum(["low", "moderate", "high"]),
+  riskLevel: z.enum(riskLevelValues),
   isLiquid: z.boolean(),
   notes: z.string().trim().max(500).optional(),
   value: z.coerce.number().nonnegative().max(1_000_000_000_000),

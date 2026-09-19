@@ -46,13 +46,13 @@ export type ParsedBankTransaction = {
 
 export type ParsedBankStatement = {
   provider: "abn_amro" | "ing";
-  institution: string;
+  institution: "ABN AMRO" | "ING";
   accountName: string;
-  accountType: string;
+  accountType: "Personal current account" | "Joint current account" | "Current account";
   ownershipType: "personal" | "joint";
   accountLast4: string;
   accountFingerprint: string;
-  currency: string;
+  currency: "EUR";
   periodStart: string | null;
   periodEnd: string | null;
   openingBalance: number | null;

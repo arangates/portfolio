@@ -28,6 +28,16 @@ import { Textarea } from "@portfolio/ui/components/textarea";
 import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  bankNameValues,
+  depositTypeValues,
+  currencyValues,
+  accountTypeValues,
+  commodityTypeValues,
+  assetTypeValues,
+  riskLevelValues,
+  normalizeBankName,
+} from "@portfolio/db/portfolio-enums";
 import { toast } from "sonner";
 
 export type PortfolioRecordKind =
@@ -38,6 +48,16 @@ export type PortfolioRecordKind =
   | "real_estate";
 
 type Values = Record<string, string | number | boolean | null | undefined>;
+const enumOptions: Record<string, readonly string[]> = {
+  institution: bankNameValues,
+  bank: bankNameValues,
+  depositType: depositTypeValues,
+  currency: currencyValues,
+  accountType: accountTypeValues,
+  commodityType: commodityTypeValues,
+  assetType: assetTypeValues,
+  riskLevel: riskLevelValues,
+};
 
 const today = new Date().toISOString().slice(0, 10);
 
@@ -69,6 +89,36 @@ function TextField({
   max?: string;
   step?: string;
 }) {
+  const options = enumOptions[name];
+  if (options) {
+    const selected = value(values, name, name === "currency" ? "INR" : "");
+    return (
+      <Field>
+        <FieldLabel htmlFor={name}>{label}</FieldLabel>
+        <select
+          id={name}
+          name={name}
+          required={required}
+          defaultValue={String(
+            name === "bank" || name === "institution" ? normalizeBankName(selected) : selected,
+          )}
+          className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          <option value="" disabled>
+            Select {label.toLowerCase()}
+          </option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        {name === "institution" || name === "bank" ? (
+          <FieldDescription>For Other, record the institution name in notes.</FieldDescription>
+        ) : null}
+      </Field>
+    );
+  }
   return (
     <Field>
       <FieldLabel htmlFor={name}>{label}</FieldLabel>

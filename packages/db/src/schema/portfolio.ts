@@ -7,6 +7,7 @@ import {
   integer,
   jsonb,
   numeric,
+  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -15,6 +16,33 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
+
+import {
+  bankNameValues,
+  depositTypeValues,
+  currencyValues,
+  accountTypeValues,
+  commodityTypeValues,
+  assetTypeValues,
+  riskLevelValues,
+} from "../portfolio-enums";
+export {
+  bankNameValues,
+  depositTypeValues,
+  currencyValues,
+  accountTypeValues,
+  commodityTypeValues,
+  assetTypeValues,
+  riskLevelValues,
+} from "../portfolio-enums";
+
+export const bankNameEnum = pgEnum("bank_name", bankNameValues);
+export const depositTypeEnum = pgEnum("deposit_type", depositTypeValues);
+export const currencyEnum = pgEnum("currency_code", currencyValues);
+export const accountTypeEnum = pgEnum("bank_account_type", accountTypeValues);
+export const commodityTypeEnum = pgEnum("commodity_type", commodityTypeValues);
+export const assetTypeEnum = pgEnum("manual_asset_type", assetTypeValues);
+export const riskLevelEnum = pgEnum("risk_level", riskLevelValues);
 
 export const portfolioSource = pgTable(
   "portfolio_source",
@@ -235,14 +263,14 @@ export const bankAccount = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    institution: text("institution").notNull(),
+    institution: bankNameEnum("institution").notNull(),
     name: text("name").notNull(),
-    accountType: text("account_type").notNull(),
+    accountType: accountTypeEnum("account_type").notNull(),
     accountLast4: text("account_last4"),
     ownershipType: text("ownership_type").default("personal").notNull(),
     accountFingerprint: text("account_fingerprint"),
     minimumBalance: numeric("minimum_balance", { precision: 30, scale: 8 }),
-    currency: text("currency").notNull(),
+    currency: currencyEnum("currency").notNull(),
     notes: text("notes"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -295,10 +323,10 @@ export const fixedDeposit = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    bank: text("bank").notNull(),
-    depositType: text("deposit_type").notNull(),
+    bank: bankNameEnum("bank").notNull(),
+    depositType: depositTypeEnum("deposit_type").notNull(),
     accountLast4: text("account_last4"),
-    currency: text("currency").default("INR").notNull(),
+    currency: currencyEnum("currency").default("INR").notNull(),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -347,7 +375,7 @@ export const commodityHolding = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    commodityType: text("commodity_type").notNull(),
+    commodityType: commodityTypeEnum("commodity_type").notNull(),
     location: text("location"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -372,7 +400,7 @@ export const commoditySnapshot = pgTable(
     quantityGrams: numeric("quantity_grams", { precision: 30, scale: 8 }).notNull(),
     ownershipShare: numeric("ownership_share", { precision: 12, scale: 8 }).notNull(),
     pricePerGram: numeric("price_per_gram", { precision: 30, scale: 8 }).notNull(),
-    currency: text("currency").notNull(),
+    currency: currencyEnum("currency").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
@@ -460,9 +488,9 @@ export const manualAsset = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    assetType: text("asset_type").notNull(),
+    assetType: assetTypeEnum("asset_type").notNull(),
     location: text("location"),
-    riskLevel: text("risk_level").default("moderate").notNull(),
+    riskLevel: riskLevelEnum("risk_level").default("moderate").notNull(),
     isLiquid: boolean("is_liquid").default(false).notNull(),
     notes: text("notes"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
@@ -487,7 +515,7 @@ export const manualAssetSnapshot = pgTable(
       .references(() => manualAsset.id, { onDelete: "cascade" }),
     asOf: timestamp("as_of", { withTimezone: true }).defaultNow().notNull(),
     value: numeric("value", { precision: 30, scale: 8 }).notNull(),
-    currency: text("currency").notNull(),
+    currency: currencyEnum("currency").notNull(),
     ownershipShare: numeric("ownership_share", { precision: 12, scale: 8 }).default("1").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },

@@ -6,7 +6,6 @@ import {
   ChartNoAxesCombinedIcon,
   CoinsIcon,
   CircleDollarSignIcon,
-  DatabaseIcon,
   EuroIcon,
   FlameIcon,
   Globe2Icon,
@@ -200,16 +199,11 @@ export const dashboardNavigation = [
     label: "Data",
     items: [
       {
-        title: "Import history",
-        url: "/dashboard/imports",
-        icon: DatabaseIcon,
-        keywords: "upload files batches",
-      },
-      {
         title: "Source documents",
         url: "/dashboard/documents",
         icon: FilesIcon,
-        keywords: "files archive google drive download originals source documents",
+        keywords:
+          "files imports history archive google drive download originals source documents batches",
       },
       {
         title: "Settings & data",

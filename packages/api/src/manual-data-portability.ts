@@ -1,4 +1,5 @@
 import "server-only";
+import { normalizeBankName } from "@portfolio/db/portfolio-enums";
 
 import { randomUUID } from "node:crypto";
 
@@ -70,6 +71,7 @@ type PortableRow = {
 };
 
 type DbColumn = SQLWrapper & {
+  enumValues?: readonly string[];
   dataType: string;
   columnType: string;
   hasDefault: boolean;
@@ -300,6 +302,16 @@ function normalizeForColumn(value: unknown, field: string, column: DbColumn) {
   }
   if (dateOnlyFields.has(field) || column.columnType.includes("Timestamp")) {
     return normalizedDate(resolved, field);
+  }
+  if (column.enumValues) {
+    const candidate =
+      field === "bank" || field === "institution"
+        ? normalizeBankName(resolved)
+        : String(resolved).trim();
+    if (typeof candidate !== "string" || !column.enumValues.includes(candidate)) {
+      throw new Error(`${field} must be one of: ${column.enumValues.join(", ")}`);
+    }
+    return candidate;
   }
   if (column.dataType === "boolean") return normalizedBoolean(resolved, field);
   if (column.dataType === "number") {
