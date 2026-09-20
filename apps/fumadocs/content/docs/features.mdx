@@ -7,6 +7,14 @@ description: The portfolio surfaces and workflows included in the current produc
 
 The dashboard consolidates current assets into the user's base currency and shows net worth, liquidity, allocation, valuation coverage and Indian-equity performance. It surfaces missing FX rates instead of presenting incomplete totals as complete.
 
+## Ask Selvam
+
+The authenticated assistant has a dedicated chat page and a floating panel available across the dashboard. Both use one active conversation runtime during route changes. Conversations are saved to account-scoped database threads and can be resumed across sessions and devices. The full-page interface has a collapsible history sidebar, new/switch/rename/delete controls, response streaming, starter prompts, model selection, and a copy-transcript sharing action. Public share links are intentionally not created for private financial conversations. The full-page interface uses assistant-ui headless thread and composer primitives styled with Selvam's design system; Vercel AI SDK handles streaming and per-request provider selection.
+
+Users supply their own OpenAI or Google Gemini key. The key is encrypted at rest per account, is never returned to the browser after saving, and is instantiated on the server for each request. The provider receives the user's question and the relevant financial context needed to answer it. Removing a key stops future use. Existing encrypted keys depend on `BETTER_AUTH_SECRET`; rotate that secret only with a credential-rekey plan.
+
+Each response starts with the same live portfolio overview query as the dashboard and can request read-only FIRE, household, banking, salary, deposit, global-equity and verified-return sections. The assistant is instructed to preserve exact amounts, currency, dates and coverage caveats, and to decline unsupported figures. AI output is still fallible and is not a substitute for inspecting the linked records before a financial decision. No files or account data are used to train a model by Selvam itself; third-party provider data handling follows the provider selected by the user.
+
 ## Analytics workspace
 
 The dedicated Analytics page keeps the dashboard concise while combining account-owned wealth, liquidity, tradebook, salary, household and property trends. EvilCharts/ECharts blocks use interactive legends, precise currency tooltips and container-aware resizing for phones and larger screens. Each section appears only when its underlying dataset exists; charts never use sample data.

@@ -10,6 +10,11 @@
     "test:pwa": "node --test scripts/service-worker.test.mjs"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.76",
+    "@ai-sdk/openai": "^4.0.71",
+    "@ai-sdk/react": "^4.0.110",
+    "@assistant-ui/ai-sdk": "^0.0.7",
+    "@assistant-ui/react": "^0.15.21",
     "@portfolio/api": "workspace:*",
     "@portfolio/auth": "workspace:*",
     "@portfolio/db": "workspace:*",
@@ -22,6 +27,7 @@
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "^11.18.0",
+    "ai": "^7.0.107",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
@@ -31,6 +37,7 @@
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-markdown": "^10.1.0",
     "sonner": "catalog:",
     "zod": "catalog:"
   },

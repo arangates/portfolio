@@ -27,6 +27,12 @@ export const dashboardNavigation = [
     label: "Portfolio",
     items: [
       {
+        title: "Ask Selvam",
+        url: "/dashboard/chat",
+        icon: BrainCircuitIcon,
+        keywords: "ai assistant chat ask portfolio fire budget returns",
+      },
+      {
         title: "Overview & assets",
         shortTitle: "Overview",
         url: "/dashboard",

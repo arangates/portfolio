@@ -155,6 +155,20 @@
       "when": 1789841546525,
       "tag": "0021_neat_magma",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1789898370987,
+      "tag": "0022_productive_sphinx",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1789920430298,
+      "tag": "0023_parched_gladiator",
+      "breakpoints": true
     }
   ]
 }

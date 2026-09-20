@@ -15,6 +15,9 @@ import { Button } from "@portfolio/ui/components/button";
 import { useSidebar } from "@portfolio/ui/components/sidebar";
 
 const PrivacyContext = createContext({ hidden: false, toggle: () => {} });
+export function useFinancialPrivacy() {
+  return useContext(PrivacyContext).hidden;
+}
 
 export function DashboardExperience({
   initialHidden,

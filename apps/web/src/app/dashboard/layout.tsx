@@ -8,6 +8,7 @@ import {
   MobileNavigation,
 } from "@/components/dashboard-experience";
 import { AppStatus } from "@/components/pwa-controls";
+import { GlobalAIChat } from "@/components/global-ai-chat";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -28,12 +29,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
       >
         <AppSidebar user={session.user} variant="inset" />
         <SidebarInset>
-          <SiteHeader />
-          <AppStatus />
-          <main className="dashboard-content flex min-w-0 flex-1 flex-col overflow-x-hidden">
-            <FinancialContent>{children}</FinancialContent>
-          </main>
-          <MobileNavigation />
+          <GlobalAIChat userId={session.user.id}>
+            <SiteHeader />
+            <AppStatus />
+            <main className="dashboard-content flex min-w-0 flex-1 flex-col overflow-x-hidden">
+              <FinancialContent>{children}</FinancialContent>
+            </main>
+            <MobileNavigation />
+          </GlobalAIChat>
         </SidebarInset>
       </SidebarProvider>
     </DashboardExperience>
