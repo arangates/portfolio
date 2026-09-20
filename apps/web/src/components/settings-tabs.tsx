@@ -1,24 +1,32 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@portfolio/ui/components/tabs";
-import { FlameIcon, ShieldCheckIcon, SlidersHorizontalIcon, UserRoundIcon } from "lucide-react";
+import {
+  FlameIcon,
+  KeyRoundIcon,
+  ShieldCheckIcon,
+  SlidersHorizontalIcon,
+  UserRoundIcon,
+} from "lucide-react";
 
 export function SettingsTabs({
   account,
   portfolio,
   planning,
   dataAndSecurity,
+  modelKeys,
   defaultValue = "account",
 }: {
   account: React.ReactNode;
   portfolio: React.ReactNode;
   planning: React.ReactNode;
   dataAndSecurity: React.ReactNode;
-  defaultValue?: "account" | "portfolio" | "planning" | "security";
+  modelKeys: React.ReactNode;
+  defaultValue?: "account" | "portfolio" | "planning" | "security" | "model-keys";
 }) {
   return (
     <Tabs defaultValue={defaultValue} className="min-w-0 gap-4 px-4 lg:px-6">
-      <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 group-data-horizontal/tabs:h-auto sm:inline-grid sm:w-auto sm:grid-cols-4">
+      <TabsList className="grid h-auto w-full grid-cols-2 gap-1 p-1 group-data-horizontal/tabs:h-auto sm:inline-grid sm:w-auto sm:grid-cols-5">
         <TabsTrigger value="account" className="h-9 gap-2 px-3">
           <UserRoundIcon className="size-4" />
           Account
@@ -35,6 +43,9 @@ export function SettingsTabs({
           <ShieldCheckIcon className="size-4" />
           Data & security
         </TabsTrigger>
+        <TabsTrigger value="model-keys" className="h-9 gap-2 px-3">
+          <KeyRoundIcon className="size-4" /> Model keys
+        </TabsTrigger>
       </TabsList>
       <div className="[&_[data-slot=card]]:gap-0 [&_[data-slot=card]]:py-0 [&_[data-slot=card]]:shadow-xs [&_[data-slot=card-content]]:px-4 [&_[data-slot=card-content]]:pb-4 sm:[&_[data-slot=card-content]]:px-5 sm:[&_[data-slot=card-content]]:pb-5 [&_[data-slot=card-footer]]:px-4 [&_[data-slot=card-footer]]:pb-4 sm:[&_[data-slot=card-footer]]:px-5 sm:[&_[data-slot=card-footer]]:pb-5 [&_[data-slot=card-header]]:p-4 sm:[&_[data-slot=card-header]]:p-5">
         <TabsContent value="account">
@@ -47,6 +58,7 @@ export function SettingsTabs({
         <TabsContent value="security">
           <div className="grid min-w-0 gap-4 xl:grid-cols-2">{dataAndSecurity}</div>
         </TabsContent>
+        <TabsContent value="model-keys">{modelKeys}</TabsContent>
       </div>
     </Tabs>
   );

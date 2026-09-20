@@ -18,13 +18,17 @@ export function SiteHeader() {
 
   return (
     <header className="app-header sticky top-0 z-30 flex h-(--header-height) shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
-      <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
+      <div className="flex w-full min-w-0 items-center gap-1 px-3 sm:px-4 lg:gap-2 lg:px-6">
         <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mx-2 h-4 data-vertical:self-auto" />
+        <Separator orientation="vertical" className="mx-1 h-4 data-vertical:self-auto sm:mx-2" />
         <h1 className="min-w-0 flex-1 truncate text-sm font-medium sm:text-base">{title}</h1>
-        <div className="flex shrink-0 items-center gap-2">
-          <AmountModeToggle />
-          <InstallApp />
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <span className="hidden sm:inline-flex">
+            <AmountModeToggle />
+          </span>
+          <span className="hidden sm:inline-flex">
+            <InstallApp />
+          </span>
           <PrivacyToggle />
           <CommandSearch />
           <ModeToggle />

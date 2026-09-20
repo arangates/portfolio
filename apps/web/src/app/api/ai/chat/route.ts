@@ -3,6 +3,8 @@ import { getChatThread, saveChatThread, type StoredChatMessage } from "@/lib/ai-
 import { getChatOverview, getChatSection, sections } from "@/lib/ai-financial-context";
 import { createGoogle } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { chatModels } from "@/lib/ai-models";
 import { auth } from "@portfolio/auth";
 import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage } from "ai";
 import { headers } from "next/headers";
@@ -12,8 +14,14 @@ export const maxDuration = 60;
 
 const requestSchema = z.object({
   threadId: z.uuid(),
-  provider: z.enum(["openai", "google"]),
-  model: z.enum(["gpt-4.1-mini", "gpt-5.4-mini", "gemini-3.6-flash"]),
+  provider: z.enum(["openai", "google", "anthropic", "opencode"]),
+  model: z.enum([
+    "gpt-4.1-mini",
+    "gpt-5.4-mini",
+    "gemini-3.6-flash",
+    "claude-sonnet-4-6",
+    "gpt-5.6-sol",
+  ]),
   trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
   messages: z
     .array(
@@ -96,7 +104,9 @@ export async function POST(request: Request) {
     const thread = await getChatThread(session.user.id, raw.threadId);
     if (!thread) return Response.json({ error: "Chat not found." }, { status: 404 });
     if (
-      raw.provider === "openai" ? !raw.model.startsWith("gpt-") : !raw.model.startsWith("gemini-")
+      !chatModels.some(
+        (candidate) => candidate.id === raw.model && candidate.provider === raw.provider,
+      )
     )
       return Response.json({ error: "Model does not match provider." }, { status: 400 });
     const regenerate = raw.trigger === "regenerate-message";
@@ -130,14 +140,18 @@ export async function POST(request: Request) {
     if (!key)
       return Response.json(
         {
-          error: `Add your ${raw.provider === "openai" ? "OpenAI" : "Gemini"} API key in the chat settings first.`,
+          error: `Add your ${raw.provider} API key in Settings → Model keys first.`,
         },
         { status: 400 },
       );
     const model =
       raw.provider === "openai"
         ? createOpenAI({ apiKey: key })(raw.model)
-        : createGoogle({ apiKey: key })(raw.model);
+        : raw.provider === "google"
+          ? createGoogle({ apiKey: key })(raw.model)
+          : raw.provider === "anthropic"
+            ? createAnthropic({ apiKey: key })(raw.model)
+            : createOpenAI({ apiKey: key, baseURL: "https://opencode.ai/zen/v1" })(raw.model);
     stage = "financial-context";
     const overview = await getChatOverview(session.user.id);
     stage = "stream-setup";

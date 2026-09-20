@@ -335,6 +335,7 @@ export function AppStatus() {
       setMessage("Update did not finish. Try again when connected.");
     }, 15000);
   }
+  if (pathname === "/dashboard/chat") return null;
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b bg-muted/20 px-4 py-1.5 text-xs text-muted-foreground lg:px-6">
       <div role="status" className="flex min-w-0 flex-1 items-center gap-2">

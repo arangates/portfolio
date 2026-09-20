@@ -1,10 +1,13 @@
 "use client";
 
 import { useSelvamChat } from "@/components/global-ai-chat";
+import { chatModels } from "@/lib/ai-models";
 import {
   ActionBarPrimitive,
   AuiIf,
+  BranchPickerPrimitive,
   ComposerPrimitive,
+  ErrorPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
 } from "@assistant-ui/react";
@@ -12,6 +15,9 @@ import { Button } from "@portfolio/ui/components/button";
 import {
   BrainCircuitIcon,
   CopyIcon,
+  DownloadIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   KeyRoundIcon,
   MenuIcon,
   PanelLeftCloseIcon,
@@ -26,6 +32,7 @@ import {
 } from "lucide-react";
 import Markdown from "react-markdown";
 import { useState } from "react";
+import Link from "next/link";
 
 function ChatMessage({ role }: { role: "user" | "assistant" }) {
   return (
@@ -57,24 +64,52 @@ function ChatMessage({ role }: { role: "user" | "assistant" }) {
             ),
           }}
         />
+        <MessagePrimitive.Error>
+          <ErrorPrimitive.Root className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-destructive">
+            <ErrorPrimitive.Message />
+          </ErrorPrimitive.Root>
+        </MessagePrimitive.Error>
         {role === "assistant" && (
-          <ActionBarPrimitive.Root
-            hideWhenRunning
-            className="mt-2 flex items-center gap-2 border-t pt-2 text-muted-foreground"
-          >
-            <ActionBarPrimitive.Copy
-              aria-label="Copy response"
-              className="rounded p-1 hover:bg-accent"
+          <div className="mt-2 flex flex-wrap items-center gap-2 border-t pt-2 text-muted-foreground">
+            <BranchPickerPrimitive.Root
+              hideWhenSingleBranch
+              className="inline-flex items-center gap-1 text-xs"
             >
-              <CopyIcon className="size-3.5" />
-            </ActionBarPrimitive.Copy>
-            <ActionBarPrimitive.Reload
-              aria-label="Regenerate response"
-              className="rounded p-1 hover:bg-accent"
-            >
-              <RefreshCwIcon className="size-3.5" />
-            </ActionBarPrimitive.Reload>
-          </ActionBarPrimitive.Root>
+              <BranchPickerPrimitive.Previous
+                aria-label="Previous response"
+                className="rounded p-1 hover:bg-accent"
+              >
+                <ChevronLeftIcon className="size-3.5" />
+              </BranchPickerPrimitive.Previous>
+              <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
+              <BranchPickerPrimitive.Next
+                aria-label="Next response"
+                className="rounded p-1 hover:bg-accent"
+              >
+                <ChevronRightIcon className="size-3.5" />
+              </BranchPickerPrimitive.Next>
+            </BranchPickerPrimitive.Root>
+            <ActionBarPrimitive.Root hideWhenRunning className="flex items-center gap-2">
+              <ActionBarPrimitive.Copy
+                aria-label="Copy response"
+                className="rounded p-1 hover:bg-accent"
+              >
+                <CopyIcon className="size-3.5" />
+              </ActionBarPrimitive.Copy>
+              <ActionBarPrimitive.Reload
+                aria-label="Regenerate response"
+                className="rounded p-1 hover:bg-accent"
+              >
+                <RefreshCwIcon className="size-3.5" />
+              </ActionBarPrimitive.Reload>
+              <ActionBarPrimitive.ExportMarkdown
+                aria-label="Download response as Markdown"
+                className="rounded p-1 hover:bg-accent"
+              >
+                <DownloadIcon className="size-3.5" />
+              </ActionBarPrimitive.ExportMarkdown>
+            </ActionBarPrimitive.Root>
+          </div>
         )}
       </div>
     </MessagePrimitive.Root>
@@ -93,70 +128,94 @@ export default function ChatPage() {
   const [historyOpen, setHistoryOpen] = useState(true);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   return (
-    <div className="flex h-[calc(100dvh-6.5rem)] min-h-0 flex-col overflow-hidden md:h-[calc(100dvh-3rem)]">
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-3 lg:px-6">
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          className="md:hidden"
-          onClick={() => setMobileHistoryOpen(true)}
-          aria-label="Open chat history"
-        >
-          <MenuIcon />
-        </Button>
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          className="hidden md:inline-flex"
-          onClick={() => setHistoryOpen(!historyOpen)}
-          aria-label={historyOpen ? "Hide chat history" : "Show chat history"}
-        >
-          {historyOpen ? <PanelLeftCloseIcon /> : <PanelLeftOpenIcon />}
-        </Button>
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="rounded-xl border bg-primary/10 p-2 text-primary">
-            <BrainCircuitIcon className="size-5" />
+    <div className="flex h-[calc(100dvh-var(--header-height)-env(safe-area-inset-top))] min-h-0 min-w-0 flex-col overflow-hidden">
+      <div className="flex shrink-0 flex-col gap-3 border-b px-3 py-3 sm:flex-row sm:items-center sm:px-4 lg:px-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            className="md:hidden"
+            onClick={() => setMobileHistoryOpen(true)}
+            aria-label="Open chat history"
+          >
+            <MenuIcon />
+          </Button>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            className="hidden md:inline-flex"
+            onClick={() => setHistoryOpen(!historyOpen)}
+            aria-label={historyOpen ? "Hide chat history" : "Show chat history"}
+          >
+            {historyOpen ? <PanelLeftCloseIcon /> : <PanelLeftOpenIcon />}
+          </Button>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="rounded-xl border bg-primary/10 p-2 text-primary">
+              <BrainCircuitIcon className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-semibold">Ask Selvam</h1>
+              <p className="hidden text-xs text-muted-foreground sm:block">
+                Your financial research assistant · current account data
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h1 className="font-semibold">Ask Selvam</h1>
-            <p className="text-xs text-muted-foreground">
-              Your financial research assistant · current account data
-            </p>
-          </div>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            className="sm:hidden"
+            onClick={chat.clear}
+            aria-label="New chat"
+          >
+            <PlusIcon />
+          </Button>
         </div>
-        <select
-          aria-label="AI model"
-          value={chat.model}
-          onChange={(event) => {
-            const model = event.target.value as typeof chat.model;
-            chat.setProvider(model.startsWith("gemini-") ? "google" : "openai");
-            chat.setModel(model);
-          }}
-          className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-        >
-          <option value="gpt-4.1-mini">GPT-4.1 mini {chat.status?.openai ? "✓" : ""}</option>
-          <option value="gpt-5.4-mini">GPT-5.4 mini {chat.status?.openai ? "✓" : ""}</option>
-          <option value="gemini-3.6-flash">
-            Gemini 3.6 Flash {chat.status?.google ? "✓" : ""}
-          </option>
-        </select>
-        <Button size="sm" variant="outline" onClick={() => chat.setSettings(!chat.settings)}>
-          <KeyRoundIcon /> Keys
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => void chat.shareTranscript()}
-          disabled={!chat.activeThreadId}
-        >
-          <Share2Icon />
-          <span className="hidden sm:inline">Share</span>
-        </Button>
-        <Button size="sm" variant="outline" onClick={chat.clear}>
-          <PlusIcon /> New chat
-        </Button>
+        <div className="flex min-w-0 items-center gap-2 sm:justify-end">
+          <select
+            aria-label="AI model"
+            value={chat.model}
+            onChange={(event) => {
+              const model = event.target.value as typeof chat.model;
+              chat.setProvider(
+                chatModels.find((candidate) => candidate.id === model)?.provider ?? "openai",
+              );
+              chat.setModel(model);
+            }}
+            className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm sm:max-w-56 sm:flex-none"
+          >
+            {chatModels.map((candidate) => (
+              <option key={`${candidate.provider}:${candidate.id}`} value={candidate.id}>
+                {candidate.label} {chat.status?.[candidate.provider] ? "✓" : ""}
+              </option>
+            ))}
+          </select>
+          <Button
+            size="icon-sm"
+            variant="outline"
+            render={<Link href="/dashboard/settings?tab=model-keys" />}
+            aria-label="Model key settings"
+          >
+            <KeyRoundIcon />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void chat.shareTranscript()}
+            disabled={!chat.activeThreadId}
+          >
+            <Share2Icon />
+            <span className="hidden sm:inline">Share</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={chat.clear}
+            className="hidden sm:inline-flex"
+          >
+            <PlusIcon /> New chat
+          </Button>
+        </div>
       </div>
-      {chat.settings && chat.keySettings}
       {(chat.notice || chat.error) && (
         <p role="alert" className="border-b px-4 py-2 text-sm text-destructive">
           {chat.notice || chat.error}
@@ -173,7 +232,7 @@ export default function ChatPage() {
         )}
         <aside
           aria-label="Conversation history"
-          className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-72 flex-col border-r bg-background pt-12 shadow-xl md:static md:z-auto md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
+          className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] flex-col border-r bg-background pt-[max(3rem,env(safe-area-inset-top))] shadow-xl md:static md:z-auto md:w-72 md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
         >
           <div className="flex items-center justify-between border-b p-3">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -239,7 +298,7 @@ export default function ChatPage() {
         <ThreadPrimitive.Root className="flex min-h-0 min-w-0 flex-1 flex-col">
           <ThreadPrimitive.Viewport className="min-h-0 flex-1 overflow-y-auto" autoScroll>
             <AuiIf condition={(state) => state.thread.isEmpty}>
-              <div className="mx-auto flex max-w-2xl flex-col items-center px-5 py-12 text-center sm:py-20">
+              <div className="mx-auto flex max-w-2xl flex-col items-center px-5 py-8 text-center sm:py-20">
                 <div className="mb-5 rounded-2xl border bg-primary/10 p-4 text-primary">
                   <BrainCircuitIcon className="size-8" />
                 </div>
@@ -274,7 +333,7 @@ export default function ChatPage() {
               </div>
             </AuiIf>
             <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
-            <ThreadPrimitive.ViewportFooter className="sticky bottom-0 border-t bg-background/95 px-4 py-4 backdrop-blur">
+            <ThreadPrimitive.ViewportFooter className="sticky bottom-0 border-t bg-background/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:px-4 sm:py-4">
               <div className="mx-auto max-w-3xl">
                 <ThreadPrimitive.ScrollToBottom className="mb-2 ml-auto block rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground disabled:hidden">
                   Scroll to latest
@@ -309,7 +368,7 @@ export default function ChatPage() {
                   <Button
                     className="w-full"
                     variant="outline"
-                    onClick={() => chat.setSettings(true)}
+                    render={<Link href="/dashboard/settings?tab=model-keys" />}
                   >
                     <KeyRoundIcon /> Add an API key to start chatting
                   </Button>

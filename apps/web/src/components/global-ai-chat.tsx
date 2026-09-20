@@ -1,6 +1,7 @@
 "use client";
 
 import { useFinancialPrivacy } from "@/components/dashboard-experience";
+import { chatModels, defaultModel, type ChatModel, type ChatProvider } from "@/lib/ai-models";
 import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
@@ -13,7 +14,6 @@ import {
   MessageCircleIcon,
   SendIcon,
   SquareIcon,
-  Trash2Icon,
   XIcon,
 } from "lucide-react";
 import Markdown from "react-markdown";
@@ -21,9 +21,8 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type Provider = "openai" | "google";
+type Provider = ChatProvider;
 type Status = Record<Provider, boolean>;
-type ChatModel = "gpt-4.1-mini" | "gpt-5.4-mini" | "gemini-3.6-flash";
 type ChatThread = { id: string; title: string; provider: string; model: string; updatedAt: string };
 type ChatContextValue = {
   provider: Provider;
@@ -40,10 +39,7 @@ type ChatContextValue = {
   shareTranscript: () => Promise<void>;
   sendPrompt: (text: string) => void;
   status: Status | null;
-  settings: boolean;
-  setSettings: (value: boolean) => void;
   clear: () => void;
-  keySettings: React.ReactNode;
   notice: string;
   error: string | undefined;
 };
@@ -59,7 +55,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   const pathname = usePathname();
   const onChatPage = pathname === "/dashboard/chat";
   const [open, setOpen] = useState(false);
-  const [settings, setSettings] = useState(false);
   const [provider, setProvider] = useState<Provider>("openai");
   const [model, setModel] = useState<ChatModel>("gpt-4.1-mini");
   const [threads, setThreads] = useState<ChatThread[]>([]);
@@ -70,10 +65,8 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     messages: UIMessage[];
   } | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
-  const [key, setKey] = useState("");
   const [input, setInput] = useState("");
   const [notice, setNotice] = useState("");
-  const [busy, setBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const providerRef = useRef(provider);
   providerRef.current = provider;
@@ -83,6 +76,8 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   threadRef.current = activeThreadId;
   const initializationRef = useRef(false);
   const selectionRef = useRef(0);
+
+  useEffect(() => setOpen(false), [pathname]);
 
   const chat = useChat({
     id: activeThreadId ?? `selvam-pending:${userId}`,
@@ -131,16 +126,18 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
       const data = (await response.json()) as { thread: ChatThread & { messages: UIMessage[] } };
       if (selection !== selectionRef.current) return;
       setActiveThreadId(id);
-      const nextProvider = data.thread.provider === "google" ? "google" : "openai";
+      const nextProvider = (["openai", "google", "anthropic", "opencode"] as string[]).includes(
+        data.thread.provider,
+      )
+        ? (data.thread.provider as Provider)
+        : "openai";
       setProvider(nextProvider);
       setModel(
-        (["gpt-4.1-mini", "gpt-5.4-mini", "gemini-3.6-flash"] as string[]).includes(
-          data.thread.model,
+        chatModels.some(
+          (candidate) => candidate.id === data.thread.model && candidate.provider === nextProvider,
         )
           ? (data.thread.model as ChatModel)
-          : nextProvider === "openai"
-            ? "gpt-4.1-mini"
-            : "gemini-3.6-flash",
+          : defaultModel[nextProvider],
       );
       setPendingHistory({ id, messages: data.thread.messages });
     } catch (cause) {
@@ -219,7 +216,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   }
   function sendPrompt(text: string) {
     if (!activeThreadId || threadLoading || chatStatus !== "ready" || !status?.[provider]) {
-      setSettings(true);
+      setNotice(`Add your ${provider} API key in Settings → Model keys to chat.`);
       return;
     }
     setNotice("");
@@ -227,7 +224,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   }
   function chooseProvider(value: Provider) {
     setProvider(value);
-    setModel(value === "openai" ? "gpt-4.1-mini" : "gemini-3.6-flash");
+    setModel(defaultModel[value]);
   }
 
   useEffect(() => {
@@ -256,8 +253,12 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
       })
       .then((value) => {
         setStatus(value);
-        if (!value.openai && value.google) chooseProvider("google");
-        if (!value.openai && !value.google) setSettings(true);
+        if (!value[providerRef.current]) {
+          const first = (["google", "openai", "anthropic", "opencode"] as Provider[]).find(
+            (candidate) => value[candidate],
+          );
+          if (first) chooseProvider(first);
+        }
       })
       .catch(() => setNotice("Could not load provider settings. Please retry."));
   }, [open, onChatPage]);
@@ -276,51 +277,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  async function saveKey() {
-    setBusy(true);
-    setNotice("");
-    try {
-      const response = await fetch("/api/ai/keys", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider, key }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Could not save API key");
-      setStatus((current) => ({
-        openai: current?.openai ?? false,
-        google: current?.google ?? false,
-        [provider]: true,
-      }));
-      setKey("");
-      setSettings(false);
-      setNotice("API key saved securely.");
-    } catch (cause) {
-      setNotice(cause instanceof Error ? cause.message : "Could not save API key");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function removeKey() {
-    setBusy(true);
-    setNotice("");
-    try {
-      const response = await fetch(`/api/ai/keys?provider=${provider}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Could not remove API key");
-      setStatus((current) => ({
-        openai: current?.openai ?? false,
-        google: current?.google ?? false,
-        [provider]: false,
-      }));
-      setNotice("API key removed.");
-    } catch (cause) {
-      setNotice(cause instanceof Error ? cause.message : "Could not remove API key");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   function submit(event: React.FormEvent) {
     event.preventDefault();
     const text = input.trim();
@@ -330,46 +286,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     sendPrompt(text);
   }
 
-  const keySettings = (
-    <div className="shrink-0 space-y-2 border-b bg-muted/30 p-4 text-sm">
-      <label className="block font-medium" htmlFor="ai-provider">
-        Provider
-      </label>
-      <select
-        id="ai-provider"
-        value={provider}
-        onChange={(event) => chooseProvider(event.target.value as Provider)}
-        className="h-9 w-full rounded-md border border-input bg-background px-3"
-      >
-        <option value="openai">OpenAI {status?.openai ? "· key saved" : ""}</option>
-        <option value="google">Google Gemini {status?.google ? "· key saved" : ""}</option>
-      </select>
-      <label className="block font-medium" htmlFor="ai-key">
-        Your {provider === "openai" ? "OpenAI" : "Gemini"} API key
-      </label>
-      <Input
-        id="ai-key"
-        type="password"
-        value={key}
-        onChange={(event) => setKey(event.target.value)}
-        autoComplete="off"
-        placeholder="Paste API key"
-      />
-      <p className="text-xs text-muted-foreground">
-        Stored encrypted for your account. Requests go directly to your chosen provider.
-      </p>
-      <div className="flex gap-2">
-        <Button type="button" size="sm" onClick={saveKey} disabled={busy || key.trim().length < 8}>
-          Save key
-        </Button>
-        {status?.[provider] && (
-          <Button type="button" size="sm" variant="outline" onClick={removeKey} disabled={busy}>
-            <Trash2Icon /> Remove
-          </Button>
-        )}
-      </div>
-    </div>
-  );
   const clear = () => {
     void newThread();
   };
@@ -391,10 +307,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
           shareTranscript,
           sendPrompt,
           status,
-          settings,
-          setSettings,
           clear,
-          keySettings,
           notice,
           error: error?.message,
         }}
@@ -403,7 +316,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
         {!privateMode && !onChatPage && !open && (
           <Button
             type="button"
-            className="fixed bottom-20 right-4 z-40 h-12 gap-2 rounded-full px-4 shadow-lg sm:bottom-5"
+            className="fixed bottom-5 right-4 z-40 h-12 gap-2 rounded-full px-4 shadow-lg"
             onClick={() => setOpen(true)}
             aria-label="Open Selvam assistant"
           >
@@ -428,9 +341,9 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
               <Button
                 type="button"
                 size="icon-sm"
-                variant={settings ? "secondary" : "ghost"}
-                onClick={() => setSettings((current) => !current)}
-                aria-label="AI provider settings"
+                variant="ghost"
+                render={<Link href="/dashboard/settings?tab=model-keys" />}
+                aria-label="Model key settings"
               >
                 <KeyRoundIcon />
               </Button>
@@ -453,7 +366,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
                 <XIcon />
               </Button>
             </header>
-            {settings && keySettings}
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4" aria-live="polite">
               {messages.length === 0 && (
                 <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
@@ -511,22 +423,13 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
               onSubmit={submit}
               className="flex shrink-0 items-center gap-2 border-t p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
             >
-              <select
-                aria-label="Chat provider"
-                value={provider}
-                onChange={(event) => chooseProvider(event.target.value as Provider)}
-                className="h-9 max-w-23 rounded-md border border-input bg-background px-1 text-xs"
-              >
-                <option value="openai">OpenAI</option>
-                <option value="google">Gemini</option>
-              </select>
               <Input
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 maxLength={2000}
                 disabled={!status?.[provider] || !activeThreadId || threadLoading}
                 placeholder={
-                  status?.[provider] ? "Ask about your finances…" : "Add an API key first"
+                  status?.[provider] ? "Ask about your finances…" : "Set up a model key in Settings"
                 }
                 aria-label="Message"
                 className="min-w-0 flex-1"

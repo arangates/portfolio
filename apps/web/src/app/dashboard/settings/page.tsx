@@ -1,6 +1,7 @@
 import { InstallApp } from "@/components/pwa-controls";
 import { PageHeader } from "@/components/page-header";
 import { SettingsTabs } from "@/components/settings-tabs";
+import { ModelKeysSettings } from "@/components/model-keys-settings";
 import { GoogleDriveArchiveCard } from "@/components/google-drive-archive-card";
 import { ExchangeRateSyncCard } from "@/components/exchange-rate-sync-card";
 import { getDriveArchiveState } from "@/lib/google-drive-archive";
@@ -44,7 +45,10 @@ export default async function SettingsPage({
   ]);
   const requestedTab = (await searchParams).tab;
   const defaultTab =
-    requestedTab === "portfolio" || requestedTab === "planning" || requestedTab === "security"
+    requestedTab === "portfolio" ||
+    requestedTab === "planning" ||
+    requestedTab === "security" ||
+    requestedTab === "model-keys"
       ? requestedTab
       : "account";
   const driveSummary = {
@@ -67,6 +71,7 @@ export default async function SettingsPage({
         />
         <SettingsTabs
           defaultValue={defaultTab}
+          modelKeys={<ModelKeysSettings />}
           account={<AccountForm name={session.user.name} email={session.user.email} />}
           portfolio={
             <>

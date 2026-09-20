@@ -155,6 +155,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^4.0.58
+        version: 4.0.58(zod@4.4.3)
       '@ai-sdk/google':
         specifier: ^4.0.76
         version: 4.0.76(zod@4.4.3)
@@ -495,6 +498,12 @@ importers:
         version: 6.0.3
 
 packages:
+
+  '@ai-sdk/anthropic@4.0.58':
+    resolution: {integrity: sha512-vhXKBz7jnIhBlOoj2d0joyHicWISuIxDNha65SLrAnagAkVgulLoZBRLZRazstxlO/BtXU+cDERe1opVKte2OQ==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
 
   '@ai-sdk/gateway@4.0.87':
     resolution: {integrity: sha512-6wJmX/D5OO7tvDJbtFdXdBuRt8AkCnW+FLK+W35UHe/tHgolAa4hclXtJcMSYnlTDy/t5DNRgdesVaoMXtwzow==}
@@ -5565,6 +5574,12 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@ai-sdk/anthropic@4.0.58(zod@4.4.3)':
+    dependencies:
+      '@ai-sdk/provider': 4.0.17
+      '@ai-sdk/provider-utils': 5.0.45(zod@4.4.3)
+      zod: 4.4.3
 
   '@ai-sdk/gateway@4.0.87(zod@4.4.3)':
     dependencies:
