@@ -23,7 +23,7 @@ import { usePathname } from "next/navigation";
 
 type Provider = "openai" | "google";
 type Status = Record<Provider, boolean>;
-type ChatModel = "gpt-4.1-mini" | "gpt-5.4-mini" | "gemini-2.5-flash" | "gemini-2.5-pro";
+type ChatModel = "gpt-4.1-mini" | "gpt-5.4-mini" | "gemini-3.6-flash";
 type ChatThread = { id: string; title: string; provider: string; model: string; updatedAt: string };
 type ChatContextValue = {
   provider: Provider;
@@ -134,13 +134,13 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
       const nextProvider = data.thread.provider === "google" ? "google" : "openai";
       setProvider(nextProvider);
       setModel(
-        (
-          ["gpt-4.1-mini", "gpt-5.4-mini", "gemini-2.5-flash", "gemini-2.5-pro"] as string[]
-        ).includes(data.thread.model)
+        (["gpt-4.1-mini", "gpt-5.4-mini", "gemini-3.6-flash"] as string[]).includes(
+          data.thread.model,
+        )
           ? (data.thread.model as ChatModel)
           : nextProvider === "openai"
             ? "gpt-4.1-mini"
-            : "gemini-2.5-flash",
+            : "gemini-3.6-flash",
       );
       setPendingHistory({ id, messages: data.thread.messages });
     } catch (cause) {
@@ -227,7 +227,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   }
   function chooseProvider(value: Provider) {
     setProvider(value);
-    setModel(value === "openai" ? "gpt-4.1-mini" : "gemini-2.5-flash");
+    setModel(value === "openai" ? "gpt-4.1-mini" : "gemini-3.6-flash");
   }
 
   useEffect(() => {

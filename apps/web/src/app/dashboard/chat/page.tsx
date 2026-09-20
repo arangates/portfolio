@@ -136,10 +136,9 @@ export default function ChatPage() {
         >
           <option value="gpt-4.1-mini">GPT-4.1 mini {chat.status?.openai ? "✓" : ""}</option>
           <option value="gpt-5.4-mini">GPT-5.4 mini {chat.status?.openai ? "✓" : ""}</option>
-          <option value="gemini-2.5-flash">
-            Gemini 2.5 Flash {chat.status?.google ? "✓" : ""}
+          <option value="gemini-3.6-flash">
+            Gemini 3.6 Flash {chat.status?.google ? "✓" : ""}
           </option>
-          <option value="gemini-2.5-pro">Gemini 2.5 Pro {chat.status?.google ? "✓" : ""}</option>
         </select>
         <Button size="sm" variant="outline" onClick={() => chat.setSettings(!chat.settings)}>
           <KeyRoundIcon /> Keys
