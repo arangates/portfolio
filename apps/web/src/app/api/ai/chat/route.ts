@@ -23,6 +23,7 @@ const requestSchema = z.object({
     "gpt-5.6-sol",
   ]),
   trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
+  messageId: z.string().max(100).optional(),
   messages: z
     .array(
       z.object({
@@ -43,7 +44,7 @@ function sameOrigin(request: Request) {
   );
 }
 
-function providerErrorMessage(error: unknown): string {
+function providerErrorMessage(error: unknown, provider: string): string {
   const details =
     error instanceof Error
       ? `${error.message} ${"cause" in error ? String(error.cause) : ""}`.toLowerCase()
@@ -53,7 +54,7 @@ function providerErrorMessage(error: unknown): string {
     details.includes("insufficient_quota") ||
     details.includes("credit_balance_exhausted")
   )
-    return "Your OpenAI API project has no credits remaining. Add API billing credits or select Gemini in the model picker.";
+    return `Your ${provider === "opencode" ? "OpenCode Zen" : provider === "openai" ? "OpenAI" : provider} API project has no credits remaining. Add provider billing credits or select another configured model.`;
   if (details.includes("no longer available") || details.includes("model not found"))
     return "This model is unavailable to your API key. Select Gemini 3.6 Flash or another available model.";
   if (
@@ -61,7 +62,7 @@ function providerErrorMessage(error: unknown): string {
     details.includes("incorrect api key") ||
     details.includes("api key not valid")
   )
-    return "The provider rejected your API key. Replace it in chat settings.";
+    return "The provider rejected your API key. Replace it in Settings → Model keys.";
   if (details.includes("rate limit"))
     return "The provider rate limit was reached. Wait a moment and retry.";
   return "The AI provider could not answer. Check your API key and provider billing, then retry.";
@@ -97,7 +98,8 @@ export async function POST(request: Request) {
         }),
       }))
       .filter((message) => message.parts.length > 0);
-    if (submitted[0]?.role !== "user" || submitted[0].parts.length === 0) {
+    const regenerate = raw.trigger === "regenerate-message";
+    if (!regenerate && (submitted[0]?.role !== "user" || submitted[0].parts.length === 0)) {
       return Response.json({ error: "Message is missing or too long." }, { status: 400 });
     }
     stage = "thread";
@@ -109,12 +111,19 @@ export async function POST(request: Request) {
       )
     )
       return Response.json({ error: "Model does not match provider." }, { status: 400 });
-    const regenerate = raw.trigger === "regenerate-message";
-    const lastUserIndex = thread.messages.findLastIndex((message) => message.role === "user");
-    if (
-      regenerate &&
-      (lastUserIndex < 0 || thread.messages[lastUserIndex]?.id !== submitted[0]?.id)
-    )
+    const regeneratedAssistantIndex = regenerate
+      ? raw.messageId
+        ? thread.messages.findIndex(
+            (message) => message.id === raw.messageId && message.role === "assistant",
+          )
+        : thread.messages.findLastIndex((message) => message.role === "assistant")
+      : -1;
+    const lastUserIndex = regenerate
+      ? thread.messages
+          .slice(0, regeneratedAssistantIndex)
+          .findLastIndex((message) => message.role === "user")
+      : -1;
+    if (regenerate && (regeneratedAssistantIndex < 0 || lastUserIndex < 0))
       return Response.json(
         { error: "This response can no longer be regenerated." },
         { status: 409 },
@@ -186,7 +195,7 @@ export async function POST(request: Request) {
           overlap >= 0 ? [...existing.slice(0, overlap), ...safe] : [...existing, ...safe];
         await saveChatThread(session.user.id, raw.threadId, history, raw.provider, raw.model);
       },
-      onError: providerErrorMessage,
+      onError: (error) => providerErrorMessage(error, raw.provider),
     });
   } catch (error) {
     // Do not log request bodies, financial context, or provider credentials.

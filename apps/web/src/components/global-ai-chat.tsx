@@ -17,7 +17,7 @@ import {
   XIcon,
 } from "lucide-react";
 import Markdown from "react-markdown";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -42,6 +42,7 @@ type ChatContextValue = {
   clear: () => void;
   notice: string;
   error: string | undefined;
+  dismissError: () => void;
 };
 const ChatContext = createContext<ChatContextValue | null>(null);
 export function useSelvamChat() {
@@ -56,7 +57,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   const onChatPage = pathname === "/dashboard/chat";
   const [open, setOpen] = useState(false);
   const [provider, setProvider] = useState<Provider>("openai");
-  const [model, setModel] = useState<ChatModel>("gpt-4.1-mini");
+  const [model, setModelState] = useState<ChatModel>("gpt-4.1-mini");
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [threadLoading, setThreadLoading] = useState(false);
@@ -79,25 +80,31 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
 
   useEffect(() => setOpen(false), [pathname]);
 
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/ai/chat",
+        prepareSendMessagesRequest: ({ messages: current, body, trigger, messageId }) => ({
+          body: {
+            threadId: threadRef.current,
+            provider: body?.provider ?? providerRef.current,
+            model: modelRef.current,
+            trigger,
+            messageId,
+            messages: current.slice(-1),
+          },
+        }),
+      }),
+    [],
+  );
   const chat = useChat({
     id: activeThreadId ?? `selvam-pending:${userId}`,
-    transport: new DefaultChatTransport({
-      api: "/api/ai/chat",
-      prepareSendMessagesRequest: ({ messages: current, body, trigger }) => ({
-        body: {
-          threadId: threadRef.current,
-          provider: body?.provider ?? providerRef.current,
-          model: modelRef.current,
-          trigger,
-          messages: current.slice(-1),
-        },
-      }),
-    }),
+    transport,
     onFinish: () => {
       window.setTimeout(() => void refreshThreads().catch(() => {}), 250);
     },
   });
-  const { messages, setMessages, sendMessage, stop, error, status: chatStatus } = chat;
+  const { messages, setMessages, sendMessage, stop, clearError, error, status: chatStatus } = chat;
   const runtime = useAISDKRuntime(chat);
 
   useEffect(() => {
@@ -119,6 +126,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     const selection = ++selectionRef.current;
     setThreadLoading(true);
     setNotice("");
+    clearError();
     stop();
     try {
       const response = await fetch(`/api/ai/threads/${id}`, { cache: "no-store" });
@@ -132,7 +140,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
         ? (data.thread.provider as Provider)
         : "openai";
       setProvider(nextProvider);
-      setModel(
+      setModelState(
         chatModels.some(
           (candidate) => candidate.id === data.thread.model && candidate.provider === nextProvider,
         )
@@ -152,6 +160,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     const selection = ++selectionRef.current;
     setThreadLoading(true);
     setNotice("");
+    clearError();
     stop();
     try {
       const response = await fetch("/api/ai/threads", { method: "POST" });
@@ -215,16 +224,31 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     }
   }
   function sendPrompt(text: string) {
-    if (!activeThreadId || threadLoading || chatStatus !== "ready" || !status?.[provider]) {
+    if (!status?.[provider]) {
       setNotice(`Add your ${provider} API key in Settings → Model keys to chat.`);
       return;
     }
+    if (
+      !activeThreadId ||
+      threadLoading ||
+      chatStatus === "submitted" ||
+      chatStatus === "streaming"
+    )
+      return;
+    if (chatStatus === "error") clearError();
     setNotice("");
     void sendMessage({ text }, { body: { provider } });
   }
   function chooseProvider(value: Provider) {
+    clearError();
+    setNotice("");
     setProvider(value);
-    setModel(defaultModel[value]);
+    setModelState(defaultModel[value]);
+  }
+  function chooseModel(value: ChatModel) {
+    clearError();
+    setNotice("");
+    setModelState(value);
   }
 
   useEffect(() => {
@@ -280,7 +304,14 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   function submit(event: React.FormEvent) {
     event.preventDefault();
     const text = input.trim();
-    if (!text || chatStatus !== "ready" || !status?.[provider] || !activeThreadId || threadLoading)
+    if (
+      !text ||
+      chatStatus === "submitted" ||
+      chatStatus === "streaming" ||
+      !status?.[provider] ||
+      !activeThreadId ||
+      threadLoading
+    )
       return;
     setInput("");
     sendPrompt(text);
@@ -296,7 +327,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
           provider,
           setProvider: chooseProvider,
           model,
-          setModel,
+          setModel: chooseModel,
           threads,
           activeThreadId,
           threadLoading,
@@ -310,6 +341,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
           clear,
           notice,
           error: error?.message,
+          dismissError: clearError,
         }}
       >
         {children}
@@ -415,9 +447,17 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
               <div ref={endRef} />
             </div>
             {(notice || error) && (
-              <p role="alert" className="border-t px-4 py-2 text-xs text-destructive">
-                {notice || error?.message}
-              </p>
+              <div
+                role="alert"
+                className="flex items-center gap-2 border-t px-4 py-2 text-xs text-destructive"
+              >
+                <span className="min-w-0 flex-1">{notice || error?.message}</span>
+                {error && (
+                  <Button type="button" size="sm" variant="ghost" onClick={clearError}>
+                    Dismiss
+                  </Button>
+                )}
+              </div>
             )}
             <form
               onSubmit={submit}

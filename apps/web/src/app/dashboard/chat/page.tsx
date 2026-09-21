@@ -5,7 +5,6 @@ import { chatModels } from "@/lib/ai-models";
 import {
   ActionBarPrimitive,
   AuiIf,
-  BranchPickerPrimitive,
   ComposerPrimitive,
   ErrorPrimitive,
   MessagePrimitive,
@@ -16,8 +15,6 @@ import {
   BrainCircuitIcon,
   CopyIcon,
   DownloadIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   KeyRoundIcon,
   MenuIcon,
   PanelLeftCloseIcon,
@@ -71,24 +68,6 @@ function ChatMessage({ role }: { role: "user" | "assistant" }) {
         </MessagePrimitive.Error>
         {role === "assistant" && (
           <div className="mt-2 flex flex-wrap items-center gap-2 border-t pt-2 text-muted-foreground">
-            <BranchPickerPrimitive.Root
-              hideWhenSingleBranch
-              className="inline-flex items-center gap-1 text-xs"
-            >
-              <BranchPickerPrimitive.Previous
-                aria-label="Previous response"
-                className="rounded p-1 hover:bg-accent"
-              >
-                <ChevronLeftIcon className="size-3.5" />
-              </BranchPickerPrimitive.Previous>
-              <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
-              <BranchPickerPrimitive.Next
-                aria-label="Next response"
-                className="rounded p-1 hover:bg-accent"
-              >
-                <ChevronRightIcon className="size-3.5" />
-              </BranchPickerPrimitive.Next>
-            </BranchPickerPrimitive.Root>
             <ActionBarPrimitive.Root hideWhenRunning className="flex items-center gap-2">
               <ActionBarPrimitive.Copy
                 aria-label="Copy response"
@@ -217,9 +196,17 @@ export default function ChatPage() {
         </div>
       </div>
       {(chat.notice || chat.error) && (
-        <p role="alert" className="border-b px-4 py-2 text-sm text-destructive">
-          {chat.notice || chat.error}
-        </p>
+        <div
+          role="alert"
+          className="flex items-center gap-2 border-b px-4 py-2 text-sm text-destructive"
+        >
+          <span className="min-w-0 flex-1">{chat.notice || chat.error}</span>
+          {chat.error && (
+            <Button size="sm" variant="ghost" onClick={chat.dismissError}>
+              Dismiss
+            </Button>
+          )}
+        </div>
       )}
       <div className="relative flex min-h-0 flex-1">
         {mobileHistoryOpen && (

@@ -39,14 +39,26 @@ function decrypt(value: string) {
 
 export async function providerStatus(userId: string) {
   const rows = await db
-    .select({ provider: aiProviderCredential.provider })
+    .select({
+      provider: aiProviderCredential.provider,
+      encryptedKey: aiProviderCredential.encryptedKey,
+    })
     .from(aiProviderCredential)
     .where(eq(aiProviderCredential.userId, userId));
+  const valid = (provider: AIProvider) =>
+    rows.some((row) => {
+      if (row.provider !== provider) return false;
+      try {
+        return decrypt(row.encryptedKey).length >= 8;
+      } catch {
+        return false;
+      }
+    });
   return {
-    openai: rows.some((row) => row.provider === "openai"),
-    google: rows.some((row) => row.provider === "google"),
-    anthropic: rows.some((row) => row.provider === "anthropic"),
-    opencode: rows.some((row) => row.provider === "opencode"),
+    openai: valid("openai"),
+    google: valid("google"),
+    anthropic: valid("anthropic"),
+    opencode: valid("opencode"),
   };
 }
 
