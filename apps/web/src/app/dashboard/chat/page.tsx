@@ -15,12 +15,14 @@ import {
   BrainCircuitIcon,
   CopyIcon,
   DownloadIcon,
+  CheckCircle2Icon,
   KeyRoundIcon,
   MenuIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
   PlusIcon,
   RefreshCwIcon,
+  LoaderCircleIcon,
   SendIcon,
   Share2Icon,
   ShieldCheckIcon,
@@ -30,6 +32,34 @@ import {
 import Markdown from "react-markdown";
 import { useState } from "react";
 import Link from "next/link";
+
+function ReasoningSummary({ text }: { text: string }) {
+  return (
+    <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
+      <summary className="cursor-pointer select-none font-medium text-foreground">
+        Reasoning summary
+      </summary>
+      <p className="mt-2 whitespace-pre-wrap leading-relaxed">{text}</p>
+    </details>
+  );
+}
+
+function FinancialToolStatus({ toolName, status }: { toolName: string; status: { type: string } }) {
+  const running = status.type === "running" || status.type === "requires-action";
+  return (
+    <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
+      {running ? (
+        <LoaderCircleIcon className="size-3.5 animate-spin" />
+      ) : (
+        <CheckCircle2Icon className="size-3.5 text-emerald-500" />
+      )}
+      <span>
+        {running ? "Checking" : "Checked"}{" "}
+        {toolName === "getFinancialSection" ? "your latest Selvam records" : toolName}
+      </span>
+    </div>
+  );
+}
 
 function ChatMessage({ role }: { role: "user" | "assistant" }) {
   return (
@@ -59,6 +89,8 @@ function ChatMessage({ role }: { role: "user" | "assistant" }) {
                 </Markdown>
               </div>
             ),
+            Reasoning: ReasoningSummary,
+            tools: { Fallback: FinancialToolStatus },
           }}
         />
         <MessagePrimitive.Error>
@@ -322,6 +354,15 @@ export default function ChatPage() {
             <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
             <ThreadPrimitive.ViewportFooter className="sticky bottom-0 border-t bg-background/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:px-4 sm:py-4">
               <div className="mx-auto max-w-3xl">
+                <AuiIf condition={(state) => state.thread.isRunning}>
+                  <div
+                    className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"
+                    role="status"
+                  >
+                    <LoaderCircleIcon className="size-3.5 animate-spin" />
+                    Reading your current records and preparing an answer…
+                  </div>
+                </AuiIf>
                 <ThreadPrimitive.ScrollToBottom className="mb-2 ml-auto block rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground disabled:hidden">
                   Scroll to latest
                 </ThreadPrimitive.ScrollToBottom>
