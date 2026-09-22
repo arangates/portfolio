@@ -1,6 +1,7 @@
 "use client";
 
 import { useFinancialPrivacy } from "@/components/dashboard-experience";
+import { ChatComposer, ChatModelSelector } from "@portfolio/ai-chat-ui";
 import {
   chatModels,
   defaultModel,
@@ -12,17 +13,9 @@ import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { Button } from "@portfolio/ui/components/button";
-import { Input } from "@portfolio/ui/components/input";
+import { buttonVariants } from "@portfolio/ui/components/button";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import {
-  KeyRoundIcon,
-  Maximize2Icon,
-  MessageCircleIcon,
-  PlusIcon,
-  SendIcon,
-  SquareIcon,
-  XIcon,
-} from "lucide-react";
+import { KeyRoundIcon, Maximize2Icon, MessageCircleIcon, PlusIcon, XIcon } from "lucide-react";
 import Markdown from "react-markdown";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -60,11 +53,69 @@ export function useSelvamChat() {
   return context;
 }
 
+export function SelvamComposer() {
+  const chat = useSelvamChat();
+
+  if (chat.statusLoading || !chat.status) {
+    return (
+      <div className="h-10 w-full animate-pulse rounded-2xl border bg-muted/40" role="status" />
+    );
+  }
+
+  if (!chat.status[chat.provider]) {
+    return (
+      <Link
+        href="/dashboard/settings?tab=model-keys"
+        className={buttonVariants({ variant: "outline", className: "w-full" })}
+      >
+        <KeyRoundIcon /> Add an API key to start chatting
+      </Link>
+    );
+  }
+
+  return (
+    <ChatComposer
+      modelSelector={
+        <ChatModelSelector
+          provider={chat.provider}
+          model={chat.model}
+          models={chat.models}
+          providerStatus={chat.status}
+          onChange={(provider, model) => {
+            chat.setProvider(provider as Provider);
+            chat.setModel(model);
+          }}
+        />
+      }
+      mentions={[
+        { id: "portfolio", label: "Portfolio overview", type: "financial section" },
+        { id: "fire", label: "FIRE plan", type: "financial section" },
+        { id: "cash-flow", label: "Cash flow", type: "financial section" },
+        { id: "returns", label: "Verified returns", type: "financial section" },
+      ]}
+      commands={[
+        {
+          id: "summarize",
+          description: "Summarize the conversation",
+          execute: () => chat.sendPrompt("Summarize this conversation using my current records."),
+        },
+        {
+          id: "help",
+          description: "List available financial chat commands",
+          execute: () =>
+            chat.sendPrompt("What commands and financial sections can you help me with?"),
+        },
+      ]}
+    />
+  );
+}
+
 export function GlobalAIChat({ userId, children }: { userId: string; children: React.ReactNode }) {
   const privateMode = useFinancialPrivacy();
   const pathname = usePathname();
   const onChatPage = pathname === "/dashboard/chat";
   const [open, setOpen] = useState(false);
+  const [launcherDismissed, setLauncherDismissed] = useState(false);
   const [provider, setProvider] = useState<Provider>("openai");
   const [model, setModelState] = useState<ChatModel>("gpt-4.1-mini");
   const [models, setModels] = useState<ModelEntry[]>([...chatModels]);
@@ -77,7 +128,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   } | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
-  const [input, setInput] = useState("");
   const [notice, setNotice] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
   const providerRef = useRef(provider);
@@ -350,22 +400,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  function submit(event: React.FormEvent) {
-    event.preventDefault();
-    const text = input.trim();
-    if (
-      !text ||
-      chatStatus === "submitted" ||
-      chatStatus === "streaming" ||
-      !status?.[provider] ||
-      !activeThreadId ||
-      threadLoading
-    )
-      return;
-    setInput("");
-    sendPrompt(text);
-  }
-
   const clear = () => {
     void newThread();
   };
@@ -396,15 +430,29 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
         }}
       >
         {children}
-        {!privateMode && !onChatPage && !open && (
-          <Button
-            type="button"
-            className="fixed bottom-5 right-4 z-40 h-12 gap-2 rounded-full px-4 shadow-lg"
-            onClick={() => setOpen(true)}
-            aria-label="Open Selvam assistant"
-          >
-            <MessageCircleIcon className="size-5" /> Ask Selvam
-          </Button>
+        {!privateMode && !onChatPage && !open && !launcherDismissed && (
+          <div className="fixed right-4 bottom-5 z-40 flex items-center gap-1 rounded-full bg-primary p-1 text-primary-foreground shadow-lg">
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-10 gap-2 rounded-full px-3 text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground"
+              onClick={() => setOpen(true)}
+              aria-label="Open Selvam assistant"
+            >
+              <MessageCircleIcon className="size-5" /> Ask Selvam
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="rounded-full text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground"
+              onClick={() => setLauncherDismissed(true)}
+              aria-label="Dismiss Ask Selvam button"
+              title="Dismiss"
+            >
+              <XIcon className="size-4" />
+            </Button>
+          </div>
         )}
         {!privateMode && !onChatPage && open && (
           <section
@@ -531,44 +579,9 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
                 )}
               </div>
             )}
-            <form
-              onSubmit={submit}
-              className="flex shrink-0 items-end gap-2 border-t bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
-            >
-              <Input
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                maxLength={2000}
-                disabled={!status?.[provider] || !activeThreadId || threadLoading}
-                placeholder={
-                  status?.[provider] ? "Ask about your finances…" : "Set up a model key in Settings"
-                }
-                aria-label="Message"
-                className="min-w-0 flex-1"
-              />
-              {chatStatus === "ready" ? (
-                <Button
-                  type="submit"
-                  size="icon"
-                  disabled={
-                    !input.trim() || !status?.[provider] || !activeThreadId || threadLoading
-                  }
-                  aria-label="Send message"
-                >
-                  <SendIcon />
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  onClick={stop}
-                  aria-label="Stop response"
-                >
-                  <SquareIcon />
-                </Button>
-              )}
-            </form>
+            <div className="shrink-0 border-t bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <SelvamComposer />
+            </div>
           </section>
         )}
       </ChatContext.Provider>

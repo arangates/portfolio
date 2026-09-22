@@ -12,6 +12,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@assistant-ui/react": "^0.15.21",
     "@portfolio/ui": "workspace:*",
     "lucide-react": "catalog:",
     "react": "catalog:"

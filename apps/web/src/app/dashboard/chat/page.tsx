@@ -2,9 +2,7 @@
 
 import { useFinancialPrivacy } from "@/components/dashboard-experience";
 import { MarkdownText, DirectiveText } from "@/components/assistant-ui";
-import { type ChatProvider } from "@/lib/ai-models";
 import {
-  ChatModelSelector,
   ChatSuggestions,
   ChatWorkspaceControls,
   type ChatSuggestionGroup,
@@ -14,7 +12,6 @@ import {
   ActionBarPrimitive,
   AuiIf,
   BranchPickerPrimitive,
-  ComposerPrimitive,
   ErrorPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
@@ -22,7 +19,6 @@ import {
   useAuiState,
   type AssistantState,
 } from "@assistant-ui/react";
-import { LexicalComposerInput, type DirectiveChipProps } from "@assistant-ui/react-lexical";
 import { Button } from "@portfolio/ui/components/button";
 import { Skeleton } from "@portfolio/ui/components/skeleton";
 import { buttonVariants } from "@portfolio/ui/components/button";
@@ -40,15 +36,12 @@ import {
   MoreHorizontalIcon,
   PlusIcon,
   RefreshCwIcon,
-  SendIcon,
   ShieldCheckIcon,
-  SquareIcon,
   Trash2Icon,
-  WrenchIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, type FC, memo } from "react";
-import { useSelvamChat } from "@/components/global-ai-chat";
+import { useState, type FC } from "react";
+import { SelvamComposer, useSelvamChat } from "@/components/global-ai-chat";
 
 // ============================================================================
 // Types and Constants
@@ -158,29 +151,6 @@ const ThreadWelcome: FC = () => {
 };
 
 // ============================================================================
-// Directive Chip Component
-// ============================================================================
-
-const DirectiveChip = memo(function DirectiveChip(props: DirectiveChipProps) {
-  const { directiveId, directiveType, label } = props;
-  const showWrench = directiveType !== "command";
-  return (
-    <span
-      className="aui-directive-chip inline-flex items-baseline gap-1 rounded-md bg-blue-100 px-1.5 py-0.5 text-[13px] leading-none font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-      data-directive-type={directiveType}
-      data-directive-id={directiveId}
-    >
-      {showWrench && (
-        <span className="aui-directive-chip-icon self-center">
-          <WrenchIcon className="size-3" />
-        </span>
-      )}
-      <span className="aui-directive-chip-label">{label}</span>
-    </span>
-  );
-});
-
-// ============================================================================
 // Financial Tool Status - Custom for Selvam
 // ============================================================================
 
@@ -200,89 +170,6 @@ function FinancialToolStatus({ toolName, status }: { toolName: string; status: {
     </div>
   );
 }
-
-// ============================================================================
-// Composer Component
-// ============================================================================
-
-const Composer: FC = () => {
-  const chat = useSelvamChat();
-
-  if (chat.statusLoading || !chat.status) {
-    return (
-      <div className="h-10 w-full animate-pulse rounded-2xl border bg-muted/40" role="status" />
-    );
-  }
-
-  if (!chat.status[chat.provider]) {
-    return (
-      <Link
-        href="/dashboard/settings?tab=model-keys"
-        className={buttonVariants({ variant: "outline", className: "w-full" })}
-      >
-        <KeyRoundIcon /> Add an API key to start chatting
-      </Link>
-    );
-  }
-
-  return (
-    <ComposerPrimitive.Root className="relative flex w-full flex-col">
-      <ComposerPrimitive.AttachmentDropzone asChild>
-        <div
-          data-slot="aui_composer-shell"
-          className="border-foreground/10 focus-within:border-foreground/25 data-[dragging=true]:border-ring flex w-full cursor-text flex-col gap-2 rounded-2xl border bg-card p-2 shadow-sm transition-[border-color] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[color-mix(in_oklab,var(--color-accent)_50%,var(--color-background))]"
-        >
-          <LexicalComposerInput
-            directiveChip={DirectiveChip}
-            placeholder="Send a message..."
-            className="relative max-h-40 min-h-10 w-full resize-none bg-transparent px-3 py-2 text-base outline-none [&_.aui-lexical-placeholder]:text-muted-foreground/60 [&_.aui-directive-chip]:inline-flex [&_.aui-directive-chip]:items-baseline [&_.aui-directive-chip]:gap-1 [&_.aui-directive-chip]:rounded-md [&_.aui-directive-chip]:bg-blue-100 [&_.aui-directive-chip]:px-1.5 [&_.aui-directive-chip]:py-0.5 [&_.aui-directive-chip]:text-[13px] [&_.aui-directive-chip]:leading-none [&_.aui-directive-chip]:font-medium [&_.aui-directive-chip]:text-blue-700 dark:[&_.aui-directive-chip]:bg-blue-900/50 dark:[&_.aui-directive-chip]:text-blue-300 [&_.aui-directive-chip-icon]:self-center [&_.aui-lexical-input]:min-h-lh [&_.aui-lexical-input]:outline-none [&_.aui-lexical-placeholder]:pointer-events-none [&_.aui-lexical-placeholder]:absolute [&_.aui-lexical-placeholder]:top-0 [&_.aui-lexical-placeholder]:right-0 [&_.aui-lexical-placeholder]:left-0 [&_.aui-lexical-placeholder]:truncate [&_.aui-lexical-placeholder]:px-3 [&_.aui-lexical-placeholder]:py-2"
-          />
-          <ComposerAction />
-        </div>
-      </ComposerPrimitive.AttachmentDropzone>
-    </ComposerPrimitive.Root>
-  );
-};
-
-const ComposerAction: FC = () => {
-  const chat = useSelvamChat();
-
-  return (
-    <div className="relative flex items-center justify-between px-1 pb-1">
-      <div className="flex items-center gap-1">
-        <ChatModelSelector
-          provider={chat.provider}
-          model={chat.model}
-          models={chat.models}
-          providerStatus={chat.status}
-          onChange={(provider, model) => {
-            chat.setProvider(provider as ChatProvider);
-            chat.setModel(model);
-          }}
-        />
-      </div>
-      <div className="flex items-center gap-1.5">
-        <AuiIf condition={(s) => !s.thread.isRunning}>
-          <ComposerPrimitive.Send
-            disabled={!chat.activeThreadId || chat.threadLoading}
-            aria-label="Send message"
-            className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-50"
-          >
-            <SendIcon className="size-4" />
-          </ComposerPrimitive.Send>
-        </AuiIf>
-        <AuiIf condition={(s) => s.thread.isRunning}>
-          <ComposerPrimitive.Cancel
-            aria-label="Stop response"
-            className="flex size-10 items-center justify-center rounded-xl border"
-          >
-            <SquareIcon className="size-4" />
-          </ComposerPrimitive.Cancel>
-        </AuiIf>
-      </div>
-    </div>
-  );
-};
 
 // ============================================================================
 // Thread Scroll to Bottom
@@ -347,87 +234,75 @@ const AssistantWorkingIndicator: FC = () => {
 const ACTION_BAR_PT = "pt-1.5";
 const ACTION_BAR_HEIGHT = `-mb-7.5 min-h-7.5 ${ACTION_BAR_PT}`;
 
-const AssistantMessage: FC = () => {
-  return (
-    <MessagePrimitive.Root
-      data-slot="aui_assistant-message-root"
-      data-role="assistant"
-      className="fade-in slide-in-from-bottom-1 animate-in relative mx-auto w-full max-w-4xl duration-150"
+const AssistantMessage: FC = () => (
+  <MessagePrimitive.Root
+    data-slot="aui_assistant-message-root"
+    data-role="assistant"
+    className="fade-in slide-in-from-bottom-1 animate-in relative mx-auto w-full max-w-4xl duration-150"
+  >
+    <div
+      data-slot="aui_assistant-message-content"
+      className="text-foreground px-2 leading-relaxed wrap-break-word"
     >
-      <div
-        data-slot="aui_assistant-message-content"
-        className="text-foreground px-2 leading-relaxed wrap-break-word"
+      <MessagePrimitive.GroupedParts
+        groupBy={groupPartByType({
+          reasoning: ["group-chainOfThought", "group-reasoning"],
+          "tool-call": ["group-chainOfThought", "group-tool"],
+          "standalone-tool-call": [],
+        })}
       >
-        <MessagePrimitive.GroupedParts
-          groupBy={groupPartByType({
-            reasoning: ["group-chainOfThought", "group-reasoning"],
-            "tool-call": ["group-chainOfThought", "group-tool"],
-            "standalone-tool-call": [],
-          })}
-        >
-          {({ part, children }) => {
-            switch (part.type) {
-              case "group-chainOfThought":
-                return <div data-slot="aui_chain-of-thought">{children}</div>;
-              case "group-tool":
-                return (
-                  <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                    {children}
-                  </div>
-                );
-              case "group-reasoning": {
-                const running = part.status.type === "running";
-                return running ? (
-                  <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground open">
-                    <summary className="cursor-pointer select-none font-medium text-foreground">
-                      Reasoning summary
-                    </summary>
-                    <p className="mt-2 whitespace-pre-wrap leading-relaxed">{children}</p>
-                  </details>
-                ) : (
-                  <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                    <summary className="cursor-pointer select-none font-medium text-foreground">
-                      Reasoning summary
-                    </summary>
-                    <p className="mt-2 whitespace-pre-wrap leading-relaxed">{children}</p>
-                  </details>
-                );
-              }
-              case "text":
-                return <MarkdownText />;
-              case "reasoning":
-                return (
-                  <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                    <summary className="cursor-pointer select-none font-medium text-foreground">
-                      Reasoning summary
-                    </summary>
-                    <p className="mt-2 whitespace-pre-wrap leading-relaxed">{part.text}</p>
-                  </details>
-                );
-              case "tool-call":
-                return <FinancialToolStatus toolName={part.toolName} status={part.status} />;
-              case "indicator":
-                return <AssistantWorkingIndicator />;
-              case "data":
-                return part.dataRendererUI;
-              default:
-                return null;
-            }
-          }}
-        </MessagePrimitive.GroupedParts>
-        <MessageError />
-      </div>
-
-      <div
-        data-slot="aui_assistant-message-footer"
-        className={cn("ml-2 flex items-center", ACTION_BAR_HEIGHT)}
-      >
-        <BranchPicker />
-        <AssistantActionBar />
-      </div>
-    </MessagePrimitive.Root>
-  );
-};
+        {({ part, children }) => {
+          switch (part.type) {
+            case "group-chainOfThought":
+              return <div data-slot="aui_chain-of-thought">{children}</div>;
+            case "group-tool":
+              return (
+                <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
+                  {children}
+                </div>
+              );
+            case "group-reasoning":
+              return (
+                <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
+                  <summary className="cursor-pointer select-none font-medium text-foreground">
+                    Reasoning summary
+                  </summary>
+                  <p className="mt-2 whitespace-pre-wrap leading-relaxed">{children}</p>
+                </details>
+              );
+            case "text":
+              return <MarkdownText />;
+            case "reasoning":
+              return (
+                <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
+                  <summary className="cursor-pointer select-none font-medium text-foreground">
+                    Reasoning summary
+                  </summary>
+                  <p className="mt-2 whitespace-pre-wrap leading-relaxed">{part.text}</p>
+                </details>
+              );
+            case "tool-call":
+              return <FinancialToolStatus toolName={part.toolName} status={part.status} />;
+            case "indicator":
+              return <AssistantWorkingIndicator />;
+            case "data":
+              return part.dataRendererUI;
+            default:
+              return null;
+          }
+        }}
+      </MessagePrimitive.GroupedParts>
+      <MessageError />
+    </div>
+    <div
+      data-slot="aui_assistant-message-footer"
+      className={cn("ml-2 flex items-center", ACTION_BAR_HEIGHT)}
+    >
+      <BranchPicker />
+      <AssistantActionBar />
+    </div>
+  </MessagePrimitive.Root>
+);
 
 const AssistantActionBar: FC = () => {
   return (
@@ -598,7 +473,7 @@ const Thread: FC = () => {
               Reading your current records and preparing an answer...
             </div>
           </AuiIf>
-          <Composer />
+          <SelvamComposer />
           <AuiIf condition={isNewChatView}>
             <div className="min-h-19">
               <AuiIf condition={(s) => s.composer.isEmpty}>
