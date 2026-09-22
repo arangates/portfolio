@@ -47,6 +47,7 @@ type ChatContextValue = {
   shareTranscript: () => Promise<void>;
   sendPrompt: (text: string) => void;
   status: Status | null;
+  statusLoading: boolean;
   clear: () => void;
   notice: string;
   error: string | undefined;
@@ -75,6 +76,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     messages: UIMessage[];
   } | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
   const [input, setInput] = useState("");
   const [notice, setNotice] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
@@ -285,34 +287,51 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   }, [messages, open]);
   useEffect(() => {
     if (!open && !onChatPage) return;
-    fetch("/api/ai/keys", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Could not load key settings");
-        return response.json() as Promise<Status>;
-      })
-      .then((value) => {
-        setStatus(value);
-        if (!value[providerRef.current]) {
-          const first = (
-            ["google", "openai", "anthropic", "opencode", "mistral"] as Provider[]
-          ).find((candidate) => value[candidate]);
-          if (first) chooseProvider(first);
-        }
-      })
-      .catch(() => setNotice("Could not load provider settings. Please retry."));
+    const refreshStatus = () => {
+      setStatusLoading(true);
+      void fetch("/api/ai/keys", { cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Could not load key settings");
+          return response.json() as Promise<Status>;
+        })
+        .then((value) => {
+          setStatus(value);
+          if (!value[providerRef.current]) {
+            const first = (
+              ["google", "openai", "anthropic", "opencode", "mistral"] as Provider[]
+            ).find((candidate) => value[candidate]);
+            if (first) chooseProvider(first);
+          }
+        })
+        .catch(() => setNotice("Could not load provider settings. Please retry."))
+        .finally(() => setStatusLoading(false));
+    };
+    refreshStatus();
+    window.addEventListener("focus", refreshStatus);
+    return () => window.removeEventListener("focus", refreshStatus);
   }, [open, onChatPage]);
   useEffect(() => {
     if (!open && !onChatPage) return;
     fetch("/api/ai/models", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("Could not load available models");
-        return response.json() as Promise<{ models: Record<Provider, ModelEntry[]> }>;
+        return response.json() as Promise<{
+          models: Record<Provider, ModelEntry[]>;
+          selected?: Partial<Record<Provider, string[]>>;
+        }>;
       })
       .then((data) => {
         const discovered = (Object.values(data.models) as ModelEntry[][])
           .flat()
           .filter((candidate) => candidate.id && candidate.label && candidate.provider);
-        if (discovered.length) setModels(discovered);
+        if (discovered.length) {
+          const selected = data.selected ?? {};
+          const configured = discovered.filter((candidate) => {
+            const choices = selected[candidate.provider];
+            return !choices || choices.length === 0 || choices.includes(candidate.id);
+          });
+          setModels(configured.length ? configured : discovered);
+        }
       })
       .catch(() => setNotice("Could not load the latest provider models. Showing defaults."));
   }, [open, onChatPage]);
@@ -369,6 +388,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
           shareTranscript,
           sendPrompt,
           status,
+          statusLoading,
           clear,
           notice,
           error: error?.message,

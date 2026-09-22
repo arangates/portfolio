@@ -6,7 +6,7 @@ import { and, desc, eq } from "drizzle-orm";
 export type StoredChatMessage = {
   id: string;
   role: "user" | "assistant";
-  parts: Array<{ type: "text"; text: string }>;
+  parts: Array<Record<string, unknown>>;
 };
 
 export async function listChatThreads(userId: string) {

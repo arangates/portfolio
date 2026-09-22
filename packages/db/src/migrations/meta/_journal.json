@@ -176,6 +176,13 @@
       "when": 1790059156863,
       "tag": "0024_handy_ultimates",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1790112626313,
+      "tag": "0025_nappy_wendell_vaughn",
+      "breakpoints": true
     }
   ]
 }

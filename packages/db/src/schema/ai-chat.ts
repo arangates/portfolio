@@ -9,6 +9,7 @@ export const aiProviderCredential = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     provider: text("provider").notNull(),
     encryptedKey: text("encrypted_key").notNull(),
+    selectedModels: jsonb("selected_models").$type<string[]>().default([]).notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
@@ -31,7 +32,7 @@ export const aiChatThread = pgTable(
         Array<{
           id: string;
           role: "user" | "assistant";
-          parts: Array<{ type: "text"; text: string }>;
+          parts: Array<Record<string, unknown>>;
         }>
       >()
       .notNull()

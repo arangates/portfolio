@@ -116,9 +116,11 @@ export async function POST(request: Request) {
         { error: "This response can no longer be regenerated." },
         { status: 409 },
       );
-    const messages: UIMessage[] = regenerate
-      ? thread.messages.slice(0, lastUserIndex + 1).slice(-20)
-      : [...thread.messages.slice(-19), ...submitted];
+    const messages = (
+      regenerate
+        ? thread.messages.slice(0, lastUserIndex + 1).slice(-20)
+        : [...thread.messages.slice(-19), ...submitted]
+    ) as UIMessage[];
     if (
       messages.reduce(
         (sum, m) =>
@@ -182,8 +184,8 @@ export async function POST(request: Request) {
       onEnd: async ({ messages: completed }) => {
         const safe: StoredChatMessage[] = completed.flatMap((message) => {
           if (message.role !== "user" && message.role !== "assistant") return [];
-          const parts = message.parts.flatMap((part) =>
-            part.type === "text" ? [{ type: "text" as const, text: part.text.slice(0, 8000) }] : [],
+          const parts = message.parts.map((part) =>
+            part.type === "text" ? { type: "text", text: part.text.slice(0, 8000) } : part,
           );
           return parts.length ? [{ id: message.id, role: message.role, parts }] : [];
         });

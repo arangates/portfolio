@@ -1,6 +1,15 @@
-import { getProviderKey } from "@/lib/ai-credentials";
+import {
+  getProviderKey,
+  getSelectedProviderModels,
+  saveSelectedProviderModels,
+  type AIProvider,
+} from "@/lib/ai-credentials";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
+import { z } from "zod";
+
+const providers = ["openai", "google", "anthropic", "mistral", "opencode"] as const;
+const providerSchema = z.enum(providers);
 
 export async function GET(request: Request) {
   if (new URL(request.url).searchParams.has("provider")) {
@@ -57,7 +66,34 @@ export async function GET(request: Request) {
     }
   }
 
-  return Response.json({ models: allModels });
+  return Response.json({
+    models: allModels,
+    selected: await getSelectedProviderModels(session.user.id),
+  });
+}
+
+export async function PUT(request: Request) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user)
+    return Response.json({ error: "Sign in to save model choices" }, { status: 401 });
+  const body = z
+    .object({
+      provider: providerSchema,
+      selectedModels: z.array(z.string().trim().min(1).max(200)).min(1).max(100),
+    })
+    .safeParse(await request.json());
+  if (!body.success) return Response.json({ error: "Choose at least one model" }, { status: 400 });
+  try {
+    await saveSelectedProviderModels(session.user.id, body.data.provider as AIProvider, [
+      ...new Set(body.data.selectedModels),
+    ]);
+    return Response.json({ saved: true });
+  } catch {
+    return Response.json(
+      { error: "Add the provider API key before saving models" },
+      { status: 400 },
+    );
+  }
 }
 
 async function fetchModelsFromProvider(

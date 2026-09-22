@@ -1,0 +1,1 @@
+ALTER TABLE "ai_provider_credential" ADD COLUMN "selected_models" jsonb DEFAULT '[]'::jsonb NOT NULL;

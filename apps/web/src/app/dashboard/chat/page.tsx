@@ -134,10 +134,10 @@ const ThreadTitle: FC = () => {
 };
 
 // ============================================================================
-// Header Component
+// Workspace Controls
 // ============================================================================
 
-const Header: FC<{
+const WorkspaceControls: FC<{
   historyOpen: boolean;
   onToggleHistory: () => void;
   onOpenMobileHistory: () => void;
@@ -145,8 +145,8 @@ const Header: FC<{
   const chat = useSelvamChat();
 
   return (
-    <header className="flex shrink-0 items-center gap-2 border-b bg-background/95 px-3 py-3 backdrop-blur sm:px-4 lg:px-6">
-      <div className="flex min-w-0 items-center gap-2">
+    <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex items-start justify-between gap-3 sm:inset-x-5">
+      <div className="pointer-events-auto flex min-w-0 items-center gap-2 rounded-2xl border bg-background/90 px-2 py-1.5 shadow-sm backdrop-blur-md">
         <Button
           variant="ghost"
           size="icon-sm"
@@ -163,50 +163,47 @@ const Header: FC<{
           onClick={onToggleHistory}
           aria-label={historyOpen ? "Hide chat history" : "Show chat history"}
         >
-          {historyOpen ? (
-            <PanelLeftCloseIcon className="size-4" />
-          ) : (
-            <PanelLeftOpenIcon className="size-4" />
-          )}
+          {historyOpen ? <PanelLeftCloseIcon /> : <PanelLeftOpenIcon />}
         </Button>
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="rounded-xl bg-primary p-2 text-primary-foreground shadow-sm">
-            <BrainCircuitIcon className="size-5" />
-          </div>
+        <div className="flex min-w-0 items-center gap-2 border-l pl-2">
+          <BrainCircuitIcon className="size-4 shrink-0 text-primary" />
           <div className="min-w-0">
             <ThreadTitle />
-            <p className="hidden text-xs text-muted-foreground sm:block">
-              Your financial research assistant &middot; current account data
+            <p className="hidden truncate text-[11px] text-muted-foreground sm:block">
+              Financial research assistant
             </p>
           </div>
         </div>
+      </div>
+      <div className="pointer-events-auto flex shrink-0 items-center gap-1 rounded-2xl border bg-background/90 p-1 shadow-sm backdrop-blur-md">
+        <Link
+          href="/dashboard/settings?tab=model-keys"
+          className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
+          aria-label="Model key settings"
+          title="Model key settings"
+        >
+          <KeyRoundIcon />
+        </Link>
         <Button
           size="icon-sm"
           variant="ghost"
-          className="sm:hidden"
+          onClick={() => void chat.shareTranscript()}
+          aria-label="Share transcript"
+          title="Share transcript"
+        >
+          <Share2Icon />
+        </Button>
+        <Button
+          size="icon-sm"
+          variant="ghost"
           onClick={chat.clear}
-          aria-label="New chat"
+          aria-label="Start a new chat"
+          title="Start a new chat"
         >
           <PlusIcon />
         </Button>
       </div>
-      <div className="flex min-w-0 items-center gap-2 sm:justify-end">
-        <Link
-          href="/dashboard/settings?tab=model-keys"
-          className={buttonVariants({ variant: "outline", size: "icon-sm" })}
-          aria-label="Model key settings"
-        >
-          <KeyRoundIcon />
-        </Link>
-        <Button size="sm" variant="outline" onClick={() => void chat.shareTranscript()}>
-          <Share2Icon />
-          <span className="hidden sm:inline">Share</span>
-        </Button>
-        <Button size="sm" variant="outline" onClick={chat.clear} className="hidden sm:inline-flex">
-          <PlusIcon /> New chat
-        </Button>
-      </div>
-    </header>
+    </div>
   );
 };
 
@@ -330,7 +327,10 @@ const ModelSelector: FC = () => {
       className="h-9 min-w-0 max-w-64 rounded-lg border bg-background px-2.5 text-base font-medium md:text-sm"
     >
       {chat.models.map((candidate) => (
-        <option key={`${candidate.provider}:${candidate.id}`} value={candidate.id}>
+        <option
+          key={`${candidate.provider}:${candidate.id}`}
+          value={`${candidate.provider}:${candidate.id}`}
+        >
           {candidate.label} {chat.status?.[candidate.provider as ChatProvider] ? "\u2713" : ""}
         </option>
       ))}
@@ -389,7 +389,13 @@ function FinancialToolStatus({ toolName, status }: { toolName: string; status: {
 const Composer: FC = () => {
   const chat = useSelvamChat();
 
-  if (!chat.status?.[chat.provider]) {
+  if (chat.statusLoading || !chat.status) {
+    return (
+      <div className="h-10 w-full animate-pulse rounded-2xl border bg-muted/40" role="status" />
+    );
+  }
+
+  if (!chat.status[chat.provider]) {
     return (
       <Link
         href="/dashboard/settings?tab=model-keys"
@@ -717,7 +723,7 @@ const Thread: FC = () => {
 
   return (
     <ThreadPrimitive.Root
-      className="bg-background @container flex h-full min-w-0 w-full flex-1 flex-col"
+      className="bg-background @container flex h-full min-w-0 w-full flex-1 flex-col transition-opacity duration-200"
       style={{
         ["--thread-max-width" as string]: "44rem",
         ["--composer-bg" as string]: "color-mix(in oklab, var(--color-muted) 30%, transparent)",
@@ -729,7 +735,7 @@ const Thread: FC = () => {
         turnAnchor="top"
         data-slot="aui_thread-viewport"
         className={cn(
-          "relative flex min-w-0 flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4",
+          "relative flex min-w-0 flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-20 sm:pt-24",
           isEmpty && "justify-center",
         )}
       >
@@ -803,12 +809,6 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-[calc(100dvh-var(--header-height)-env(safe-area-inset-top))] min-h-0 min-w-0 flex-col overflow-hidden bg-muted/10">
-      <Header
-        historyOpen={historyOpen}
-        onToggleHistory={() => setHistoryOpen(!historyOpen)}
-        onOpenMobileHistory={() => setMobileHistoryOpen(true)}
-      />
-
       {chat.notice && (
         <div
           role="alert"
@@ -892,7 +892,12 @@ export default function ChatPage() {
             )}
           </div>
         </aside>
-        <div className="min-w-0 w-full flex-1">
+        <div className="relative min-w-0 w-full flex-1 transition-[width,opacity] duration-200">
+          <WorkspaceControls
+            historyOpen={historyOpen}
+            onToggleHistory={() => setHistoryOpen(!historyOpen)}
+            onOpenMobileHistory={() => setMobileHistoryOpen(true)}
+          />
           <Thread />
         </div>
       </div>

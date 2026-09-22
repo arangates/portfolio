@@ -1,6 +1,6 @@
 "use client";
 
-import { providerLabels, type ChatProvider } from "@/lib/ai-models";
+import { providerLabels, type ChatProvider, type ModelEntry } from "@/lib/ai-models";
 import { Button } from "@portfolio/ui/components/button";
 import {
   Card,
@@ -21,12 +21,29 @@ export function ModelKeysSettings() {
   const [keys, setKeys] = useState<Partial<Record<ChatProvider, string>>>({});
   const [busy, setBusy] = useState<ChatProvider | null>(null);
   const [notice, setNotice] = useState("");
+  const [models, setModels] = useState<Record<ChatProvider, ModelEntry[]>>(
+    {} as Record<ChatProvider, ModelEntry[]>,
+  );
+  const [selected, setSelected] = useState<Partial<Record<ChatProvider, string[]>>>({});
+  const [modelsBusy, setModelsBusy] = useState<ChatProvider | null>(null);
+
+  async function loadModels() {
+    const response = await fetch("/api/ai/models", { cache: "no-store" });
+    if (!response.ok) throw new Error("Could not load available models.");
+    const data = (await response.json()) as {
+      models: Record<ChatProvider, ModelEntry[]>;
+      selected?: Partial<Record<ChatProvider, string[]>>;
+    };
+    setModels(data.models);
+    setSelected(data.selected ?? {});
+  }
 
   useEffect(() => {
     void fetch("/api/ai/keys", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("Could not load saved keys.");
         setStatus((await response.json()) as Status);
+        await loadModels();
       })
       .catch(() => setNotice("Could not load saved keys. Refresh to retry."));
   }, []);
@@ -49,10 +66,30 @@ export function ModelKeysSettings() {
       setStatus((current) => (current ? { ...current, [provider]: !remove } : current));
       setKeys((current) => ({ ...current, [provider]: "" }));
       setNotice(`${providerLabels[provider]} key ${remove ? "removed" : "saved"}.`);
+      if (!remove) await loadModels();
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not update key.");
     } finally {
       setBusy(null);
+    }
+  }
+
+  async function saveModels(provider: ChatProvider) {
+    setModelsBusy(provider);
+    setNotice("");
+    try {
+      const response = await fetch("/api/ai/models", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider, selectedModels: selected[provider] ?? [] }),
+      });
+      const body = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(body.error ?? "Could not save model choices.");
+      setNotice(`${providerLabels[provider]} model choices saved.`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Could not save model choices.");
+    } finally {
+      setModelsBusy(null);
     }
   }
 
@@ -70,7 +107,7 @@ export function ModelKeysSettings() {
         )}
       </div>
       {providers.map((provider) => (
-        <Card key={provider} className="min-w-0">
+        <Card key={provider} className="min-w-0 transition-shadow duration-200 hover:shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <KeyRoundIcon className="size-4" />
@@ -113,6 +150,47 @@ export function ModelKeysSettings() {
                 </Button>
               )}
             </div>
+            {status?.[provider] && models[provider]?.length > 0 && (
+              <div className="border-t pt-3">
+                <p className="mb-2 text-sm font-medium">Models available in chat</p>
+                <div className="space-y-2">
+                  {models[provider].map((model) => {
+                    const choices = selected[provider] ?? models[provider].map((item) => item.id);
+                    const checked = choices.includes(model.id);
+                    return (
+                      <label key={model.id} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(event) =>
+                            setSelected((current) => {
+                              const next = new Set(
+                                current[provider] ?? models[provider].map((item) => item.id),
+                              );
+                              if (event.target.checked) next.add(model.id);
+                              else next.delete(model.id);
+                              return { ...current, [provider]: [...next] };
+                            })
+                          }
+                        />
+                        <span className="min-w-0 truncate">{model.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3"
+                  disabled={
+                    modelsBusy !== null || !(selected[provider]?.length ?? models[provider].length)
+                  }
+                  onClick={() => void saveModels(provider)}
+                >
+                  Save model choices
+                </Button>
+              </div>
+            )}
             {provider === "opencode" && (
               <p className="text-xs text-muted-foreground">
                 Use an OpenCode Zen API key with Zen billing, not a local OpenCode login. Selvam

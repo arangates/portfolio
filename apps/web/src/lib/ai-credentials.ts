@@ -92,3 +92,37 @@ export async function getProviderKey(userId: string, provider: AIProvider) {
     .limit(1);
   return row ? decrypt(row.encryptedKey) : null;
 }
+
+export async function getSelectedProviderModels(userId: string) {
+  const rows = await db
+    .select({
+      provider: aiProviderCredential.provider,
+      selectedModels: aiProviderCredential.selectedModels,
+    })
+    .from(aiProviderCredential)
+    .where(eq(aiProviderCredential.userId, userId));
+  return Object.fromEntries(rows.map((row) => [row.provider, row.selectedModels])) as Partial<
+    Record<AIProvider, string[]>
+  >;
+}
+
+export async function saveSelectedProviderModels(
+  userId: string,
+  provider: AIProvider,
+  selectedModels: string[],
+) {
+  const [row] = await db
+    .select({ encryptedKey: aiProviderCredential.encryptedKey })
+    .from(aiProviderCredential)
+    .where(
+      and(eq(aiProviderCredential.userId, userId), eq(aiProviderCredential.provider, provider)),
+    )
+    .limit(1);
+  if (!row) throw new Error("Provider key is not configured");
+  await db
+    .update(aiProviderCredential)
+    .set({ selectedModels, updatedAt: new Date() })
+    .where(
+      and(eq(aiProviderCredential.userId, userId), eq(aiProviderCredential.provider, provider)),
+    );
+}
