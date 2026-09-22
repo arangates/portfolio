@@ -2,7 +2,13 @@
 
 import { useFinancialPrivacy } from "@/components/dashboard-experience";
 import { MarkdownText, DirectiveText } from "@/components/assistant-ui";
-import { type ChatModel, type ChatProvider } from "@/lib/ai-models";
+import { type ChatProvider } from "@/lib/ai-models";
+import {
+  ChatModelSelector,
+  ChatSuggestions,
+  ChatWorkspaceControls,
+  type ChatSuggestionGroup,
+} from "@portfolio/ai-chat-ui";
 import {
   ActionBarMorePrimitive,
   ActionBarPrimitive,
@@ -31,34 +37,24 @@ import {
   CopyIcon,
   DownloadIcon,
   KeyRoundIcon,
-  MenuIcon,
   MoreHorizontalIcon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
   PlusIcon,
   RefreshCwIcon,
   SendIcon,
-  Share2Icon,
   ShieldCheckIcon,
   SquareIcon,
   Trash2Icon,
   WrenchIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, type FC, type ReactNode, memo } from "react";
+import { useState, type FC, memo } from "react";
 import { useSelvamChat } from "@/components/global-ai-chat";
 
 // ============================================================================
 // Types and Constants
 // ============================================================================
 
-type SuggestionGroup = {
-  label: string;
-  icon: ReactNode;
-  options: { label: string; prompt: string }[];
-};
-
-const SUGGESTION_GROUPS: SuggestionGroup[] = [
+const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
   {
     label: "Portfolio",
     icon: <BrainCircuitIcon className="size-4" />,
@@ -120,94 +116,6 @@ const isHistoryLoadingView = (s: AssistantState) =>
   !s.threads.isLoading;
 
 // ============================================================================
-// Thread Title Component
-// ============================================================================
-
-const ThreadTitle: FC = () => {
-  const chat = useSelvamChat();
-  const activeThread = chat.threads.find((t) => t.id === chat.activeThreadId);
-  return (
-    <span className="min-w-0 truncate text-sm font-medium">
-      {activeThread?.title ?? "New Chat"}
-    </span>
-  );
-};
-
-// ============================================================================
-// Workspace Controls
-// ============================================================================
-
-const WorkspaceControls: FC<{
-  historyOpen: boolean;
-  onToggleHistory: () => void;
-  onOpenMobileHistory: () => void;
-}> = ({ historyOpen, onToggleHistory, onOpenMobileHistory }) => {
-  const chat = useSelvamChat();
-
-  return (
-    <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex items-start justify-between gap-3 sm:inset-x-5">
-      <div className="pointer-events-auto flex min-w-0 items-center gap-2 rounded-2xl border bg-background/90 px-2 py-1.5 shadow-sm backdrop-blur-md">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="md:hidden"
-          onClick={onOpenMobileHistory}
-          aria-label="Open chat history"
-        >
-          <MenuIcon className="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          className="hidden md:inline-flex"
-          onClick={onToggleHistory}
-          aria-label={historyOpen ? "Hide chat history" : "Show chat history"}
-        >
-          {historyOpen ? <PanelLeftCloseIcon /> : <PanelLeftOpenIcon />}
-        </Button>
-        <div className="flex min-w-0 items-center gap-2 border-l pl-2">
-          <BrainCircuitIcon className="size-4 shrink-0 text-primary" />
-          <div className="min-w-0">
-            <ThreadTitle />
-            <p className="hidden truncate text-[11px] text-muted-foreground sm:block">
-              Financial research assistant
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="pointer-events-auto flex shrink-0 items-center gap-1 rounded-2xl border bg-background/90 p-1 shadow-sm backdrop-blur-md">
-        <Link
-          href="/dashboard/settings?tab=model-keys"
-          className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
-          aria-label="Model key settings"
-          title="Model key settings"
-        >
-          <KeyRoundIcon />
-        </Link>
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          onClick={() => void chat.shareTranscript()}
-          aria-label="Share transcript"
-          title="Share transcript"
-        >
-          <Share2Icon />
-        </Button>
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          onClick={chat.clear}
-          aria-label="Start a new chat"
-          title="Start a new chat"
-        >
-          <PlusIcon />
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-// ============================================================================
 // Loading Skeleton
 // ============================================================================
 
@@ -246,95 +154,6 @@ const ThreadWelcome: FC = () => {
         <ShieldCheckIcon className="size-4" /> Read-only access &middot; figures from your records
       </div>
     </div>
-  );
-};
-
-// ============================================================================
-// Thread Suggestions Component
-// ============================================================================
-
-const suggestionChipClass =
-  "rounded-xl border bg-card px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground";
-
-const ThreadSuggestions: FC = () => {
-  const chat = useSelvamChat();
-  const [expandedLabel, setExpandedLabel] = useState<string | null>(null);
-  const expandedGroup = SUGGESTION_GROUPS.find((group) => group.label === expandedLabel);
-
-  const sendPrompt = (prompt: string) => {
-    if (chat.threadLoading) return;
-    chat.sendPrompt(prompt);
-  };
-
-  return (
-    <div className="flex w-full flex-col gap-2 px-4">
-      <div className="w-full scrollbar-none overflow-x-auto">
-        <div className="mx-auto flex w-max items-center gap-2">
-          {SUGGESTION_GROUPS.map((group) => (
-            <Button
-              key={group.label}
-              variant="ghost"
-              className={cn(suggestionChipClass, group.label === expandedLabel && "bg-muted")}
-              onClick={() => setExpandedLabel(group.label === expandedLabel ? null : group.label)}
-            >
-              {group.icon}
-              {group.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-      {expandedGroup && (
-        <div
-          key={expandedGroup.label}
-          className="fade-in slide-in-from-top-1 animate-in w-full scrollbar-none overflow-x-auto duration-200"
-        >
-          <div className="mx-auto flex w-max items-center gap-2">
-            {expandedGroup.options.map((option) => (
-              <Button
-                key={option.label}
-                variant="ghost"
-                className={suggestionChipClass}
-                onClick={() => sendPrompt(option.prompt)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// ============================================================================
-// Model Selector Component
-// ============================================================================
-
-const ModelSelector: FC = () => {
-  const chat = useSelvamChat();
-
-  return (
-    <select
-      aria-label="AI model"
-      value={`${chat.provider}:${chat.model}`}
-      onChange={(event) => {
-        const separator = event.target.value.indexOf(":");
-        const provider = event.target.value.slice(0, separator) as ChatProvider;
-        const model = event.target.value.slice(separator + 1) as ChatModel;
-        chat.setProvider(provider);
-        chat.setModel(model);
-      }}
-      className="h-9 min-w-0 max-w-64 rounded-lg border bg-background px-2.5 text-base font-medium md:text-sm"
-    >
-      {chat.models.map((candidate) => (
-        <option
-          key={`${candidate.provider}:${candidate.id}`}
-          value={`${candidate.provider}:${candidate.id}`}
-        >
-          {candidate.label} {chat.status?.[candidate.provider as ChatProvider] ? "\u2713" : ""}
-        </option>
-      ))}
-    </select>
   );
 };
 
@@ -431,7 +250,16 @@ const ComposerAction: FC = () => {
   return (
     <div className="relative flex items-center justify-between px-1 pb-1">
       <div className="flex items-center gap-1">
-        <ModelSelector />
+        <ChatModelSelector
+          provider={chat.provider}
+          model={chat.model}
+          models={chat.models}
+          providerStatus={chat.status}
+          onChange={(provider, model) => {
+            chat.setProvider(provider as ChatProvider);
+            chat.setModel(model);
+          }}
+        />
       </div>
       <div className="flex items-center gap-1.5">
         <AuiIf condition={(s) => !s.thread.isRunning}>
@@ -719,6 +547,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({ className, ...rest
 // ============================================================================
 
 const Thread: FC = () => {
+  const chat = useSelvamChat();
   const isEmpty = useAuiState(isNewChatView);
 
   return (
@@ -773,7 +602,12 @@ const Thread: FC = () => {
           <AuiIf condition={isNewChatView}>
             <div className="min-h-19">
               <AuiIf condition={(s) => s.composer.isEmpty}>
-                <ThreadSuggestions />
+                <ChatSuggestions
+                  groups={SUGGESTION_GROUPS}
+                  onSelect={(prompt) => {
+                    if (!chat.threadLoading) chat.sendPrompt(prompt);
+                  }}
+                />
               </AuiIf>
             </div>
           </AuiIf>
@@ -893,10 +727,25 @@ export default function ChatPage() {
           </div>
         </aside>
         <div className="relative min-w-0 w-full flex-1 transition-[width,opacity] duration-200">
-          <WorkspaceControls
+          <ChatWorkspaceControls
+            title={
+              chat.threads.find((thread) => thread.id === chat.activeThreadId)?.title ?? "New chat"
+            }
             historyOpen={historyOpen}
+            settingsAction={
+              <Link
+                href="/dashboard/settings?tab=model-keys"
+                className={buttonVariants({ variant: "ghost", size: "icon-sm" })}
+                aria-label="Model key settings"
+                title="Model key settings"
+              >
+                <KeyRoundIcon />
+              </Link>
+            }
             onToggleHistory={() => setHistoryOpen(!historyOpen)}
             onOpenMobileHistory={() => setMobileHistoryOpen(true)}
+            onShare={() => void chat.shareTranscript()}
+            onNewChat={chat.clear}
           />
           <Thread />
         </div>
