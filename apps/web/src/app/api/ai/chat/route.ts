@@ -4,7 +4,7 @@ import { getChatOverview, getChatSection, sections } from "@/lib/ai-financial-co
 import { createGoogle, type GoogleLanguageModelOptions } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { chatModels } from "@/lib/ai-models";
+import { createMistral } from "@ai-sdk/mistral";
 import { auth } from "@portfolio/auth";
 import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage } from "ai";
 import { headers } from "next/headers";
@@ -14,14 +14,8 @@ export const maxDuration = 60;
 
 const requestSchema = z.object({
   threadId: z.uuid(),
-  provider: z.enum(["openai", "google", "anthropic", "opencode"]),
-  model: z.enum([
-    "gpt-4.1-mini",
-    "gpt-5.4-mini",
-    "gemini-3.6-flash",
-    "claude-sonnet-4-6",
-    "gpt-5.6-sol",
-  ]),
+  provider: z.enum(["openai", "google", "anthropic", "opencode", "mistral"]),
+  model: z.string().trim().min(1).max(200),
   trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
   messageId: z.string().max(100).optional(),
   messages: z
@@ -54,7 +48,7 @@ function providerErrorMessage(error: unknown, provider: string): string {
     details.includes("insufficient_quota") ||
     details.includes("credit_balance_exhausted")
   )
-    return `Your ${provider === "opencode" ? "OpenCode Zen" : provider === "openai" ? "OpenAI" : provider} API project has no credits remaining. Add provider billing credits or select another configured model.`;
+    return `Your ${provider === "opencode" ? "OpenCode Zen" : provider === "openai" ? "OpenAI" : provider === "mistral" ? "Mistral" : provider} API project has no credits remaining. Add provider billing credits or select another configured model.`;
   if (details.includes("no longer available") || details.includes("model not found"))
     return "This model is unavailable to your API key. Select Gemini 3.6 Flash or another available model.";
   if (
@@ -105,12 +99,6 @@ export async function POST(request: Request) {
     stage = "thread";
     const thread = await getChatThread(session.user.id, raw.threadId);
     if (!thread) return Response.json({ error: "Chat not found." }, { status: 404 });
-    if (
-      !chatModels.some(
-        (candidate) => candidate.id === raw.model && candidate.provider === raw.provider,
-      )
-    )
-      return Response.json({ error: "Model does not match provider." }, { status: 400 });
     const regeneratedAssistantIndex = regenerate
       ? raw.messageId
         ? thread.messages.findIndex(
@@ -160,7 +148,9 @@ export async function POST(request: Request) {
           ? createGoogle({ apiKey: key })(raw.model)
           : raw.provider === "anthropic"
             ? createAnthropic({ apiKey: key })(raw.model)
-            : createOpenAI({ apiKey: key, baseURL: "https://opencode.ai/zen/v1" })(raw.model);
+            : raw.provider === "mistral"
+              ? createMistral({ apiKey: key })(raw.model)
+              : createOpenAI({ apiKey: key, baseURL: "https://opencode.ai/zen/v1" })(raw.model);
     stage = "financial-context";
     const overview = await getChatOverview(session.user.id);
     stage = "stream-setup";

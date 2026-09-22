@@ -3,7 +3,7 @@ import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
 
-const provider = z.enum(["openai", "google", "anthropic", "opencode"]);
+const provider = z.enum(["openai", "google", "anthropic", "opencode", "mistral"]);
 const input = z.object({ provider, key: z.string().trim().min(8).max(512) });
 
 function sameOrigin(request: Request) {

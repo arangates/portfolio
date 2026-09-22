@@ -1,7 +1,13 @@
 "use client";
 
 import { useFinancialPrivacy } from "@/components/dashboard-experience";
-import { chatModels, defaultModel, type ChatModel, type ChatProvider } from "@/lib/ai-models";
+import {
+  chatModels,
+  defaultModel,
+  type ChatModel,
+  type ChatProvider,
+  type ModelEntry,
+} from "@/lib/ai-models";
 import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
@@ -30,6 +36,7 @@ type ChatContextValue = {
   setProvider: (provider: Provider) => void;
   model: ChatModel;
   setModel: (model: ChatModel) => void;
+  models: ModelEntry[];
   threads: ChatThread[];
   activeThreadId: string | null;
   threadLoading: boolean;
@@ -59,6 +66,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   const [open, setOpen] = useState(false);
   const [provider, setProvider] = useState<Provider>("openai");
   const [model, setModelState] = useState<ChatModel>("gpt-4.1-mini");
+  const [models, setModels] = useState<ModelEntry[]>([...chatModels]);
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [threadLoading, setThreadLoading] = useState(false);
@@ -135,18 +143,22 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
       const data = (await response.json()) as { thread: ChatThread & { messages: UIMessage[] } };
       if (selection !== selectionRef.current) return;
       setActiveThreadId(id);
-      const nextProvider = (["openai", "google", "anthropic", "opencode"] as string[]).includes(
-        data.thread.provider,
-      )
+      const nextProvider = (
+        ["openai", "google", "anthropic", "opencode", "mistral"] as string[]
+      ).includes(data.thread.provider)
         ? (data.thread.provider as Provider)
         : "openai";
       setProvider(nextProvider);
-      setModelState(
-        chatModels.some(
+      setModelState(data.thread.model as ChatModel);
+      setModels((current) =>
+        current.some(
           (candidate) => candidate.id === data.thread.model && candidate.provider === nextProvider,
         )
-          ? (data.thread.model as ChatModel)
-          : defaultModel[nextProvider],
+          ? current
+          : [
+              ...current,
+              { id: data.thread.model, label: data.thread.model, provider: nextProvider },
+            ],
       );
       setPendingHistory({ id, messages: data.thread.messages });
     } catch (cause) {
@@ -244,7 +256,9 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     clearError();
     setNotice("");
     setProvider(value);
-    setModelState(defaultModel[value]);
+    setModelState(
+      models.find((candidate) => candidate.provider === value)?.id ?? defaultModel[value],
+    );
   }
   function chooseModel(value: ChatModel) {
     clearError();
@@ -279,13 +293,28 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
       .then((value) => {
         setStatus(value);
         if (!value[providerRef.current]) {
-          const first = (["google", "openai", "anthropic", "opencode"] as Provider[]).find(
-            (candidate) => value[candidate],
-          );
+          const first = (
+            ["google", "openai", "anthropic", "opencode", "mistral"] as Provider[]
+          ).find((candidate) => value[candidate]);
           if (first) chooseProvider(first);
         }
       })
       .catch(() => setNotice("Could not load provider settings. Please retry."));
+  }, [open, onChatPage]);
+  useEffect(() => {
+    if (!open && !onChatPage) return;
+    fetch("/api/ai/models", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Could not load available models");
+        return response.json() as Promise<{ models: Record<Provider, ModelEntry[]> }>;
+      })
+      .then((data) => {
+        const discovered = (Object.values(data.models) as ModelEntry[][])
+          .flat()
+          .filter((candidate) => candidate.id && candidate.label && candidate.provider);
+        if (discovered.length) setModels(discovered);
+      })
+      .catch(() => setNotice("Could not load the latest provider models. Showing defaults."));
   }, [open, onChatPage]);
   useEffect(() => {
     if (privateMode) {
@@ -329,6 +358,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
           setProvider: chooseProvider,
           model,
           setModel: chooseModel,
+          models,
           threads,
           activeThreadId,
           threadLoading,

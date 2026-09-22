@@ -14,7 +14,7 @@ import { CheckCircle2Icon, KeyRoundIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type Status = Record<ChatProvider, boolean>;
-const providers: ChatProvider[] = ["openai", "google", "anthropic", "opencode"];
+const providers: ChatProvider[] = ["openai", "google", "anthropic", "opencode", "mistral"];
 
 export function ModelKeysSettings() {
   const [status, setStatus] = useState<Status | null>(null);
