@@ -1,7 +1,7 @@
 "use client";
 
 import { useFinancialPrivacy } from "@/components/dashboard-experience";
-import { ChatComposer, ChatModelSelector } from "@portfolio/ai-chat-ui";
+import { ChatComposer } from "@portfolio/ai-chat-ui";
 import {
   chatModels,
   defaultModel,
@@ -11,12 +11,13 @@ import {
 } from "@/lib/ai-models";
 import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
-import { AssistantRuntimeProvider } from "@assistant-ui/react";
+import { AssistantRuntimeProvider, ThreadPrimitive } from "@assistant-ui/react";
 import { Button } from "@portfolio/ui/components/button";
 import { buttonVariants } from "@portfolio/ui/components/button";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { KeyRoundIcon, Maximize2Icon, MessageCircleIcon, PlusIcon, XIcon } from "lucide-react";
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -76,18 +77,12 @@ export function SelvamComposer() {
 
   return (
     <ChatComposer
-      standalone
       modelSelector={
-        <ChatModelSelector
-          provider={chat.provider}
-          model={chat.model}
-          models={chat.models}
-          providerStatus={chat.status}
-          onChange={(provider, model) => {
-            chat.setProvider(provider as Provider);
-            chat.setModel(model);
-          }}
-        />
+        <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">
+          {chat.models.find(
+            (candidate) => candidate.provider === chat.provider && candidate.id === chat.model,
+          )?.label ?? chat.model}
+        </span>
       }
       mentions={[
         { id: "portfolio", label: "Portfolio overview", type: "financial section" },
@@ -197,23 +192,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
       const data = (await response.json()) as { thread: ChatThread & { messages: UIMessage[] } };
       if (selection !== selectionRef.current) return;
       setActiveThreadId(id);
-      const nextProvider = (
-        ["openai", "google", "anthropic", "opencode", "mistral"] as string[]
-      ).includes(data.thread.provider)
-        ? (data.thread.provider as Provider)
-        : "openai";
-      setProvider(nextProvider);
-      setModelState(data.thread.model as ChatModel);
-      setModels((current) =>
-        current.some(
-          (candidate) => candidate.id === data.thread.model && candidate.provider === nextProvider,
-        )
-          ? current
-          : [
-              ...current,
-              { id: data.thread.model, label: data.thread.model, provider: nextProvider },
-            ],
-      );
       setPendingHistory({ id, messages: data.thread.messages });
     } catch (cause) {
       if (selection === selectionRef.current) {
@@ -357,55 +335,65 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     endRef.current?.scrollIntoView({ block: "end" });
   }, [messages, open]);
   useEffect(() => {
-    if (!open && !onChatPage) return;
-    const refreshStatus = () => {
+    const refreshConfiguration = () => {
       setStatusLoading(true);
-      void fetch("/api/ai/keys", { cache: "no-store" })
-        .then(async (response) => {
-          if (!response.ok) throw new Error("Could not load key settings");
-          return response.json() as Promise<Status>;
+      void Promise.all([
+        fetch("/api/ai/keys", { cache: "no-store" }),
+        fetch("/api/ai/models", { cache: "no-store" }),
+      ])
+        .then(async ([statusResponse, modelsResponse]) => {
+          if (!statusResponse.ok || !modelsResponse.ok)
+            throw new Error("Could not load chat settings");
+          return {
+            status: (await statusResponse.json()) as Status,
+            models: (await modelsResponse.json()) as {
+              models: Record<Provider, ModelEntry[]>;
+              selected?: Partial<Record<Provider, string[]>>;
+            },
+          };
         })
-        .then((value) => {
+        .then(({ status: value, models: data }) => {
           setStatus(value);
-          if (!value[providerRef.current]) {
-            const first = (
-              ["google", "openai", "anthropic", "opencode", "mistral"] as Provider[]
-            ).find((candidate) => value[candidate]);
-            if (first) chooseProvider(first);
+          const firstProvider = (
+            [
+              providerRef.current,
+              "openai",
+              "google",
+              "anthropic",
+              "opencode",
+              "mistral",
+            ] as Provider[]
+          ).find(
+            (candidate, index, providers) =>
+              value[candidate] && providers.indexOf(candidate) === index,
+          );
+          if (!firstProvider) {
+            setModels([]);
+            return;
           }
+          const available = data.models[firstProvider] ?? [];
+          const saved = data.selected?.[firstProvider] ?? [];
+          const selectedId = saved[0] ?? available[0]?.id ?? defaultModel[firstProvider];
+          const selectedModel = available.find((candidate) => candidate.id === selectedId);
+          setProvider(firstProvider);
+          setModels(
+            selectedModel
+              ? [selectedModel]
+              : [{ id: selectedId, label: selectedId, provider: firstProvider }],
+          );
+          setModelState(selectedId);
         })
         .catch(() => setNotice("Could not load provider settings. Please retry."))
         .finally(() => setStatusLoading(false));
     };
-    refreshStatus();
-    window.addEventListener("focus", refreshStatus);
-    return () => window.removeEventListener("focus", refreshStatus);
-  }, [open, onChatPage]);
-  useEffect(() => {
-    if (!open && !onChatPage) return;
-    fetch("/api/ai/models", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Could not load available models");
-        return response.json() as Promise<{
-          models: Record<Provider, ModelEntry[]>;
-          selected?: Partial<Record<Provider, string[]>>;
-        }>;
-      })
-      .then((data) => {
-        const discovered = (Object.values(data.models) as ModelEntry[][])
-          .flat()
-          .filter((candidate) => candidate.id && candidate.label && candidate.provider);
-        if (discovered.length) {
-          const selected = data.selected ?? {};
-          const configured = discovered.filter((candidate) => {
-            const choices = selected[candidate.provider];
-            return !choices || choices.length === 0 || choices.includes(candidate.id);
-          });
-          setModels(configured.length ? configured : discovered);
-        }
-      })
-      .catch(() => setNotice("Could not load the latest provider models. Showing defaults."));
-  }, [open, onChatPage]);
+    refreshConfiguration();
+    window.addEventListener("focus", refreshConfiguration);
+    window.addEventListener("selvam-ai-config-changed", refreshConfiguration);
+    return () => {
+      window.removeEventListener("focus", refreshConfiguration);
+      window.removeEventListener("selvam-ai-config-changed", refreshConfiguration);
+    };
+  }, []);
   useEffect(() => {
     if (privateMode) {
       setOpen(false);
@@ -533,7 +521,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
               </Button>
             </header>
             <div
-              className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-muted/10 p-4"
+              className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-muted/10 p-4 [&_table]:my-2 [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_td]:whitespace-nowrap [&_td]:px-2 [&_td]:py-1 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:px-2 [&_th]:py-1"
               aria-live="polite"
             >
               {messages.length === 0 && (
@@ -559,6 +547,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
                         className="prose prose-sm max-w-none break-words dark:prose-invert [&_p]:my-1 [&_ul]:my-1"
                       >
                         <Markdown
+                          remarkPlugins={[remarkGfm]}
                           components={{
                             a: ({ href, children }) =>
                               href?.startsWith("/dashboard") ? (
@@ -602,7 +591,11 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
               </div>
             )}
             <div className="shrink-0 border-t bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              <SelvamComposer />
+              <ThreadPrimitive.Root className="contents">
+                <ThreadPrimitive.Viewport className="contents">
+                  <SelvamComposer />
+                </ThreadPrimitive.Viewport>
+              </ThreadPrimitive.Root>
             </div>
           </section>
         )}

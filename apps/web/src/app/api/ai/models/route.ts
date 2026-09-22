@@ -11,6 +11,14 @@ import { z } from "zod";
 const providers = ["openai", "google", "anthropic", "mistral", "opencode"] as const;
 const providerSchema = z.enum(providers);
 
+async function safeProviderKey(userId: string, provider: AIProvider) {
+  try {
+    return await getProviderKey(userId, provider);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: Request) {
   if (new URL(request.url).searchParams.has("provider")) {
     // Handle specific provider model list
@@ -26,7 +34,7 @@ export async function GET(request: Request) {
       return Response.json({ error: "Sign in to fetch models" }, { status: 401 });
     }
 
-    const key = await getProviderKey(
+    const key = await safeProviderKey(
       session.user.id,
       provider as "openai" | "google" | "anthropic" | "mistral" | "opencode",
     );
@@ -53,7 +61,7 @@ export async function GET(request: Request) {
   const allModels: Record<string, Array<{ id: string; label: string; provider: string }>> = {};
 
   for (const provider of ["openai", "google", "anthropic", "mistral", "opencode"] as const) {
-    const key = await getProviderKey(session.user.id, provider);
+    const key = await safeProviderKey(session.user.id, provider);
     if (key) {
       try {
         const models = await fetchModelsFromProvider(provider, key);
@@ -66,10 +74,11 @@ export async function GET(request: Request) {
     }
   }
 
-  return Response.json({
-    models: allModels,
-    selected: await getSelectedProviderModels(session.user.id),
-  });
+  let selected: Partial<Record<AIProvider, string[]>> = {};
+  try {
+    selected = await getSelectedProviderModels(session.user.id);
+  } catch {}
+  return Response.json({ models: allModels, selected });
 }
 
 export async function PUT(request: Request) {

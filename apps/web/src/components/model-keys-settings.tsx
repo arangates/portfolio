@@ -66,6 +66,7 @@ export function ModelKeysSettings() {
       setStatus((current) => (current ? { ...current, [provider]: !remove } : current));
       setKeys((current) => ({ ...current, [provider]: "" }));
       setNotice(`${providerLabels[provider]} key ${remove ? "removed" : "saved"}.`);
+      window.dispatchEvent(new Event("selvam-ai-config-changed"));
       if (!remove) await loadModels();
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not update key.");
@@ -86,6 +87,7 @@ export function ModelKeysSettings() {
       const body = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(body.error ?? "Could not save model choices.");
       setNotice(`${providerLabels[provider]} model choices saved.`);
+      window.dispatchEvent(new Event("selvam-ai-config-changed"));
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not save model choices.");
     } finally {
@@ -152,25 +154,21 @@ export function ModelKeysSettings() {
             </div>
             {status?.[provider] && models[provider]?.length > 0 && (
               <div className="border-t pt-3">
-                <p className="mb-2 text-sm font-medium">Models available in chat</p>
+                <p className="mb-2 text-sm font-medium">Default model in chat</p>
                 <div className="space-y-2">
                   {models[provider].map((model) => {
-                    const choices = selected[provider] ?? models[provider].map((item) => item.id);
+                    const choices = selected[provider]?.length
+                      ? selected[provider]
+                      : [models[provider][0]?.id];
                     const checked = choices.includes(model.id);
                     return (
                       <label key={model.id} className="flex items-center gap-2 text-sm">
                         <input
-                          type="checkbox"
+                          type="radio"
+                          name={`${provider}-default-model`}
                           checked={checked}
-                          onChange={(event) =>
-                            setSelected((current) => {
-                              const next = new Set(
-                                current[provider] ?? models[provider].map((item) => item.id),
-                              );
-                              if (event.target.checked) next.add(model.id);
-                              else next.delete(model.id);
-                              return { ...current, [provider]: [...next] };
-                            })
+                          onChange={() =>
+                            setSelected((current) => ({ ...current, [provider]: [model.id] }))
                           }
                         />
                         <span className="min-w-0 truncate">{model.label}</span>
