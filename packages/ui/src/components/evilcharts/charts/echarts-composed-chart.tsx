@@ -1652,7 +1652,16 @@ export function EChartsComposedChart<TData extends Record<string, unknown>>({
       xAxis: brush ? [xAxis, brush.miniXAxis] : xAxis,
       yAxis: brush ? [yAxis, brush.miniYAxis] : yAxis,
       tooltip: buildTooltipOption(ctx),
-      dataZoom: brush?.dataZoom,
+      dataZoom: brush?.dataZoom ?? [
+        {
+          type: "inside",
+          filterMode: "filter",
+          xAxisIndex: 0,
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
+          moveOnMouseWheel: true,
+        },
+      ],
       // bars before lines so the polyline strokes read above the columns. Line
       // glow copies come AFTER the main series (their z keeps them under the lines
       // and over the bars) so the seriesIndex→key map for clicks stays intact.

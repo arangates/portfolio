@@ -3,7 +3,6 @@ import { SiteHeader } from "@/components/site-header";
 import { auth } from "@portfolio/auth";
 import { SidebarInset, SidebarProvider } from "@portfolio/ui/components/sidebar";
 import { DashboardExperience, FinancialContent } from "@/components/dashboard-experience";
-import { AppStatus } from "@/components/pwa-controls";
 import { GlobalAIChat } from "@/components/global-ai-chat";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -27,7 +26,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <SidebarInset>
           <GlobalAIChat userId={session.user.id}>
             <SiteHeader />
-            <AppStatus />
             <main className="dashboard-content flex min-w-0 flex-1 flex-col overflow-x-hidden">
               <FinancialContent>{children}</FinancialContent>
             </main>

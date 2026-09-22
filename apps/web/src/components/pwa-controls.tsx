@@ -335,47 +335,39 @@ export function AppStatus() {
       setMessage("Update did not finish. Try again when connected.");
     }, 15000);
   }
-  if (pathname === "/dashboard/chat") return null;
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b bg-muted/20 px-4 py-1.5 text-xs text-muted-foreground lg:px-6">
-      <div role="status" className="flex min-w-0 flex-1 items-center gap-2">
-        {offline ? <WifiOffIcon className="size-3.5 shrink-0" /> : null}
-        <span>
-          {message ??
-            (offline
-              ? "Offline · displayed data may be out of date"
-              : pending || checking
-                ? "Refreshing…"
-                : waiting
-                  ? "An app update is available"
-                  : loadedAt
-                    ? `View loaded ${loadedAt} · valuation dates are shown with your data`
-                    : "Valuation dates are shown with your data")}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        {workerError ? <span>Offline support unavailable</span> : null}
-        {waiting ? (
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={offline || checking || pending}
-            onClick={update}
-          >
-            Update app
-          </Button>
-        ) : null}
+    <div role="status" className="flex items-center gap-1 text-muted-foreground">
+      {offline ? <WifiOffIcon aria-label="Offline" /> : null}
+      {waiting ? (
         <Button
-          size="icon"
-          variant="ghost"
+          size="sm"
+          variant="outline"
           disabled={offline || checking || pending}
-          onClick={refresh}
-          aria-label="Refresh data"
-          title="Refresh data"
+          onClick={update}
+          title="Apply the available app update"
         >
-          <RefreshCwIcon className={pending || checking ? "motion-safe:animate-spin" : ""} />
+          Update
         </Button>
-      </div>
+      ) : null}
+      <Button
+        size="icon-sm"
+        variant="ghost"
+        disabled={offline || checking || pending}
+        onClick={refresh}
+        aria-label={
+          message ?? (workerError ? "Refresh data; offline support unavailable" : "Refresh data")
+        }
+        title={
+          message ??
+          (offline
+            ? "Offline"
+            : loadedAt
+              ? `Refresh data · view loaded ${loadedAt}`
+              : "Refresh data")
+        }
+      >
+        <RefreshCwIcon className={pending || checking ? "motion-safe:animate-spin" : ""} />
+      </Button>
     </div>
   );
 }

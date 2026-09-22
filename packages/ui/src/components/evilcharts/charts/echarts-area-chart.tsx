@@ -1843,7 +1843,16 @@ export function EChartsAreaChart<TData extends Record<string, unknown>>({
       xAxis: brush ? [xAxis, brush.miniXAxis] : xAxis,
       yAxis: brush ? [yAxis, brush.miniYAxis] : yAxis,
       tooltip: buildTooltipOption(ctx),
-      dataZoom: brush?.dataZoom,
+      dataZoom: brush?.dataZoom ?? [
+        {
+          type: "inside",
+          filterMode: "filter",
+          xAxisIndex: 0,
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
+          moveOnMouseWheel: true,
+        },
+      ],
       series,
     };
   }, [

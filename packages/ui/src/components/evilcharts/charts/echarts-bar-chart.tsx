@@ -1701,7 +1701,17 @@ export function EChartsBarChart<TData extends Record<string, unknown>>({
       xAxis: brush ? [xAxis, brush.miniXAxis] : xAxis,
       yAxis: brush ? [yAxis, brush.miniYAxis] : yAxis,
       tooltip: buildTooltipOption(ctx),
-      dataZoom: brush?.dataZoom,
+      dataZoom: brush?.dataZoom ?? [
+        {
+          type: "inside",
+          filterMode: "filter",
+          xAxisIndex: layout === "vertical" ? 0 : undefined,
+          yAxisIndex: layout === "horizontal" ? 0 : undefined,
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
+          moveOnMouseWheel: true,
+        },
+      ],
       series: [...buildBarSeries(ctx), ...(brush?.miniSeries ?? [])],
     };
   }, [

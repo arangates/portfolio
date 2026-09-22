@@ -41,13 +41,13 @@ export function CommandSearch() {
         type="button"
         variant="outline"
         size="sm"
-        className="h-8 w-8 justify-center gap-2 px-0 text-muted-foreground sm:w-44 sm:justify-start sm:px-2.5"
+        className="h-9 w-9 justify-center gap-2 px-0 text-muted-foreground md:w-full md:justify-start md:bg-muted/35 md:px-3"
         onClick={() => setOpen(true)}
         aria-label="Search Selvam"
       >
-        <SearchIcon className="size-4" />
-        <span className="hidden sm:inline">Search</span>
-        <kbd className="ml-auto hidden rounded border bg-muted px-1.5 font-mono text-[10px] leading-5 text-muted-foreground sm:inline-flex">
+        <SearchIcon data-icon="inline-start" />
+        <span className="hidden md:inline">Search pages, charts, and features</span>
+        <kbd className="ml-auto hidden rounded border bg-background/60 px-1.5 font-mono text-[10px] leading-5 text-muted-foreground md:inline-flex">
           ⌘K
         </kbd>
       </Button>

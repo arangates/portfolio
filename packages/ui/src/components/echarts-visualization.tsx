@@ -2,7 +2,7 @@
 
 import { cn } from "@portfolio/ui/lib/utils";
 import type * as echarts from "echarts";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export type EChartsVisualizationOption = echarts.EChartsOption;
 
@@ -18,6 +18,31 @@ export function EChartsVisualization({
   const containerRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const interactiveOption = useMemo<EChartsVisualizationOption>(() => {
+    const cartesian = Boolean(option.xAxis && option.yAxis);
+    if (!cartesian) return option;
+    return {
+      ...option,
+      dataZoom: option.dataZoom ?? [
+        {
+          type: "inside",
+          filterMode: "filter",
+          zoomOnMouseWheel: true,
+          moveOnMouseMove: true,
+          moveOnMouseWheel: true,
+        },
+      ],
+      toolbox: option.toolbox ?? {
+        right: 8,
+        top: 4,
+        feature: {
+          dataZoom: { yAxisIndex: "none" },
+          restore: {},
+          saveAsImage: { pixelRatio: 2 },
+        },
+      },
+    };
+  }, [option]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -29,7 +54,7 @@ export function EChartsVisualization({
       .then((library) => {
         if (cancelled) return;
         chart = library.init(container, undefined, { renderer: "canvas" });
-        chart.setOption(option, { notMerge: true });
+        chart.setOption(interactiveOption, { notMerge: true });
         resizeObserver = new ResizeObserver(() => chart?.resize());
         resizeObserver.observe(container);
       })
@@ -41,7 +66,7 @@ export function EChartsVisualization({
       resizeObserver?.disconnect();
       chart?.dispose();
     };
-  }, [option, attempt]);
+  }, [interactiveOption, attempt]);
 
   if (failed)
     return (
