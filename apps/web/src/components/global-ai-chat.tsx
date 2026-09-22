@@ -55,7 +55,7 @@ export function useSelvamChat() {
   return context;
 }
 
-export function SelvamComposer() {
+export function SelvamComposer({ standalone = false }: { standalone?: boolean }) {
   const chat = useSelvamChat();
 
   if (chat.statusLoading || !chat.status) {
@@ -77,7 +77,7 @@ export function SelvamComposer() {
 
   return (
     <ChatComposer
-      standalone
+      standalone={standalone}
       modelSelector={
         <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">
           {chat.models.find(
@@ -593,7 +593,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
               </div>
             )}
             <div className="shrink-0 border-t bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              <SelvamComposer />
+              <SelvamComposer standalone />
             </div>
           </section>
         )}
