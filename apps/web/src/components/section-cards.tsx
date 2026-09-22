@@ -1,3 +1,5 @@
+"use client";
+
 import {
   CalculationExplanationButton,
   type CalculationExplanation,
@@ -15,6 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@portfolio/ui/components/card";
+import { Carousel, CarouselContent, CarouselItem } from "@portfolio/ui/components/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { useState } from "react";
 
 export type MetricCard = {
   explanation?: CalculationExplanation;
@@ -27,7 +32,70 @@ export type MetricCard = {
   href?: Route;
 };
 
+function MetricCardView({ item }: { item: MetricCard }) {
+  const card = (
+    <Card
+      className={cn(
+        "@container/card h-full gap-0 py-0 shadow-xs transition-colors",
+        item.href && "group-hover:border-foreground/20 group-hover:bg-muted/30",
+      )}
+    >
+      <CardHeader className="gap-2 p-4 sm:p-5">
+        <CardDescription className="flex items-center gap-2 font-medium">
+          {item.icon ? <item.icon className="size-4" /> : null}
+          {item.label}
+          {item.href ? (
+            <ArrowUpRightIcon className="ml-auto size-3.5 opacity-0 transition-opacity group-hover:opacity-70 group-focus-visible:opacity-70" />
+          ) : null}
+        </CardDescription>
+        <CardTitle className="text-2xl font-semibold tabular-nums tracking-tight">
+          {item.value}
+        </CardTitle>
+        {item.badge ? (
+          <CardAction>
+            <Badge variant="secondary" className="max-w-32 truncate font-normal">
+              {item.badge}
+            </Badge>
+          </CardAction>
+        ) : null}
+        <div className="min-w-0 pr-5 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground/80">{item.note}</span>
+          {item.detail ? (
+            <span className="hidden @min-[260px]/card:inline"> · {item.detail}</span>
+          ) : null}
+        </div>
+      </CardHeader>
+    </Card>
+  );
+
+  const content = item.href ? (
+    <Link
+      href={item.href}
+      key={item.label}
+      aria-label={`View ${item.label} breakdown in analytics`}
+      className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      {card}
+    </Link>
+  ) : (
+    <div key={item.label}>{card}</div>
+  );
+  return (
+    <div className="relative h-full">
+      {content}
+      {item.explanation ? (
+        <div className="absolute bottom-1 right-1">
+          <CalculationExplanationButton title={item.label} explanation={item.explanation} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function SectionCards({ items }: { items: MetricCard[] }) {
+  const [autoplay] = useState(() =>
+    Autoplay({ delay: 3600, stopOnInteraction: true, stopOnMouseEnter: true }),
+  );
   const wideGrid =
     items.length <= 2
       ? "@5xl/main:grid-cols-2"
@@ -35,66 +103,26 @@ export function SectionCards({ items }: { items: MetricCard[] }) {
         ? "@5xl/main:grid-cols-3"
         : "@5xl/main:grid-cols-4";
   return (
-    <div className={cn("grid grid-cols-1 gap-3 px-4 sm:grid-cols-2 lg:px-6", wideGrid)}>
-      {items.map((item) => {
-        const card = (
-          <Card
-            className={cn(
-              "@container/card h-full gap-0 py-0 shadow-xs transition-colors",
-              item.href && "group-hover:border-foreground/20 group-hover:bg-muted/30",
-            )}
-          >
-            <CardHeader className="gap-2 p-4 sm:p-5">
-              <CardDescription className="flex items-center gap-2 font-medium">
-                {item.icon ? <item.icon className="size-4" /> : null}
-                {item.label}
-                {item.href ? (
-                  <ArrowUpRightIcon className="ml-auto size-3.5 opacity-0 transition-opacity group-hover:opacity-70 group-focus-visible:opacity-70" />
-                ) : null}
-              </CardDescription>
-              <CardTitle className="text-2xl font-semibold tabular-nums tracking-tight">
-                {item.value}
-              </CardTitle>
-              {item.badge ? (
-                <CardAction>
-                  <Badge variant="secondary" className="max-w-32 truncate font-normal">
-                    {item.badge}
-                  </Badge>
-                </CardAction>
-              ) : null}
-              <div className="min-w-0 pr-5 text-xs text-muted-foreground">
-                <span className="font-medium text-foreground/80">{item.note}</span>
-                {item.detail ? (
-                  <span className="hidden @min-[260px]/card:inline"> · {item.detail}</span>
-                ) : null}
-              </div>
-            </CardHeader>
-          </Card>
-        );
-
-        const content = item.href ? (
-          <Link
-            href={item.href}
-            key={item.label}
-            aria-label={`View ${item.label} breakdown in analytics`}
-            className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            {card}
-          </Link>
-        ) : (
-          <div key={item.label}>{card}</div>
-        );
-        return (
-          <div key={item.label} className="relative h-full">
-            {content}
-            {item.explanation ? (
-              <div className="absolute bottom-1 right-1">
-                <CalculationExplanationButton title={item.label} explanation={item.explanation} />
-              </div>
-            ) : null}
-          </div>
-        );
-      })}
-    </div>
+    <>
+      <Carousel
+        opts={{ align: "start", loop: items.length > 1 }}
+        plugins={[autoplay]}
+        className="px-4 sm:hidden"
+        aria-label="Key statistics"
+      >
+        <CarouselContent className="-ml-3">
+          {items.map((item) => (
+            <CarouselItem key={item.label} className="basis-[92%] pl-3">
+              <MetricCardView item={item} />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+      <div className={cn("hidden gap-3 px-4 sm:grid sm:grid-cols-2 lg:px-6", wideGrid)}>
+        {items.map((item) => (
+          <MetricCardView key={item.label} item={item} />
+        ))}
+      </div>
+    </>
   );
 }

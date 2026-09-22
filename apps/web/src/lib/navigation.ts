@@ -15,7 +15,6 @@ import {
   LayoutDashboardIcon,
   ReceiptTextIcon,
   RouteIcon,
-  SettingsIcon,
   ShieldCheckIcon,
   SparklesIcon,
   TrendingUpIcon,
@@ -210,13 +209,6 @@ export const dashboardNavigation = [
         icon: FilesIcon,
         keywords:
           "files imports history archive google drive download originals source documents batches",
-      },
-      {
-        title: "Settings & data",
-        shortTitle: "Settings",
-        url: "/dashboard/settings",
-        icon: SettingsIcon,
-        keywords: "profile family privacy account",
       },
     ],
   },

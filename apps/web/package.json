@@ -33,6 +33,7 @@
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.2",
+    "embla-carousel-autoplay": "^8.6.0",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",

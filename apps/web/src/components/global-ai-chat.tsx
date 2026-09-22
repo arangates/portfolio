@@ -12,6 +12,7 @@ import {
   KeyRoundIcon,
   Maximize2Icon,
   MessageCircleIcon,
+  PlusIcon,
   SendIcon,
   SquareIcon,
   XIcon,
@@ -362,14 +363,27 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
             aria-modal="false"
             className="fixed inset-0 z-50 flex flex-col border bg-background shadow-2xl sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(700px,calc(100dvh-80px))] sm:w-[min(440px,calc(100vw-40px))] sm:rounded-xl"
           >
-            <header className="flex shrink-0 items-center gap-2 border-b px-4 py-3">
-              <MessageCircleIcon className="size-5" />
+            <header className="flex shrink-0 items-center gap-2 border-b bg-muted/20 px-4 py-3">
+              <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                <MessageCircleIcon />
+              </span>
               <div className="min-w-0 flex-1">
                 <h2 className="text-sm font-semibold">Ask Selvam</h2>
                 <p className="text-xs text-muted-foreground">
                   Answers from your current financial records
                 </p>
               </div>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="ghost"
+                onClick={clear}
+                disabled={threadLoading}
+                aria-label="Start a new chat"
+                title="New chat"
+              >
+                <PlusIcon />
+              </Button>
               <Button
                 type="button"
                 size="icon-sm"
@@ -398,17 +412,25 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
                 <XIcon />
               </Button>
             </header>
-            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4" aria-live="polite">
+            <div
+              className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-muted/10 p-4"
+              aria-live="polite"
+            >
               {messages.length === 0 && (
-                <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
-                  Ask about your portfolio, FIRE plan, household budget or verified returns. Figures
-                  are read from Selvam when you ask.
+                <div className="flex min-h-full flex-col items-center justify-center px-4 text-center">
+                  <span className="mb-3 flex size-11 items-center justify-center rounded-2xl border bg-background text-primary shadow-sm">
+                    <MessageCircleIcon />
+                  </span>
+                  <p className="font-medium">What would you like to understand?</p>
+                  <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+                    Ask about your portfolio, FIRE plan, household budget, or verified returns.
+                  </p>
                 </div>
               )}
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`rounded-lg px-3 py-2 text-sm ${message.role === "user" ? "ml-8 bg-primary text-primary-foreground" : "mr-4 border bg-card"}`}
+                  className={`w-fit max-w-[92%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${message.role === "user" ? "ml-auto rounded-br-md bg-primary text-primary-foreground" : "mr-auto rounded-bl-md border bg-background shadow-xs"}`}
                 >
                   {message.parts.map((part, index) =>
                     part.type === "text" ? (
@@ -461,7 +483,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
             )}
             <form
               onSubmit={submit}
-              className="flex shrink-0 items-center gap-2 border-t p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+              className="flex shrink-0 items-end gap-2 border-t bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
             >
               <Input
                 value={input}

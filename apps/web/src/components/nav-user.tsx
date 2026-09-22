@@ -61,13 +61,25 @@ export function NavUser({
             <EllipsisVerticalIcon className="ml-auto" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="min-w-56"
+            className="min-w-64"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuGroup>
-              <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+              <DropdownMenuLabel className="flex items-center gap-3 px-2.5 py-2.5 text-foreground">
+                <Avatar className="size-9 rounded-lg">
+                  {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
+                  <AvatarFallback className="rounded-lg">{fallback}</AvatarFallback>
+                </Avatar>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium">{user.name}</span>
+                  <span className="block truncate text-xs font-normal text-muted-foreground">
+                    {user.email}
+                  </span>
+                </span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
               <DropdownMenuItem render={<a href="/dashboard/settings" />}>
                 <CircleUserRoundIcon />
                 Account settings

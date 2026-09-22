@@ -64,10 +64,10 @@ function FinancialToolStatus({ toolName, status }: { toolName: string; status: {
 function ChatMessage({ role }: { role: "user" | "assistant" }) {
   return (
     <MessagePrimitive.Root
-      className={`mx-auto flex w-full max-w-3xl gap-3 px-4 py-4 ${role === "user" ? "justify-end" : "justify-start"}`}
+      className={`mx-auto flex w-full max-w-4xl gap-3 px-4 py-5 ${role === "user" ? "justify-end" : "justify-start"}`}
     >
       <div
-        className={`min-w-0 max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${role === "user" ? "bg-primary text-primary-foreground" : "border bg-card shadow-sm"}`}
+        className={`min-w-0 text-sm leading-relaxed ${role === "user" ? "max-w-[80%] rounded-2xl rounded-br-md bg-primary px-4 py-3 text-primary-foreground" : "w-full max-w-3xl px-1 py-2"}`}
       >
         <MessagePrimitive.Parts
           components={{
@@ -99,7 +99,7 @@ function ChatMessage({ role }: { role: "user" | "assistant" }) {
           </ErrorPrimitive.Root>
         </MessagePrimitive.Error>
         {role === "assistant" && (
-          <div className="mt-2 flex flex-wrap items-center gap-2 border-t pt-2 text-muted-foreground">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-muted-foreground">
             <ActionBarPrimitive.Root hideWhenRunning className="flex items-center gap-2">
               <ActionBarPrimitive.Copy
                 aria-label="Copy response"
@@ -139,8 +139,8 @@ export default function ChatPage() {
   const [historyOpen, setHistoryOpen] = useState(true);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   return (
-    <div className="flex h-[calc(100dvh-var(--header-height)-env(safe-area-inset-top))] min-h-0 min-w-0 flex-col overflow-hidden">
-      <div className="flex shrink-0 flex-col gap-3 border-b px-3 py-3 sm:flex-row sm:items-center sm:px-4 lg:px-6">
+    <div className="flex h-[calc(100dvh-var(--header-height)-env(safe-area-inset-top))] min-h-0 min-w-0 flex-col overflow-hidden bg-muted/10">
+      <div className="flex shrink-0 flex-col gap-3 border-b bg-background/95 px-3 py-3 backdrop-blur sm:flex-row sm:items-center sm:px-4 lg:px-6">
         <div className="flex min-w-0 items-center gap-2">
           <Button
             size="icon-sm"
@@ -161,7 +161,7 @@ export default function ChatPage() {
             {historyOpen ? <PanelLeftCloseIcon /> : <PanelLeftOpenIcon />}
           </Button>
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="rounded-xl border bg-primary/10 p-2 text-primary">
+            <div className="rounded-xl bg-primary p-2 text-primary-foreground shadow-sm">
               <BrainCircuitIcon className="size-5" />
             </div>
             <div className="min-w-0">
@@ -227,17 +227,12 @@ export default function ChatPage() {
           </Button>
         </div>
       </div>
-      {(chat.notice || chat.error) && (
+      {chat.notice && (
         <div
           role="alert"
           className="flex items-center gap-2 border-b px-4 py-2 text-sm text-destructive"
         >
-          <span className="min-w-0 flex-1">{chat.notice || chat.error}</span>
-          {chat.error && (
-            <Button size="sm" variant="ghost" onClick={chat.dismissError}>
-              Dismiss
-            </Button>
-          )}
+          <span className="min-w-0 flex-1">{chat.notice}</span>
         </div>
       )}
       <div className="relative flex min-h-0 flex-1">
@@ -251,7 +246,7 @@ export default function ChatPage() {
         )}
         <aside
           aria-label="Conversation history"
-          className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] flex-col border-r bg-background pt-[max(3rem,env(safe-area-inset-top))] shadow-xl md:static md:z-auto md:w-72 md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
+          className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] flex-col border-r bg-background pt-[max(3rem,env(safe-area-inset-top))] shadow-xl md:static md:z-auto md:w-72 md:bg-muted/15 md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
         >
           <div className="flex items-center justify-between border-b p-3">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -352,7 +347,7 @@ export default function ChatPage() {
               </div>
             </AuiIf>
             <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
-            <ThreadPrimitive.ViewportFooter className="sticky bottom-0 border-t bg-background/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:px-4 sm:py-4">
+            <ThreadPrimitive.ViewportFooter className="sticky bottom-0 bg-gradient-to-t from-background via-background/95 to-transparent px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-8 sm:px-4 sm:pb-4">
               <div className="mx-auto max-w-3xl">
                 <AuiIf condition={(state) => state.thread.isRunning}>
                   <div
