@@ -108,7 +108,7 @@ function ChatMessage({ role }: { role: "user" | "assistant" }) {
               }
               case "text":
                 return (
-                  <div className="prose prose-sm max-w-none break-words dark:prose-invert [&_p]:my-1 [&_ul]:my-1">
+                  <div className="prose prose-sm max-w-none break-words dark:prose-invert [&_p]:my-1 [&_ul]:my-1 [&_pre]:my-1">
                     <Markdown
                       components={{
                         a: ({ href, children }) =>
@@ -119,6 +119,53 @@ function ChatMessage({ role }: { role: "user" | "assistant" }) {
                           ) : (
                             <span>{children}</span>
                           ),
+                        table: ({ children, ...props }) => (
+                          <div className="border-foreground/10 my-3 overflow-x-auto rounded-document border">
+                            <table
+                              className="w-full border-separate border-spacing-0 text-[13px]"
+                              {...props}
+                            >
+                              {children}
+                            </table>
+                          </div>
+                        ),
+                        th: ({ children, ...props }) => (
+                          <th
+                            className="border-foreground/10 border-b px-3 py-1.5 text-start font-medium [[align=center]]:text-center [[align=right]]:text-right"
+                            {...props}
+                          >
+                            {children}
+                          </th>
+                        ),
+                        td: ({ children, ...props }) => (
+                          <td
+                            className="border-foreground/10 border-b px-3 py-1.5 text-start [[align=center]]:text-center [[align=right]]:text-right"
+                            {...props}
+                          >
+                            {children}
+                          </td>
+                        ),
+                        tr: ({ children, ...props }) => (
+                          <tr className="m-0 p-0" {...props}>
+                            {children}
+                          </tr>
+                        ),
+                        pre: ({ children, ...props }) => (
+                          <pre
+                            className="border-border/50 bg-muted/30 overflow-x-auto rounded-xl border p-3.5 text-[13px] leading-relaxed"
+                            {...props}
+                          >
+                            {children}
+                          </pre>
+                        ),
+                        code: ({ children, ...props }) => (
+                          <code
+                            className="bg-muted rounded-md px-1.5 py-0.5 font-mono text-[0.85em]"
+                            {...props}
+                          >
+                            {children}
+                          </code>
+                        ),
                       }}
                     >
                       {part.text}
