@@ -11,7 +11,7 @@ import {
 } from "@/lib/ai-models";
 import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
-import { AssistantRuntimeProvider, ThreadPrimitive } from "@assistant-ui/react";
+import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { Button } from "@portfolio/ui/components/button";
 import { buttonVariants } from "@portfolio/ui/components/button";
 import { DefaultChatTransport, type UIMessage } from "ai";
@@ -77,6 +77,7 @@ export function SelvamComposer() {
 
   return (
     <ChatComposer
+      standalone
       modelSelector={
         <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">
           {chat.models.find(
@@ -337,22 +338,23 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   useEffect(() => {
     const refreshConfiguration = () => {
       setStatusLoading(true);
-      void Promise.all([
-        fetch("/api/ai/keys", { cache: "no-store" }),
-        fetch("/api/ai/models", { cache: "no-store" }),
-      ])
-        .then(async ([statusResponse, modelsResponse]) => {
-          if (!statusResponse.ok || !modelsResponse.ok)
-            throw new Error("Could not load chat settings");
-          return {
-            status: (await statusResponse.json()) as Status,
-            models: (await modelsResponse.json()) as {
-              models: Record<Provider, ModelEntry[]>;
-              selected?: Partial<Record<Provider, string[]>>;
-            },
-          };
+      void fetch("/api/ai/keys", { cache: "no-store" })
+        .then(async (statusResponse) => {
+          if (!statusResponse.ok) throw new Error("Could not load saved API keys");
+          const value = (await statusResponse.json()) as Status;
+          let data: {
+            models: Record<Provider, ModelEntry[]>;
+            selected?: Partial<Record<Provider, string[]>>;
+          } = { models: {} as Record<Provider, ModelEntry[]> };
+          try {
+            const modelsResponse = await fetch("/api/ai/models", { cache: "no-store" });
+            if (modelsResponse.ok) data = (await modelsResponse.json()) as typeof data;
+          } catch {
+            // Key status is enough to start chat; model discovery is optional.
+          }
+          return { value, data };
         })
-        .then(({ status: value, models: data }) => {
+        .then(({ value, data }) => {
           setStatus(value);
           const firstProvider = (
             [
@@ -591,11 +593,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
               </div>
             )}
             <div className="shrink-0 border-t bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              <ThreadPrimitive.Root className="contents">
-                <ThreadPrimitive.Viewport className="contents">
-                  <SelvamComposer />
-                </ThreadPrimitive.Viewport>
-              </ThreadPrimitive.Root>
+              <SelvamComposer />
             </div>
           </section>
         )}
