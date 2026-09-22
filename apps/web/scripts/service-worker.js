@@ -35,6 +35,54 @@ self.addEventListener("message", (event) => {
     })(),
   );
 });
+self.addEventListener("push", (event) => {
+  event.waitUntil(
+    (async () => {
+      let payload = {};
+      try {
+        payload = event.data?.json() ?? {};
+      } catch {
+        payload = { title: "Selvam", body: "You have a new financial reminder." };
+      }
+      const title = typeof payload.title === "string" ? payload.title : "Selvam reminder";
+      const body = typeof payload.body === "string" ? payload.body : "Open Selvam to review it.";
+      const url =
+        typeof payload.url === "string" && payload.url.startsWith("/")
+          ? payload.url
+          : "/dashboard/calendar";
+      await self.registration.showNotification(title, {
+        body,
+        icon: "/favicon/web-app-manifest-192x192.png",
+        badge: "/favicon/web-app-manifest-192x192.png",
+        tag: typeof payload.tag === "string" ? payload.tag : "selvam-reminder",
+        renotify: false,
+        data: { url },
+      });
+    })(),
+  );
+});
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    (async () => {
+      let target = new URL(
+        event.notification.data?.url ?? "/dashboard/calendar",
+        self.location.origin,
+      );
+      if (target.origin !== self.location.origin)
+        target = new URL("/dashboard/calendar", self.location.origin);
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const existing = windows.find(
+        (client) => new URL(client.url).origin === self.location.origin,
+      );
+      if (existing) {
+        await existing.navigate(target.href);
+        return existing.focus();
+      }
+      return self.clients.openWindow(target.href);
+    })(),
+  );
+});
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);

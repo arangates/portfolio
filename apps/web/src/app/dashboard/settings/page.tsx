@@ -4,6 +4,8 @@ import { SettingsTabs } from "@/components/settings-tabs";
 import { ModelKeysSettings } from "@/components/model-keys-settings";
 import { GoogleDriveArchiveCard } from "@/components/google-drive-archive-card";
 import { ExchangeRateSyncCard } from "@/components/exchange-rate-sync-card";
+import { NotificationSettingsCard } from "@/components/notification-settings-card";
+import { getNotificationSettings } from "@/lib/push-notifications";
 import { getDriveArchiveState } from "@/lib/google-drive-archive";
 import { FireSettingsCard } from "@/components/fire-settings-card";
 import {
@@ -36,13 +38,15 @@ export default async function SettingsPage({
 }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
-  const [preference, rates, exchangeRateStatus, fireSettings, driveArchive] = await Promise.all([
-    getPortfolioPreference(session.user.id),
-    getLatestExchangeRates(session.user.id),
-    getEurInrExchangeRateStatus(session.user.id),
-    getFireSettings(session.user.id),
-    getDriveArchiveState(session.user.id),
-  ]);
+  const [preference, rates, exchangeRateStatus, fireSettings, driveArchive, notifications] =
+    await Promise.all([
+      getPortfolioPreference(session.user.id),
+      getLatestExchangeRates(session.user.id),
+      getEurInrExchangeRateStatus(session.user.id),
+      getFireSettings(session.user.id),
+      getDriveArchiveState(session.user.id),
+      getNotificationSettings(session.user.id),
+    ]);
   const requestedTab = (await searchParams).tab;
   const defaultTab =
     requestedTab === "portfolio" ||
@@ -72,7 +76,12 @@ export default async function SettingsPage({
         <SettingsTabs
           defaultValue={defaultTab}
           modelKeys={<ModelKeysSettings />}
-          account={<AccountForm name={session.user.name} email={session.user.email} />}
+          account={
+            <div className="space-y-4">
+              <AccountForm name={session.user.name} email={session.user.email} />
+              <NotificationSettingsCard initialSettings={notifications} />
+            </div>
+          }
           portfolio={
             <>
               <PreferenceForm preference={preference} />

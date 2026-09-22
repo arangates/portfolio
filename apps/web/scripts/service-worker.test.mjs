@@ -12,7 +12,15 @@ function worker({
 } = {}) {
   const handlers = {};
   const cached = new Map();
-  const state = { skipped: false, claimed: false, messages: [], fetched: [], deleted: [] };
+  const state = {
+    skipped: false,
+    claimed: false,
+    messages: [],
+    fetched: [],
+    deleted: [],
+    notifications: [],
+    opened: [],
+  };
   const cache = {
     addAll: async (paths) =>
       paths.forEach((path) => cached.set(path, new Response("offline shell"))),
@@ -30,6 +38,9 @@ function worker({
     Response,
     self: {
       location: { origin: "https://selvam.test" },
+      registration: {
+        showNotification: async (title, options) => state.notifications.push({ title, options }),
+      },
       addEventListener: (name, handler) => {
         handlers[name] = handler;
       },
@@ -38,6 +49,7 @@ function worker({
       },
       clients: {
         matchAll: async () => windows,
+        openWindow: async (url) => state.opened.push(url),
         claim: async () => {
           state.claimed = true;
         },
@@ -167,4 +179,32 @@ test("cache read and quota failures do not break online assets", async () => {
     assert.equal(await response.text(), "public asset");
     assert.equal(w.state.fetched.length, 1);
   }
+});
+
+test("push payloads display private reminders and clicks open only same-origin routes", async () => {
+  const w = worker({ windows: [] });
+  await w.dispatch("push", {
+    data: {
+      json: () => ({
+        title: "1 financial reminder today",
+        body: "Today: Deposit matures",
+        url: "/dashboard/fixed-deposits",
+        tag: "reminders-2026-09-22",
+      }),
+    },
+  });
+  assert.equal(w.state.notifications[0].title, "1 financial reminder today");
+  assert.equal(w.state.notifications[0].options.data.url, "/dashboard/fixed-deposits");
+
+  let closed = false;
+  await w.dispatch("notificationclick", {
+    notification: {
+      data: { url: "https://attacker.test/phishing" },
+      close: () => {
+        closed = true;
+      },
+    },
+  });
+  assert.equal(closed, true);
+  assert.deepEqual(w.state.opened, ["https://selvam.test/dashboard/calendar"]);
 });

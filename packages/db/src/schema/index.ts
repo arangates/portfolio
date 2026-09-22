@@ -10,3 +10,4 @@ export * from "./portfolio";
 export * from "./salary";
 export * from "./tax";
 export * from "./netherlands-tax";
+export * from "./notifications";

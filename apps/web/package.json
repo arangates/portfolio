@@ -41,6 +41,7 @@
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",
     "sonner": "catalog:",
+    "web-push": "^3.6.7",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -50,6 +51,7 @@
     "@types/node": "^20.19.43",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@types/web-push": "^3.6.4",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }
