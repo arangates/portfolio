@@ -36,6 +36,7 @@ type ChatContextValue = {
   newThread: () => Promise<void>;
   selectThread: (id: string) => Promise<void>;
   deleteThread: (id: string) => Promise<void>;
+  deleteThreads: (ids?: string[]) => Promise<void>;
   renameThread: (id: string, title: string) => Promise<void>;
   shareTranscript: () => Promise<void>;
   sendPrompt: (text: string) => void;
@@ -75,6 +76,7 @@ export function SelvamComposer() {
 
   return (
     <ChatComposer
+      standalone
       modelSelector={
         <ChatModelSelector
           provider={chat.provider}
@@ -256,6 +258,25 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     }
   }
 
+  async function deleteThreads(ids?: string[]) {
+    const response = await fetch("/api/ai/threads", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(ids ? { ids } : { all: true }),
+    });
+    if (!response.ok) {
+      setNotice("Could not delete conversations");
+      return;
+    }
+    const data = (await response.json()) as { deleted: string[] };
+    const deletedIds = new Set(data.deleted);
+    setThreads((current) => current.filter((thread) => !deletedIds.has(thread.id)));
+    if (ids === undefined || (activeThreadId && deletedIds.has(activeThreadId))) {
+      setActiveThreadId(null);
+      await newThread();
+    }
+  }
+
   async function renameThread(id: string, title: string) {
     const response = await fetch(`/api/ai/threads/${id}`, {
       method: "PATCH",
@@ -418,6 +439,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
           newThread,
           selectThread,
           deleteThread,
+          deleteThreads,
           renameThread,
           shareTranscript,
           sendPrompt,

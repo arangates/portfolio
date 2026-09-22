@@ -5,8 +5,10 @@ import { cn } from "@portfolio/ui/lib/utils";
 import {
   AuiIf,
   ComposerPrimitive,
+  unstable_useComposerInput,
   unstable_useMentionAdapter,
   unstable_useSlashCommandAdapter,
+  unstable_useTriggerPopoverAriaProps,
   type Unstable_SlashCommand,
 } from "@assistant-ui/react";
 import {
@@ -193,10 +195,12 @@ export function ChatComposer({
   modelSelector,
   mentions = [],
   commands = [],
+  standalone = false,
 }: {
   modelSelector: ReactNode;
   mentions?: ChatMention[];
   commands?: ChatCommand[];
+  standalone?: boolean;
 }) {
   const mention = unstable_useMentionAdapter({ items: mentions });
   const slash = unstable_useSlashCommandAdapter({ commands });
@@ -258,11 +262,15 @@ export function ChatComposer({
             </div>
           )}
         </ComposerPrimitive.Attachments>
-        <ComposerPrimitive.Input
-          placeholder="Message, or @ to mention / for commands..."
-          rows={1}
-          className="min-h-11 w-full resize-none bg-transparent px-3 py-2 text-base outline-none placeholder:text-muted-foreground"
-        />
+        {standalone ? (
+          <StandaloneComposerInput />
+        ) : (
+          <ComposerPrimitive.Input
+            placeholder="Message, or @ to mention / for commands..."
+            rows={1}
+            className="min-h-11 w-full resize-none bg-transparent px-3 py-2 text-base outline-none placeholder:text-muted-foreground"
+          />
+        )}
         <div className="flex items-center justify-between gap-2 px-1">
           <div className="flex min-w-0 items-center gap-1">
             <ComposerPrimitive.AddAttachment
@@ -300,6 +308,29 @@ export function ChatComposer({
         </div>
       </ComposerPrimitive.Root>
     </ComposerPrimitive.Unstable_TriggerPopoverRoot>
+  );
+}
+
+function StandaloneComposerInput() {
+  const { value, setText, send, isDisabled } = unstable_useComposerInput();
+  const triggerPopoverAriaProps = unstable_useTriggerPopoverAriaProps();
+
+  return (
+    <textarea
+      {...triggerPopoverAriaProps}
+      value={value}
+      disabled={isDisabled}
+      placeholder="Message, or @ to mention / for commands..."
+      rows={1}
+      onChange={(event) => setText(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          send();
+        }
+      }}
+      className="min-h-11 w-full resize-none bg-transparent px-3 py-2 text-base outline-none placeholder:text-muted-foreground"
+    />
   );
 }
 

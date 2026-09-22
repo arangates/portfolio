@@ -67,11 +67,11 @@ export default async function SettingsPage({
   };
   return (
     <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
-      <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
+      <div className="flex flex-col gap-5 py-4 sm:py-5 md:gap-6 md:py-6">
         <PageHeader
           title="Settings"
           action={<InstallApp alwaysShow />}
-          description="Manage your account, portfolio defaults, family planning and data security."
+          description="Your personal control center for Selvam. Tune the details that shape your portfolio, planning and privacy."
         />
         <SettingsTabs
           defaultValue={defaultTab}

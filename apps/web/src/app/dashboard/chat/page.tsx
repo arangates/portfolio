@@ -34,6 +34,7 @@ import {
   DownloadIcon,
   KeyRoundIcon,
   MoreHorizontalIcon,
+  PencilIcon,
   PlusIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
@@ -42,6 +43,7 @@ import {
 import Link from "next/link";
 import { useState, type FC } from "react";
 import { SelvamComposer, useSelvamChat } from "@/components/global-ai-chat";
+import { Checkbox } from "@portfolio/ui/components/checkbox";
 
 // ============================================================================
 // Types and Constants
@@ -107,6 +109,12 @@ const isHistoryLoadingView = (s: AssistantState) =>
   s.thread.isLoading &&
   !s.thread.isDisabled &&
   !s.threads.isLoading;
+
+function formatThreadDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(
+    new Date(value),
+  );
+}
 
 // ============================================================================
 // Loading Skeleton
@@ -506,6 +514,44 @@ export default function ChatPage() {
   const privateMode = useFinancialPrivacy();
   const [historyOpen, setHistoryOpen] = useState(true);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
+  const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set());
+  const allThreadsSelected =
+    chat.threads.length > 0 && selectedThreadIds.size === chat.threads.length;
+
+  function toggleThreadSelection(id: string) {
+    setSelectedThreadIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAllThreads() {
+    setSelectedThreadIds(
+      allThreadsSelected ? new Set() : new Set(chat.threads.map((thread) => thread.id)),
+    );
+  }
+
+  function deleteSelectedThreads() {
+    if (!selectedThreadIds.size) return;
+    if (
+      !window.confirm(
+        `Delete ${selectedThreadIds.size} conversation${selectedThreadIds.size === 1 ? "" : "s"}? This cannot be undone.`,
+      )
+    )
+      return;
+    const ids = [...selectedThreadIds];
+    setSelectedThreadIds(new Set());
+    void chat.deleteThreads(ids);
+  }
+
+  function deleteAllThreads() {
+    if (!chat.threads.length) return;
+    if (!window.confirm("Delete all conversations? This cannot be undone.")) return;
+    setSelectedThreadIds(new Set());
+    void chat.deleteThreads();
+  }
 
   // Sync with global chat state
   if (privateMode) {
@@ -540,52 +586,89 @@ export default function ChatPage() {
           aria-label="Conversation history"
           className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] flex-col border-r bg-background pt-[max(3rem,env(safe-area-inset-top))] shadow-xl md:static md:z-auto md:w-72 md:bg-muted/15 md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
         >
-          <div className="flex items-center justify-between border-b p-3">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Conversations
-            </span>
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              onClick={() => {
-                void chat.newThread();
-                setMobileHistoryOpen(false);
-              }}
-              aria-label="New conversation"
-            >
-              <PlusIcon />
-            </Button>
+          <div className="space-y-3 border-b p-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <h2 className="text-sm font-semibold">Conversations</h2>
+                <p className="text-xs text-muted-foreground">{chat.threads.length} saved</p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  void chat.newThread();
+                  setMobileHistoryOpen(false);
+                }}
+              >
+                <PlusIcon /> New
+              </Button>
+            </div>
+            {chat.threads.length > 0 && (
+              <div className="space-y-2 text-xs">
+                <label className="flex items-center gap-2 whitespace-nowrap text-muted-foreground">
+                  <Checkbox checked={allThreadsSelected} onCheckedChange={toggleAllThreads} />
+                  Select all
+                </label>
+                <div className="flex items-center gap-1 border-t pt-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                    disabled={!selectedThreadIds.size}
+                    onClick={deleteSelectedThreads}
+                  >
+                    <Trash2Icon /> Delete selected
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+                    onClick={deleteAllThreads}
+                  >
+                    Delete all
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
             {chat.threads.map((thread) => (
               <div
                 key={thread.id}
-                className={`group flex items-center rounded-lg text-sm ${thread.id === chat.activeThreadId ? "bg-accent" : "hover:bg-muted"}`}
+                className={`group flex items-center gap-2 rounded-xl border border-transparent px-2 py-2 transition-colors ${thread.id === chat.activeThreadId ? "border-border bg-accent/80 shadow-xs" : "hover:border-border/70 hover:bg-muted/60"}`}
               >
+                <Checkbox
+                  checked={selectedThreadIds.has(thread.id)}
+                  onCheckedChange={() => toggleThreadSelection(thread.id)}
+                  aria-label={`Select ${thread.title}`}
+                />
                 <button
                   type="button"
-                  className="min-w-0 flex-1 truncate px-3 py-2.5 text-left"
+                  className="min-w-0 flex-1 truncate text-left"
                   onClick={() => {
                     void chat.selectThread(thread.id);
                     setMobileHistoryOpen(false);
                   }}
                 >
-                  {thread.title}
+                  <span className="block truncate text-sm font-medium">{thread.title}</span>
+                  <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                    {formatThreadDate(thread.updatedAt)}
+                  </span>
                 </button>
                 <button
                   type="button"
-                  className="mr-1 rounded p-1.5 text-muted-foreground hover:text-foreground"
+                  className="rounded-md p-1.5 text-muted-foreground opacity-60 transition-opacity hover:bg-background hover:text-foreground group-hover:opacity-100"
                   aria-label={`Rename ${thread.title}`}
                   onClick={() => {
                     const title = window.prompt("Conversation title", thread.title)?.trim();
                     if (title) void chat.renameThread(thread.id, title);
                   }}
                 >
-                  \u270E
+                  <PencilIcon className="size-3.5" />
                 </button>
                 <button
                   type="button"
-                  className="mr-1 rounded p-1.5 text-muted-foreground hover:text-destructive"
+                  className="rounded-md p-1.5 text-muted-foreground opacity-60 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
                   aria-label={`Delete ${thread.title}`}
                   onClick={() => {
                     if (window.confirm(`Delete "${thread.title}"? This cannot be undone.`))

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { aiChatThread, db } from "@portfolio/db";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 
 export type StoredChatMessage = {
   id: string;
@@ -43,6 +43,17 @@ export async function deleteChatThread(userId: string, id: string) {
   return db
     .delete(aiChatThread)
     .where(and(eq(aiChatThread.id, id), eq(aiChatThread.userId, userId)))
+    .returning({ id: aiChatThread.id });
+}
+
+export async function deleteChatThreads(userId: string, ids?: string[]) {
+  return db
+    .delete(aiChatThread)
+    .where(
+      ids?.length
+        ? and(eq(aiChatThread.userId, userId), inArray(aiChatThread.id, ids))
+        : eq(aiChatThread.userId, userId),
+    )
     .returning({ id: aiChatThread.id });
 }
 
