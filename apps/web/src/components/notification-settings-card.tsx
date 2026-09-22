@@ -113,6 +113,9 @@ export function NotificationSettingsCard({
     const result = await post({
       action: "preferences",
       enabled: updated.enabled,
+      inAppEnabled: updated.inAppEnabled,
+      pushEnabled: updated.pushEnabled,
+      emailEnabled: updated.emailEnabled,
       reminderHour: updated.reminderHour,
       daysAhead: updated.daysAhead,
     });
@@ -121,16 +124,61 @@ export function NotificationSettingsCard({
 
   const unavailable = !settings.configured || !supported;
   return (
-    <Card id="push-notifications" className="scroll-mt-20">
+    <Card id="notification-preferences" className="scroll-mt-20">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BellIcon className="size-4" /> Push notifications
+          <BellIcon className="size-4" /> Notification preferences
         </CardTitle>
         <CardDescription>
-          Private reminders for upcoming bills, contract endings and fixed-deposit maturities.
+          Choose where Selvam sends reminders for upcoming bills, contract endings and maturities.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="divide-y rounded-lg border">
+          {[
+            [
+              "in-app-notifications",
+              "In-app",
+              "Show alerts in the notification inbox.",
+              settings.inAppEnabled,
+            ],
+            [
+              "push-notifications",
+              "Push",
+              "Receive alerts on subscribed devices.",
+              settings.pushEnabled,
+            ],
+            [
+              "email-notifications",
+              "Email",
+              "Email delivery will use your account email when configured.",
+              settings.emailEnabled,
+            ],
+          ].map(([id, title, description, checked]) => (
+            <label key={id as string} className="flex items-center gap-3 p-3">
+              <Checkbox
+                id={id as string}
+                checked={checked as boolean}
+                disabled={pending || (id === "push-notifications" && !settings.configured)}
+                onCheckedChange={(value) =>
+                  void run(() =>
+                    savePreference({
+                      [id === "in-app-notifications"
+                        ? "inAppEnabled"
+                        : id === "push-notifications"
+                          ? "pushEnabled"
+                          : "emailEnabled"]: value === true,
+                    }),
+                  )
+                }
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium">{title as string}</span>
+                <span className="block text-xs text-muted-foreground">{description as string}</span>
+              </span>
+            </label>
+          ))}
+        </div>
         {unavailable ? (
           <p className="text-sm text-muted-foreground">
             {!settings.configured

@@ -9,7 +9,9 @@ import {
   pushSubscription,
 } from "@portfolio/db";
 import { env } from "@portfolio/env/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
+
+import { createReminderNotification } from "@/lib/in-app-notifications";
 import * as webPush from "web-push";
 
 type BrowserSubscription = {
@@ -21,6 +23,9 @@ export type NotificationSettings = {
   configured: boolean;
   publicKey: string | null;
   enabled: boolean;
+  inAppEnabled: boolean;
+  pushEnabled: boolean;
+  emailEnabled: boolean;
   reminderHour: number;
   daysAhead: number;
   subscriptionCount: number;
@@ -51,6 +56,9 @@ export async function getNotificationSettings(userId: string): Promise<Notificat
     configured: pushConfigured(),
     publicKey: env.VAPID_PUBLIC_KEY ?? null,
     enabled: preference?.enabled ?? true,
+    inAppEnabled: preference?.inAppEnabled ?? true,
+    pushEnabled: preference?.pushEnabled ?? true,
+    emailEnabled: preference?.emailEnabled ?? false,
     reminderHour: preference?.reminderHour ?? 8,
     daysAhead: preference?.daysAhead ?? 3,
     subscriptionCount: subscriptions.length,
@@ -83,10 +91,10 @@ export async function savePushSubscription(
     });
   await db
     .insert(notificationPreference)
-    .values({ userId, enabled: true })
+    .values({ userId, enabled: true, pushEnabled: true })
     .onConflictDoUpdate({
       target: notificationPreference.userId,
-      set: { enabled: true, updatedAt: new Date() },
+      set: { enabled: true, pushEnabled: true, updatedAt: new Date() },
     });
 }
 
@@ -98,7 +106,14 @@ export async function removePushSubscription(userId: string, endpoint: string) {
 
 export async function saveNotificationPreference(
   userId: string,
-  input: { enabled: boolean; reminderHour: number; daysAhead: number },
+  input: {
+    enabled: boolean;
+    inAppEnabled: boolean;
+    pushEnabled: boolean;
+    emailEnabled: boolean;
+    reminderHour: number;
+    daysAhead: number;
+  },
 ) {
   await db
     .insert(notificationPreference)
@@ -235,7 +250,6 @@ export async function sendTestNotification(userId: string) {
 }
 
 export async function sendScheduledReminders(now = new Date()) {
-  if (!pushConfigured()) throw new Error("Push notifications are not configured");
   const preferences = await db
     .select({
       userId: notificationPreference.userId,
@@ -245,7 +259,12 @@ export async function sendScheduledReminders(now = new Date()) {
     })
     .from(notificationPreference)
     .leftJoin(portfolioPreference, eq(portfolioPreference.userId, notificationPreference.userId))
-    .where(eq(notificationPreference.enabled, true));
+    .where(
+      or(
+        eq(notificationPreference.pushEnabled, true),
+        eq(notificationPreference.inAppEnabled, true),
+      ),
+    );
 
   let sent = 0;
   let expired = 0;
@@ -258,17 +277,21 @@ export async function sendScheduledReminders(now = new Date()) {
         .select()
         .from(pushSubscription)
         .where(eq(pushSubscription.userId, preference.userId));
-      if (subscriptions.length === 0) continue;
       const today = dateInTimeZone(now, timeZone);
       const events = await plannedEvents(preference.userId, today, preference.daysAhead);
       if (events.length === 0) continue;
+      const payload = reminderPayload(today, events, preference.daysAhead);
+      const parsedPayload = JSON.parse(payload) as { title: string; body: string; url: string };
+      await createReminderNotification(preference.userId, {
+        deliveryKey: `reminders:${today}`,
+        title: parsedPayload.title,
+        body: parsedPayload.body,
+        url: parsedPayload.url,
+      });
+      if (subscriptions.length === 0 || !pushConfigured()) continue;
       const results = await Promise.allSettled(
         subscriptions.map((subscription) =>
-          sendToSubscription(
-            subscription,
-            reminderPayload(today, events, preference.daysAhead),
-            `reminders:${today}`,
-          ),
+          sendToSubscription(subscription, payload, `reminders:${today}`),
         ),
       );
       for (const result of results) {

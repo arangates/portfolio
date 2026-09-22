@@ -183,6 +183,13 @@
       "when": 1790112626313,
       "tag": "0025_nappy_wendell_vaughn",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1790116997000,
+      "tag": "0026_in_app_notifications",
+      "breakpoints": true
     }
   ]
 }

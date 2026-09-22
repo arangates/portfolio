@@ -5,6 +5,7 @@ import { PrivacyToggle } from "@/components/dashboard-experience";
 import { AppStatus, InstallApp } from "@/components/pwa-controls";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CommandSearch } from "@/components/command-search";
+import { NotificationBell } from "@/components/notification-bell";
 import { dashboardPages } from "@/lib/navigation";
 import { Separator } from "@portfolio/ui/components/separator";
 import { SidebarTrigger } from "@portfolio/ui/components/sidebar";
@@ -39,6 +40,7 @@ export function SiteHeader() {
             <CommandSearch />
           </span>
           <AppStatus />
+          <NotificationBell />
           <ModeToggle />
         </div>
       </div>

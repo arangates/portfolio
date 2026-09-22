@@ -39,6 +39,9 @@ export const notificationPreference = pgTable("notification_preference", {
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
   enabled: boolean("enabled").default(true).notNull(),
+  inAppEnabled: boolean("in_app_enabled").default(true).notNull(),
+  pushEnabled: boolean("push_enabled").default(true).notNull(),
+  emailEnabled: boolean("email_enabled").default(false).notNull(),
   reminderHour: integer("reminder_hour").default(8).notNull(),
   daysAhead: integer("days_ahead").default(3).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -47,6 +50,27 @@ export const notificationPreference = pgTable("notification_preference", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+export const inAppNotification = pgTable(
+  "in_app_notification",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    deliveryKey: text("delivery_key"),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    url: text("url").notNull().default("/dashboard"),
+    readAt: timestamp("read_at", { withTimezone: true }),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("in_app_notification_user_created_idx").on(table.userId, table.createdAt),
+    uniqueIndex("in_app_notification_delivery_uidx").on(table.userId, table.deliveryKey),
+  ],
+);
 
 export const pushDelivery = pgTable(
   "push_delivery",

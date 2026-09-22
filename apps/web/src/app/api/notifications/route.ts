@@ -23,6 +23,9 @@ const requestSchema = z.discriminatedUnion("action", [
   z.object({
     action: z.literal("preferences"),
     enabled: z.boolean(),
+    inAppEnabled: z.boolean(),
+    pushEnabled: z.boolean(),
+    emailEnabled: z.boolean(),
     reminderHour: z.number().int().min(0).max(23),
     daysAhead: z.number().int().min(1).max(14),
   }),
