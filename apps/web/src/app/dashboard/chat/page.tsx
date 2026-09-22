@@ -37,6 +37,7 @@ import {
   PencilIcon,
   PlusIcon,
   RefreshCwIcon,
+  SearchIcon,
   ShieldCheckIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -514,9 +515,13 @@ export default function ChatPage() {
   const privateMode = useFinancialPrivacy();
   const [historyOpen, setHistoryOpen] = useState(true);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
+  const [historyQuery, setHistoryQuery] = useState("");
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set());
   const allThreadsSelected =
     chat.threads.length > 0 && selectedThreadIds.size === chat.threads.length;
+  const visibleThreads = chat.threads.filter((thread) =>
+    thread.title.toLocaleLowerCase().includes(historyQuery.trim().toLocaleLowerCase()),
+  );
 
   function toggleThreadSelection(id: string) {
     setSelectedThreadIds((current) => {
@@ -586,56 +591,86 @@ export default function ChatPage() {
           aria-label="Conversation history"
           className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] flex-col border-r bg-background pt-[max(3rem,env(safe-area-inset-top))] shadow-xl md:static md:z-auto md:w-72 md:bg-muted/15 md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
         >
-          <div className="space-y-3 border-b p-3">
-            <div className="flex items-center justify-between gap-2">
+          <div className="space-y-4 border-b p-4">
+            <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <h2 className="text-sm font-semibold">Conversations</h2>
-                <p className="text-xs text-muted-foreground">{chat.threads.length} saved</p>
+                <h2 className="text-lg font-semibold tracking-tight">Drafts</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {chat.threads.length} saved conversation{chat.threads.length === 1 ? "" : "s"}
+                </p>
               </div>
               <Button
-                size="sm"
-                variant="outline"
+                size="icon-sm"
+                variant="ghost"
                 onClick={() => {
                   void chat.newThread();
                   setMobileHistoryOpen(false);
                 }}
+                aria-label="New conversation"
+                title="New conversation"
               >
-                <PlusIcon /> New
+                <PlusIcon />
               </Button>
             </div>
-            {chat.threads.length > 0 && (
-              <div className="space-y-2 text-xs">
-                <label className="flex items-center gap-2 whitespace-nowrap text-muted-foreground">
-                  <Checkbox checked={allThreadsSelected} onCheckedChange={toggleAllThreads} />
-                  Select all
-                </label>
-                <div className="flex items-center gap-1 border-t pt-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                    disabled={!selectedThreadIds.size}
-                    onClick={deleteSelectedThreads}
-                  >
-                    <Trash2Icon /> Delete selected
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
-                    onClick={deleteAllThreads}
-                  >
-                    Delete all
-                  </Button>
+            <div className="relative">
+              <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={historyQuery}
+                onChange={(event) => setHistoryQuery(event.target.value)}
+                placeholder="Type to search..."
+                aria-label="Search conversations"
+                className="h-10 w-full rounded-lg border bg-muted/20 pr-3 pl-9 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
+              />
+            </div>
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <button
+                type="button"
+                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                aria-label="Show unread conversations"
+                title="Unread filtering is not available yet"
+              >
+                <span className="relative inline-flex size-8 items-center rounded-full bg-muted p-1">
+                  <span className="size-6 rounded-full bg-background shadow-sm" />
+                </span>
+                Unread
+              </button>
+              {chat.threads.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <label className="flex items-center gap-1.5 text-muted-foreground">
+                    <Checkbox checked={allThreadsSelected} onCheckedChange={toggleAllThreads} />
+                    Select all
+                  </label>
                 </div>
+              )}
+            </div>
+            {selectedThreadIds.size > 0 && (
+              <div className="flex items-center gap-1 border-t pt-3">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                  disabled={!selectedThreadIds.size}
+                  onClick={deleteSelectedThreads}
+                >
+                  <Trash2Icon /> Delete selected
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+                  onClick={deleteAllThreads}
+                >
+                  Delete all
+                </Button>
               </div>
             )}
           </div>
-          <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
-            {chat.threads.map((thread) => (
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {visibleThreads.map((thread) => (
               <div
                 key={thread.id}
-                className={`group flex items-center gap-2 rounded-xl border border-transparent px-2 py-2 transition-colors ${thread.id === chat.activeThreadId ? "border-border bg-accent/80 shadow-xs" : "hover:border-border/70 hover:bg-muted/60"}`}
+                className={`group flex min-h-28 items-start gap-2 border-b px-4 py-4 transition-colors ${thread.id === chat.activeThreadId ? "bg-accent/70" : "hover:bg-muted/50"}`}
               >
                 <Checkbox
                   checked={selectedThreadIds.has(thread.id)}
@@ -644,15 +679,23 @@ export default function ChatPage() {
                 />
                 <button
                   type="button"
-                  className="min-w-0 flex-1 truncate text-left"
+                  className="min-w-0 flex-1 text-left"
                   onClick={() => {
                     void chat.selectThread(thread.id);
                     setMobileHistoryOpen(false);
                   }}
                 >
-                  <span className="block truncate text-sm font-medium">{thread.title}</span>
-                  <span className="mt-0.5 block text-[11px] text-muted-foreground">
-                    {formatThreadDate(thread.updatedAt)}
+                  <span className="flex items-start justify-between gap-3">
+                    <span className="truncate text-sm font-medium">{thread.title}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {formatThreadDate(thread.updatedAt)}
+                    </span>
+                  </span>
+                  <span className="mt-2 block truncate text-sm text-muted-foreground">
+                    Continue this conversation in Selvam...
+                  </span>
+                  <span className="mt-1 block truncate text-xs text-muted-foreground/70">
+                    Financial research assistant
                   </span>
                 </button>
                 <button
@@ -679,8 +722,12 @@ export default function ChatPage() {
                 </button>
               </div>
             ))}
-            {chat.threads.length === 0 && (
-              <p className="px-3 py-4 text-xs text-muted-foreground">No saved conversations yet.</p>
+            {visibleThreads.length === 0 && (
+              <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+                {historyQuery
+                  ? "No conversations match your search."
+                  : "No saved conversations yet."}
+              </p>
             )}
           </div>
         </aside>

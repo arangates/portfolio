@@ -12,14 +12,20 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@assistant-ui/react": "^0.15.21",
     "@portfolio/ui": "workspace:*",
     "lucide-react": "catalog:",
     "react": "catalog:"
   },
   "devDependencies": {
+    "@assistant-ui/react": "^0.15.21",
     "@portfolio/config": "workspace:*",
     "@types/react": "catalog:",
-    "typescript": "catalog:"
+    "ai": "^7.0.107",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@assistant-ui/react": "^0.15.21",
+    "react": "^19.0.0"
   }
 }

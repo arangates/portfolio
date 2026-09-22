@@ -306,9 +306,6 @@ importers:
 
   packages/ai-chat-ui:
     dependencies:
-      '@assistant-ui/react':
-        specifier: ^0.15.21
-        version: 0.15.21(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(ai@7.0.107(zod@4.6.5))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
       '@portfolio/ui':
         specifier: workspace:*
         version: link:../ui
@@ -319,15 +316,24 @@ importers:
         specifier: 'catalog:'
         version: 19.2.8
     devDependencies:
+      '@assistant-ui/react':
+        specifier: ^0.15.21
+        version: 0.15.21(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(ai@7.0.107(zod@4.4.3))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
       '@portfolio/config':
         specifier: workspace:*
         version: link:../config
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.18
+      ai:
+        specifier: ^7.0.107
+        version: 7.0.107(zod@4.4.3)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
 
   packages/api:
     dependencies:
@@ -5773,14 +5779,6 @@ snapshots:
       '@vercel/oidc': 3.2.0
       zod: 4.4.3
 
-  '@ai-sdk/gateway@4.0.87(zod@4.6.5)':
-    dependencies:
-      '@ai-sdk/provider': 4.0.17
-      '@ai-sdk/provider-utils': 5.0.45(zod@4.6.5)
-      '@vercel/oidc': 3.2.0
-      zod: 4.6.5
-    optional: true
-
   '@ai-sdk/google@4.0.76(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 4.0.17
@@ -5815,16 +5813,6 @@ snapshots:
       eventsource-parser: 3.1.1
       undici: 7.29.0
       zod: 4.4.3
-
-  '@ai-sdk/provider-utils@5.0.45(zod@4.6.5)':
-    dependencies:
-      '@ai-sdk/provider': 4.0.17
-      '@standard-schema/spec': 1.1.0
-      '@workflow/serde': 4.1.0
-      eventsource-parser: 3.1.1
-      undici: 7.29.0
-      zod: 4.6.5
-    optional: true
 
   '@ai-sdk/provider@4.0.17':
     dependencies:
@@ -5879,20 +5867,6 @@ snapshots:
       - ioredis
       - redis
 
-  '@assistant-ui/core@0.3.20(@assistant-ui/store@0.3.14(@assistant-ui/tap@0.9.18(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react@19.2.8))(@assistant-ui/tap@0.9.18(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(assistant-cloud@0.2.2(ai@7.0.107(zod@4.6.5)))(react@19.2.8)':
-    dependencies:
-      '@assistant-ui/store': 0.3.14(@assistant-ui/tap@0.9.18(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)
-      '@assistant-ui/tap': 0.9.18(@types/react@19.2.18)(react@19.2.8)
-      assistant-stream: 0.3.44
-      nanoid: 6.0.1
-    optionalDependencies:
-      '@types/react': 19.2.18
-      assistant-cloud: 0.2.2(ai@7.0.107(zod@4.6.5))
-      react: 19.2.8
-    transitivePeerDependencies:
-      - ioredis
-      - redis
-
   '@assistant-ui/react-markdown@0.14.16(@assistant-ui/react@0.15.21(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(ai@7.0.107(zod@4.4.3))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)':
     dependencies:
       '@assistant-ui/react': 0.15.21(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(ai@7.0.107(zod@4.4.3))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
@@ -5915,33 +5889,6 @@ snapshots:
       '@assistant-ui/store': 0.3.14(@assistant-ui/tap@0.9.18(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)
       '@assistant-ui/tap': 0.9.18(@types/react@19.2.18)(react@19.2.8)
       assistant-cloud: 0.2.2(ai@7.0.107(zod@4.4.3))
-      assistant-stream: 0.3.44
-      radix-ui: 1.6.7(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-      react-textarea-autosize: 8.5.9(@types/react@19.2.18)(react@19.2.8)
-      safe-content-frame: 0.0.31
-      zod: 4.6.5
-      zustand: 5.0.15(@types/react@19.2.18)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))
-    optionalDependencies:
-      '@types/react': 19.2.18
-      '@types/react-dom': 19.2.4(@types/react@19.2.18)
-    transitivePeerDependencies:
-      - '@opentelemetry/api'
-      - '@opentelemetry/exporter-trace-otlp-http'
-      - '@opentelemetry/sdk-trace-base'
-      - ai
-      - immer
-      - ioredis
-      - redis
-      - use-sync-external-store
-
-  '@assistant-ui/react@0.15.21(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(ai@7.0.107(zod@4.6.5))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8))':
-    dependencies:
-      '@assistant-ui/core': 0.3.20(@assistant-ui/store@0.3.14(@assistant-ui/tap@0.9.18(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react@19.2.8))(@assistant-ui/tap@0.9.18(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(assistant-cloud@0.2.2(ai@7.0.107(zod@4.6.5)))(react@19.2.8)
-      '@assistant-ui/store': 0.3.14(@assistant-ui/tap@0.9.18(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)
-      '@assistant-ui/tap': 0.9.18(@types/react@19.2.18)(react@19.2.8)
-      assistant-cloud: 0.2.2(ai@7.0.107(zod@4.6.5))
       assistant-stream: 0.3.44
       radix-ui: 1.6.7(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react: 19.2.8
@@ -6196,7 +6143,7 @@ snapshots:
       jose: 6.2.8
       kysely: 0.29.5
       nanostores: 1.4.2
-      zod: 4.4.3
+      zod: 4.6.5
 
   '@better-auth/drizzle-adapter@1.6.25(@better-auth/core@1.6.25(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(better-call@1.3.7(zod@4.4.3))(jose@6.2.8)(kysely@0.29.5)(nanostores@1.4.2))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.2(@neondatabase/serverless@1.1.0)(kysely@0.29.5))':
     dependencies:
@@ -7998,14 +7945,6 @@ snapshots:
       '@ai-sdk/provider-utils': 5.0.45(zod@4.4.3)
       zod: 4.4.3
 
-  ai@7.0.107(zod@4.6.5):
-    dependencies:
-      '@ai-sdk/gateway': 4.0.87(zod@4.6.5)
-      '@ai-sdk/provider': 4.0.17
-      '@ai-sdk/provider-utils': 5.0.45(zod@4.6.5)
-      zod: 4.6.5
-    optional: true
-
   ajv-formats@2.1.1(ajv@8.20.0):
     optionalDependencies:
       ajv: 8.20.0
@@ -8081,15 +8020,6 @@ snapshots:
       assistant-stream: 0.3.44
     optionalDependencies:
       ai: 7.0.107(zod@4.4.3)
-    transitivePeerDependencies:
-      - ioredis
-      - redis
-
-  assistant-cloud@0.2.2(ai@7.0.107(zod@4.6.5)):
-    dependencies:
-      assistant-stream: 0.3.44
-    optionalDependencies:
-      ai: 7.0.107(zod@4.6.5)
     transitivePeerDependencies:
       - ioredis
       - redis
