@@ -17,7 +17,16 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@portfolio/ui/components/sidebar";
-import { CircleUserRoundIcon, EllipsisVerticalIcon, LogOutIcon } from "lucide-react";
+import {
+  BellIcon,
+  CircleUserRoundIcon,
+  DatabaseIcon,
+  EllipsisVerticalIcon,
+  FlameIcon,
+  KeyRoundIcon,
+  LogOutIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 
 function initials(name: string) {
@@ -82,7 +91,27 @@ export function NavUser({
               <DropdownMenuSeparator />
               <DropdownMenuItem render={<a href="/dashboard/settings" />}>
                 <CircleUserRoundIcon />
-                Account settings
+                Account
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<a href="/dashboard/settings?tab=portfolio" />}>
+                <SlidersHorizontalIcon />
+                Portfolio
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<a href="/dashboard/settings?tab=planning" />}>
+                <FlameIcon />
+                Planning
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<a href="/dashboard/settings?tab=security" />}>
+                <DatabaseIcon />
+                Data & security
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<a href="/dashboard/settings?tab=model-keys" />}>
+                <KeyRoundIcon />
+                Model keys
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<a href="/dashboard/settings#push-notifications" />}>
+                <BellIcon />
+                Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

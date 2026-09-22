@@ -121,7 +121,7 @@ export function NotificationSettingsCard({
 
   const unavailable = !settings.configured || !supported;
   return (
-    <Card>
+    <Card id="push-notifications" className="scroll-mt-20">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BellIcon className="size-4" /> Push notifications

@@ -134,6 +134,72 @@ function AssistantMessage() {
   return <ChatMessage role="assistant" />;
 }
 
+function ModelSelector({ chat }: { chat: ReturnType<typeof useSelvamChat> }) {
+  return (
+    <select
+      aria-label="AI model"
+      value={chat.model}
+      onChange={(event) => {
+        const model = event.target.value as typeof chat.model;
+        chat.setProvider(
+          chatModels.find((candidate) => candidate.id === model)?.provider ?? "openai",
+        );
+        chat.setModel(model);
+      }}
+      className="h-9 min-w-0 max-w-64 rounded-lg border bg-background px-2.5 text-base font-medium md:text-sm"
+    >
+      {chatModels.map((candidate) => (
+        <option key={`${candidate.provider}:${candidate.id}`} value={candidate.id}>
+          {candidate.label} {chat.status?.[candidate.provider] ? "✓" : ""}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function ChatComposer({ chat }: { chat: ReturnType<typeof useSelvamChat> }) {
+  return chat.status?.[chat.provider] ? (
+    <ComposerPrimitive.Root className="flex flex-col rounded-2xl border bg-card p-2 shadow-sm">
+      <ComposerPrimitive.Input
+        maxLength={2000}
+        disabled={!chat.activeThreadId || chat.threadLoading}
+        placeholder="Send a message…"
+        className="max-h-40 min-h-14 w-full resize-none bg-transparent px-3 py-2 text-base outline-none"
+      />
+      <div className="flex items-center gap-2 px-1 pb-1">
+        <ModelSelector chat={chat} />
+        <div className="ml-auto">
+          <AuiIf condition={(state) => !state.thread.isRunning}>
+            <ComposerPrimitive.Send
+              disabled={!chat.activeThreadId || chat.threadLoading}
+              aria-label="Send message"
+              className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-50"
+            >
+              <SendIcon className="size-4" />
+            </ComposerPrimitive.Send>
+          </AuiIf>
+          <AuiIf condition={(state) => state.thread.isRunning}>
+            <ComposerPrimitive.Cancel
+              aria-label="Stop response"
+              className="flex size-10 items-center justify-center rounded-xl border"
+            >
+              <SquareIcon className="size-4" />
+            </ComposerPrimitive.Cancel>
+          </AuiIf>
+        </div>
+      </div>
+    </ComposerPrimitive.Root>
+  ) : (
+    <Button
+      className="w-full"
+      variant="outline"
+      render={<Link href="/dashboard/settings?tab=model-keys" />}
+    >
+      <KeyRoundIcon /> Add an API key to start chatting
+    </Button>
+  );
+}
+
 export default function ChatPage() {
   const chat = useSelvamChat();
   const [historyOpen, setHistoryOpen] = useState(true);
@@ -182,24 +248,6 @@ export default function ChatPage() {
           </Button>
         </div>
         <div className="flex min-w-0 items-center gap-2 sm:justify-end">
-          <select
-            aria-label="AI model"
-            value={chat.model}
-            onChange={(event) => {
-              const model = event.target.value as typeof chat.model;
-              chat.setProvider(
-                chatModels.find((candidate) => candidate.id === model)?.provider ?? "openai",
-              );
-              chat.setModel(model);
-            }}
-            className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm sm:max-w-56 sm:flex-none"
-          >
-            {chatModels.map((candidate) => (
-              <option key={`${candidate.provider}:${candidate.id}`} value={candidate.id}>
-                {candidate.label} {chat.status?.[candidate.provider] ? "✓" : ""}
-              </option>
-            ))}
-          </select>
           <Button
             size="icon-sm"
             variant="outline"
@@ -312,22 +360,14 @@ export default function ChatPage() {
         <ThreadPrimitive.Root className="flex min-h-0 min-w-0 flex-1 flex-col">
           <ThreadPrimitive.Viewport className="min-h-0 flex-1 overflow-y-auto" autoScroll>
             <AuiIf condition={(state) => state.thread.isEmpty}>
-              <div className="mx-auto flex max-w-2xl flex-col items-center px-5 py-8 text-center sm:py-20">
-                <div className="mb-5 rounded-2xl border bg-primary/10 p-4 text-primary">
-                  <BrainCircuitIcon className="size-8" />
-                </div>
-                <h2 className="text-2xl font-semibold tracking-tight">
-                  Understand your money, clearly.
+              <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col items-center justify-center px-5 py-10 text-center">
+                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Welcome back. What can I help with?
                 </h2>
-                <p className="mt-3 max-w-lg text-sm text-muted-foreground">
-                  Ask about your portfolio, returns, cash flow, household spending or FIRE plan.
-                  Selvam reads the latest data in your account before answering.
-                </p>
-                <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-                  <ShieldCheckIcon className="size-4" /> Read-only access · figures from your
-                  records
+                <div className="mt-8 w-full max-w-3xl text-left">
+                  <ChatComposer chat={chat} />
                 </div>
-                <div className="mt-8 grid w-full gap-2 sm:grid-cols-2">
+                <div className="mt-5 flex max-w-3xl flex-wrap justify-center gap-2">
                   {[
                     "How much of my portfolio is liquid?",
                     "How does my FIRE plan compare with current assets?",
@@ -337,12 +377,16 @@ export default function ChatPage() {
                     <button
                       key={prompt}
                       type="button"
-                      className="rounded-xl border bg-card p-3 text-left text-sm hover:bg-accent"
+                      className="rounded-xl border bg-card px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
                       onClick={() => chat.sendPrompt(prompt)}
                     >
                       {prompt}
                     </button>
                   ))}
+                </div>
+                <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
+                  <ShieldCheckIcon className="size-4" /> Read-only access · figures from your
+                  records
                 </div>
               </div>
             </AuiIf>
@@ -361,44 +405,12 @@ export default function ChatPage() {
                 <ThreadPrimitive.ScrollToBottom className="mb-2 ml-auto block rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground disabled:hidden">
                   Scroll to latest
                 </ThreadPrimitive.ScrollToBottom>
-                {chat.status?.[chat.provider] ? (
-                  <ComposerPrimitive.Root className="flex items-end gap-2 rounded-2xl border bg-card p-2 shadow-sm">
-                    <ComposerPrimitive.Input
-                      maxLength={2000}
-                      disabled={!chat.activeThreadId || chat.threadLoading}
-                      placeholder="Ask a question about your finances…"
-                      className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-2 text-sm outline-none"
-                    />
-                    <AuiIf condition={(state) => !state.thread.isRunning}>
-                      <ComposerPrimitive.Send
-                        disabled={!chat.activeThreadId || chat.threadLoading}
-                        aria-label="Send message"
-                        className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-50"
-                      >
-                        <SendIcon className="size-4" />
-                      </ComposerPrimitive.Send>
-                    </AuiIf>
-                    <AuiIf condition={(state) => state.thread.isRunning}>
-                      <ComposerPrimitive.Cancel
-                        aria-label="Stop response"
-                        className="flex size-10 shrink-0 items-center justify-center rounded-xl border"
-                      >
-                        <SquareIcon className="size-4" />
-                      </ComposerPrimitive.Cancel>
-                    </AuiIf>
-                  </ComposerPrimitive.Root>
-                ) : (
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    render={<Link href="/dashboard/settings?tab=model-keys" />}
-                  >
-                    <KeyRoundIcon /> Add an API key to start chatting
-                  </Button>
-                )}
-                <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                  AI can make mistakes. Verify decisions against the linked source records.
-                </p>
+                <AuiIf condition={(state) => !state.thread.isEmpty}>
+                  <ChatComposer chat={chat} />
+                  <p className="mt-2 text-center text-xs text-muted-foreground">
+                    AI can make mistakes. Verify decisions against the linked source records.
+                  </p>
+                </AuiIf>
               </div>
             </ThreadPrimitive.ViewportFooter>
           </ThreadPrimitive.Viewport>

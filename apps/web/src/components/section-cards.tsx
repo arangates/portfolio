@@ -1,5 +1,3 @@
-"use client";
-
 import {
   CalculationExplanationButton,
   type CalculationExplanation,
@@ -17,9 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@portfolio/ui/components/card";
-import { Carousel, CarouselContent, CarouselItem } from "@portfolio/ui/components/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import { useState } from "react";
+import { MobileSectionCardsCarousel } from "@/components/mobile-section-cards-carousel";
 
 export type MetricCard = {
   explanation?: CalculationExplanation;
@@ -93,9 +89,6 @@ function MetricCardView({ item }: { item: MetricCard }) {
 }
 
 export function SectionCards({ items }: { items: MetricCard[] }) {
-  const [autoplay] = useState(() =>
-    Autoplay({ delay: 3600, stopOnInteraction: true, stopOnMouseEnter: true }),
-  );
   const wideGrid =
     items.length <= 2
       ? "@5xl/main:grid-cols-2"
@@ -104,20 +97,11 @@ export function SectionCards({ items }: { items: MetricCard[] }) {
         : "@5xl/main:grid-cols-4";
   return (
     <>
-      <Carousel
-        opts={{ align: "start", loop: items.length > 1 }}
-        plugins={[autoplay]}
-        className="px-4 sm:hidden"
-        aria-label="Key statistics"
-      >
-        <CarouselContent className="-ml-3">
-          {items.map((item) => (
-            <CarouselItem key={item.label} className="basis-[92%] pl-3">
-              <MetricCardView item={item} />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
+      <MobileSectionCardsCarousel>
+        {items.map((item) => (
+          <MetricCardView key={item.label} item={item} />
+        ))}
+      </MobileSectionCardsCarousel>
       <div className={cn("hidden gap-3 px-4 sm:grid sm:grid-cols-2 lg:px-6", wideGrid)}>
         {items.map((item) => (
           <MetricCardView key={item.label} item={item} />
