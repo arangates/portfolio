@@ -9,6 +9,7 @@ import {
   ErrorPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
+  groupPartByType,
 } from "@assistant-ui/react";
 import { Button } from "@portfolio/ui/components/button";
 import {
@@ -64,35 +65,75 @@ function FinancialToolStatus({ toolName, status }: { toolName: string; status: {
 function ChatMessage({ role }: { role: "user" | "assistant" }) {
   return (
     <MessagePrimitive.Root
-      className={`mx-auto flex w-full max-w-4xl gap-3 px-4 py-5 ${role === "user" ? "justify-end" : "justify-start"}`}
+      data-role={role}
+      className={`fade-in slide-in-from-bottom-1 animate-in mx-auto flex w-full max-w-4xl gap-3 px-4 py-5 ${role === "user" ? "justify-end" : "justify-start"} duration-150`}
     >
       <div
         className={`min-w-0 text-sm leading-relaxed ${role === "user" ? "max-w-[80%] rounded-2xl rounded-br-md bg-primary px-4 py-3 text-primary-foreground" : "w-full max-w-3xl px-1 py-2"}`}
       >
-        <MessagePrimitive.Parts
-          components={{
-            Text: ({ text }) => (
-              <div className="prose prose-sm max-w-none break-words dark:prose-invert [&_p]:my-1 [&_ul]:my-1">
-                <Markdown
-                  components={{
-                    a: ({ href, children }) =>
-                      href?.startsWith("/dashboard") ? (
-                        <a href={href} className="underline">
-                          {children}
-                        </a>
-                      ) : (
-                        <span>{children}</span>
-                      ),
-                  }}
-                >
-                  {text}
-                </Markdown>
-              </div>
-            ),
-            Reasoning: ReasoningSummary,
-            tools: { Fallback: FinancialToolStatus },
+        <MessagePrimitive.GroupedParts
+          groupBy={groupPartByType({
+            reasoning: ["group-chainOfThought", "group-reasoning"],
+            "tool-call": ["group-chainOfThought", "group-tool"],
+            "standalone-tool-call": [],
+          })}
+        >
+          {({ part, children }) => {
+            switch (part.type) {
+              case "group-chainOfThought":
+                return <div data-slot="aui_chain-of-thought">{children}</div>;
+              case "group-tool":
+                return (
+                  <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
+                    {children}
+                  </div>
+                );
+              case "group-reasoning": {
+                const running = part.status.type === "running";
+                return running ? (
+                  <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground open">
+                    <summary className="cursor-pointer select-none font-medium text-foreground">
+                      Reasoning summary
+                    </summary>
+                    <p className="mt-2 whitespace-pre-wrap leading-relaxed">{children}</p>
+                  </details>
+                ) : (
+                  <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
+                    <summary className="cursor-pointer select-none font-medium text-foreground">
+                      Reasoning summary
+                    </summary>
+                    <p className="mt-2 whitespace-pre-wrap leading-relaxed">{children}</p>
+                  </details>
+                );
+              }
+              case "text":
+                return (
+                  <div className="prose prose-sm max-w-none break-words dark:prose-invert [&_p]:my-1 [&_ul]:my-1">
+                    <Markdown
+                      components={{
+                        a: ({ href, children }) =>
+                          href?.startsWith("/dashboard") ? (
+                            <a href={href} className="underline">
+                              {children}
+                            </a>
+                          ) : (
+                            <span>{children}</span>
+                          ),
+                      }}
+                    >
+                      {part.text}
+                    </Markdown>
+                  </div>
+                );
+              case "reasoning":
+                return <ReasoningSummary text={part.text} />;
+              case "tool-call":
+                return <FinancialToolStatus toolName={part.toolName} status={part.status} />;
+              default:
+                return null;
+            }
           }}
-        />
+        </MessagePrimitive.GroupedParts>
         <MessagePrimitive.Error>
           <ErrorPrimitive.Root className="mt-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-destructive">
             <ErrorPrimitive.Message />
@@ -130,6 +171,7 @@ function ChatMessage({ role }: { role: "user" | "assistant" }) {
 function UserMessage() {
   return <ChatMessage role="user" />;
 }
+
 function AssistantMessage() {
   return <ChatMessage role="assistant" />;
 }
@@ -204,6 +246,10 @@ export default function ChatPage() {
   const chat = useSelvamChat();
   const [historyOpen, setHistoryOpen] = useState(true);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
+
+  const isNewChatView = (state: any) =>
+    state.thread.messages.length === 0 && (!state.thread.isLoading || state.threads.isLoading);
+
   return (
     <div className="flex h-[calc(100dvh-var(--header-height)-env(safe-area-inset-top))] min-h-0 min-w-0 flex-col overflow-hidden bg-muted/10">
       <div className="flex shrink-0 flex-col gap-3 border-b bg-background/95 px-3 py-3 backdrop-blur sm:flex-row sm:items-center sm:px-4 lg:px-6">
@@ -275,6 +321,7 @@ export default function ChatPage() {
           </Button>
         </div>
       </div>
+
       {chat.notice && (
         <div
           role="alert"
@@ -283,6 +330,7 @@ export default function ChatPage() {
           <span className="min-w-0 flex-1">{chat.notice}</span>
         </div>
       )}
+
       <div className="relative flex min-h-0 flex-1">
         {mobileHistoryOpen && (
           <button
@@ -344,7 +392,7 @@ export default function ChatPage() {
                   className="mr-1 rounded p-1.5 text-muted-foreground hover:text-destructive"
                   aria-label={`Delete ${thread.title}`}
                   onClick={() => {
-                    if (window.confirm(`Delete “${thread.title}”? This cannot be undone.`))
+                    if (window.confirm(`Delete "${thread.title}"? This cannot be undone.`))
                       void chat.deleteThread(thread.id);
                   }}
                 >
@@ -358,11 +406,14 @@ export default function ChatPage() {
           </div>
         </aside>
         <ThreadPrimitive.Root className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <ThreadPrimitive.Viewport className="min-h-0 flex-1 overflow-y-auto" autoScroll>
-            <AuiIf condition={(state) => state.thread.isEmpty}>
+          <ThreadPrimitive.Viewport
+            turnAnchor="top"
+            className="relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
+          >
+            <AuiIf condition={isNewChatView}>
               <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col items-center justify-center px-5 py-10 text-center">
-                <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Welcome back. What can I help with?
+                <h2 className="text-2xl font-medium tracking-tight sm:text-3xl">
+                  How can I help you today?
                 </h2>
                 <div className="mt-8 w-full max-w-3xl text-left">
                   <ChatComposer chat={chat} />
@@ -390,7 +441,11 @@ export default function ChatPage() {
                 </div>
               </div>
             </AuiIf>
-            <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
+
+            <div data-slot="aui_message-group" className="mb-14 flex flex-col gap-y-6 empty:hidden">
+              <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
+            </div>
+
             <ThreadPrimitive.ViewportFooter className="sticky bottom-0 bg-gradient-to-t from-background via-background/95 to-transparent px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-8 sm:px-4 sm:pb-4">
               <div className="mx-auto max-w-3xl">
                 <AuiIf condition={(state) => state.thread.isRunning}>
