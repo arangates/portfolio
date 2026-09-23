@@ -2,15 +2,13 @@
 import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
+import { AllocationPieChart } from "@/components/allocation-pie-chart";
 import { formatCompactCurrency, formatFullCurrency } from "@/lib/format";
 import {
   EChartsAreaChart,
   type ChartConfig as AreaChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-area-chart";
-import {
-  EChartsPieChart,
-  type ChartConfig as PieChartConfig,
-} from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
+import { type ChartConfig as PieChartConfig } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
 
 const ALLOCATION_COLORS: Array<{ light: string[]; dark: string[] }> = [
   { light: ["#2563eb", "#60a5fa"], dark: ["#60a5fa", "#93c5fd"] },
@@ -61,29 +59,13 @@ export function RealEstateCharts({
         metricTooltip={formatFullCurrency(total, currency)}
         metricLabel="owned value"
       >
-        <EChartsPieChart
+        <AllocationPieChart
           data={allocationData}
           config={allocationConfig}
-          dataKey="value"
-          nameKey="id"
-          className="h-[340px] min-w-0 w-full sm:h-[360px]"
-        >
-          <EChartsPieChart.Background variant="dots" />
-          <EChartsPieChart.Pie
-            variant="gradient"
-            innerRadius="54%"
-            outerRadius="78%"
-            cornerRadius={6}
-            paddingAngle={2}
-            isClickable
-          />
-          <EChartsPieChart.Tooltip
-            variant="frosted-glass"
-            roundness="lg"
-            valueFormatter={(value) => formatCurrency(value, currency)}
-          />
-          <EChartsPieChart.Legend align="center" verticalAlign="bottom" isClickable />
-        </EChartsPieChart>
+          currency={currency}
+          className="h-[340px] sm:h-[360px]"
+          ariaLabel="Property allocation breakdown"
+        />
       </AnalyticsChartCard>
       <AnalyticsChartCard
         id="property-valuation-history"

@@ -1017,6 +1017,8 @@ export async function getPortfolioOverview(
   const liquidValue = valuedAssets.reduce((sum, asset) => sum + liquidValueFor(asset), 0);
   const equityInvested = equity?.holdings.reduce((sum, item) => sum + item.investedValue, 0) ?? 0;
   const equityPnl = equity?.holdings.reduce((sum, item) => sum + item.unrealizedPnl, 0) ?? 0;
+  const convertedEquityInvested = convert(equityInvested, "INR") ?? 0;
+  const convertedEquityPnl = convert(equityPnl, "INR") ?? 0;
   const unconvertedCurrencies = [
     ...new Set(assets.filter((asset) => asset.baseValue === null).map((asset) => asset.currency)),
   ];
@@ -1040,6 +1042,11 @@ export async function getPortfolioOverview(
   for (const asset of valuedAssets) {
     const value = liquidValueFor(asset);
     if (value <= 0) continue;
+    if (asset.key === "zerodha-equity" && convertedEquityInvested > 0 && convertedEquityPnl > 0) {
+      liquidBuckets.set("Indian equity · invested", convertedEquityInvested);
+      liquidBuckets.set("Indian equity · profit", convertedEquityPnl);
+      continue;
+    }
     const bucket = liquidBucketFor(asset);
     liquidBuckets.set(bucket, (liquidBuckets.get(bucket) ?? 0) + value);
   }

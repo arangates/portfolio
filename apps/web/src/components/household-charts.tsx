@@ -2,6 +2,7 @@
 import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
+import { AllocationPieChart } from "@/components/allocation-pie-chart";
 import { formatCompactCurrency } from "@/lib/format";
 import {
   EChartsBarChart,
@@ -11,10 +12,7 @@ import {
   EChartsComposedChart,
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
-import {
-  EChartsPieChart,
-  type ChartConfig as PieChartConfig,
-} from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
+import { type ChartConfig as PieChartConfig } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
 
 const categoryConfig = {
   amount: {
@@ -113,20 +111,13 @@ export function HouseholdCharts({
         metric={formatCurrency(total, currency)}
         metricLabel="gross recurring spend"
       >
-        <EChartsPieChart
-          data={mixData}
+        <AllocationPieChart
+          data={mixData.map(({ name, value }) => ({ id: name, value }))}
           config={mixConfig}
-          dataKey="value"
-          nameKey="name"
-          className="h-[320px] min-w-0 w-full"
-        >
-          <EChartsPieChart.Pie innerRadius="55%" outerRadius="80%" variant="gradient" />
-          <EChartsPieChart.Tooltip
-            variant="frosted-glass"
-            valueFormatter={(value) => formatCurrency(value, currency)}
-          />
-          <EChartsPieChart.Legend align="center" verticalAlign="bottom" isClickable />
-        </EChartsPieChart>
+          currency={currency}
+          className="h-[320px]"
+          ariaLabel="Essential and flexible household spending breakdown"
+        />
       </AnalyticsChartCard>
       <AnalyticsChartCard
         id="household-scenario-comparison"

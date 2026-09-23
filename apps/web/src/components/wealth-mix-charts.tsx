@@ -2,11 +2,9 @@
 import { useAmountFormat } from "@/components/amount-preferences";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
+import { AllocationPieChart } from "@/components/allocation-pie-chart";
 import { formatPercent } from "@/lib/format";
-import {
-  EChartsPieChart,
-  type ChartConfig,
-} from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
+import { type ChartConfig } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
 
 const palette = [
   { light: ["#2563eb", "#60a5fa"], dark: ["#60a5fa", "#93c5fd"] },
@@ -72,29 +70,12 @@ export function WealthMixCharts({
         metric={formatCurrency(netWorth, currency)}
         metricLabel="total net worth"
       >
-        <EChartsPieChart
+        <AllocationPieChart
           data={allocationData}
           config={allocationConfig}
-          dataKey="value"
-          nameKey="id"
-          className="h-[320px] min-w-0 w-full"
-        >
-          <EChartsPieChart.Background variant="dots" />
-          <EChartsPieChart.Pie
-            variant="gradient"
-            innerRadius="52%"
-            outerRadius="78%"
-            cornerRadius={5}
-            paddingAngle={2}
-            isClickable
-          />
-          <EChartsPieChart.Tooltip
-            variant="frosted-glass"
-            roundness="lg"
-            valueFormatter={(value) => formatCurrency(value, currency)}
-          />
-          <EChartsPieChart.Legend align="center" verticalAlign="bottom" isClickable />
-        </EChartsPieChart>
+          currency={currency}
+          ariaLabel="Wealth mix breakdown"
+        />
       </AnalyticsChartCard>
 
       <AnalyticsChartCard
@@ -104,30 +85,12 @@ export function WealthMixCharts({
         metric={formatPercent(netWorth === 0 ? 0 : liquidValue / netWorth, 0)}
         metricLabel="of net worth is liquid"
       >
-        <EChartsPieChart
+        <AllocationPieChart
           data={liquidityData}
           config={liquidityConfig}
-          dataKey="value"
-          nameKey="id"
-          className="h-[320px] min-w-0 w-full"
-        >
-          <EChartsPieChart.Background variant="cross-hatch" />
-          <EChartsPieChart.Pie
-            variant="gradient"
-            innerRadius="64%"
-            outerRadius="82%"
-            cornerRadius={8}
-            paddingAngle={3}
-            startAngle={90}
-            isClickable
-          />
-          <EChartsPieChart.Tooltip
-            variant="frosted-glass"
-            roundness="lg"
-            valueFormatter={(value) => formatCurrency(value, currency)}
-          />
-          <EChartsPieChart.Legend align="center" verticalAlign="bottom" isClickable />
-        </EChartsPieChart>
+          currency={currency}
+          ariaLabel="Liquidity structure breakdown"
+        />
       </AnalyticsChartCard>
     </div>
   );

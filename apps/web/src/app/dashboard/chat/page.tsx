@@ -624,21 +624,14 @@ export default function ChatPage() {
               />
             </div>
             <div className="flex items-center justify-between gap-2 text-xs">
-              <button
-                type="button"
-                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-                aria-label="Show unread conversations"
-                title="Unread filtering is not available yet"
-              >
-                <span className="relative inline-flex size-8 items-center rounded-full bg-muted p-1">
-                  <span className="size-6 rounded-full bg-background shadow-sm" />
-                </span>
-                Unread
-              </button>
               {chat.threads.length > 0 && (
                 <div className="flex items-center gap-1">
                   <label className="flex items-center gap-1.5 text-muted-foreground">
-                    <Checkbox checked={allThreadsSelected} onCheckedChange={toggleAllThreads} />
+                    <Checkbox
+                      className="size-6 rounded-full bg-background shadow-sm"
+                      checked={allThreadsSelected}
+                      onCheckedChange={toggleAllThreads}
+                    />
                     Select all
                   </label>
                 </div>
@@ -673,6 +666,7 @@ export default function ChatPage() {
                 className={`group flex min-h-28 items-start gap-2 border-b px-4 py-4 transition-colors ${thread.id === chat.activeThreadId ? "bg-accent/70" : "hover:bg-muted/50"}`}
               >
                 <Checkbox
+                  className="size-6 rounded-full bg-background shadow-sm"
                   checked={selectedThreadIds.has(thread.id)}
                   onCheckedChange={() => toggleThreadSelection(thread.id)}
                   aria-label={`Select ${thread.title}`}

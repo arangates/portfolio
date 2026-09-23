@@ -1,6 +1,7 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
+import { AllocationPieChart } from "@/components/allocation-pie-chart";
 import { useAmountFormat } from "@/components/amount-preferences";
 import { DataTable } from "@/components/data-table/data-table";
 import { appFetch } from "@/lib/app-activity";
@@ -12,6 +13,7 @@ import {
   EChartsVisualization,
   type EChartsVisualizationOption,
 } from "@portfolio/ui/components/echarts-visualization";
+import type { ChartConfig } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -25,6 +27,15 @@ const label = (value: string) =>
     .split("_")
     .map((part) => part[0]?.toUpperCase() + part.slice(1))
     .join(" ");
+
+const categoryPalette = [
+  { light: ["#2563eb", "#60a5fa"], dark: ["#60a5fa", "#93c5fd"] },
+  { light: ["#7c3aed", "#a78bfa"], dark: ["#a78bfa", "#c4b5fd"] },
+  { light: ["#059669", "#34d399"], dark: ["#34d399", "#6ee7b7"] },
+  { light: ["#d97706", "#fbbf24"], dark: ["#fbbf24", "#fde68a"] },
+  { light: ["#dc2626", "#fb7185"], dark: ["#f87171", "#fda4af"] },
+  { light: ["#0891b2", "#22d3ee"], dark: ["#22d3ee", "#67e8f9"] },
+];
 
 export function CashFlowDashboard({
   data,
@@ -110,31 +121,16 @@ export function CashFlowDashboard({
       ],
     };
   }, [binnedMonthly, formatCurrency]);
-  const categoryOption = useMemo<EChartsVisualizationOption>(
-    () => ({
-      tooltip: { trigger: "item" },
-      legend: {
-        type: "scroll",
-        orient: "vertical",
-        right: 8,
-        top: "middle",
-        textStyle: { color: "#a1a1aa" },
-        formatter: label,
-      },
-      series: [
-        {
-          type: "pie",
-          radius: ["48%", "76%"],
-          center: ["35%", "50%"],
-          padAngle: 2,
-          itemStyle: { borderRadius: 5, borderColor: "#18181b", borderWidth: 2 },
-          label: { show: false },
-          data: data.categories.map((row) => ({ ...row, name: label(row.name) })),
-        },
-      ],
-    }),
-    [data.categories],
-  );
+  const categoryData = data.categories.map((row) => ({
+    id: row.name,
+    value: row.value,
+  }));
+  const categoryConfig = Object.fromEntries(
+    data.categories.map((row, index) => [
+      row.name,
+      { label: label(row.name), colors: categoryPalette[index % categoryPalette.length]! },
+    ]),
+  ) satisfies ChartConfig;
   const accountOption = useMemo<EChartsVisualizationOption>(
     () => ({
       tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
@@ -319,9 +315,11 @@ export function CashFlowDashboard({
             metric={formatCurrency(data.metrics.totalSpending, "EUR")}
             metricLabel="external spending"
           >
-            <EChartsVisualization
-              option={categoryOption}
-              className="h-[330px] w-full"
+            <AllocationPieChart
+              data={categoryData}
+              config={categoryConfig}
+              currency="EUR"
+              className="h-[330px]"
               ariaLabel="Spending by category"
             />
           </AnalyticsChartCard>
