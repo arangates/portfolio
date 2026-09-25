@@ -1,5 +1,5 @@
-import { PageHeader } from "@portfolio/ui/components/page-header";
-import { EvaluationSection } from "@/components/evaluation-section";
+import { PageHeader } from "@/components/page-header";
+import EvaluationSection from "@/components/evaluation-section";
 
 export default function IntelligencePage() {
   return (

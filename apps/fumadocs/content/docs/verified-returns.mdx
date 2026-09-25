@@ -14,9 +14,7 @@ The engine uses the XIRR algorithm to account for the exact dates when capital w
 ### The Algorithm (Newton-Raphson Method)
 XIRR solves for the discount rate $r$ that makes the Net Present Value (NPV) of all cash flows equal to zero:
 
-```text
-NPV = \sum \frac{C_i}{(1 + r)^{\frac{d_i - d_0}{365}}} = 0
-```
+$$ NPV = \sum \frac{C_i}{(1 + r)^{\frac{d_i - d_0}{365}}} = 0 $$
 
 Where:
 - $C_i$ = Cash flow amount (negative for investments/buys, positive for redemptions/sells and final current value).
