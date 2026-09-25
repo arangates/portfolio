@@ -1,6 +1,5 @@
 "use client";
 
-import { useFinancialPrivacy } from "@/components/dashboard-experience";
 import { ChatComposer } from "@portfolio/ai-chat-ui";
 import {
   chatModels,
@@ -12,12 +11,9 @@ import {
 import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { Button } from "@portfolio/ui/components/button";
 import { buttonVariants } from "@portfolio/ui/components/button";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { KeyRoundIcon, Maximize2Icon, MessageCircleIcon, PlusIcon, XIcon } from "lucide-react";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { KeyRoundIcon } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -109,11 +105,8 @@ export function SelvamComposer({ standalone = false }: { standalone?: boolean })
 }
 
 export function GlobalAIChat({ userId, children }: { userId: string; children: React.ReactNode }) {
-  const privateMode = useFinancialPrivacy();
   const pathname = usePathname();
   const onChatPage = pathname === "/dashboard/chat";
-  const [open, setOpen] = useState(false);
-  const [launcherDismissed, setLauncherDismissed] = useState(false);
   const [provider, setProvider] = useState<Provider>("openai");
   const [model, setModelState] = useState<ChatModel>("gpt-4.1-mini");
   const [models, setModels] = useState<ModelEntry[]>([...chatModels]);
@@ -136,8 +129,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   threadRef.current = activeThreadId;
   const initializationRef = useRef(false);
   const selectionRef = useRef(0);
-
-  useEffect(() => setOpen(false), [pathname]);
 
   const transport = useMemo(
     () =>
@@ -319,7 +310,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   }
 
   useEffect(() => {
-    if (!open && !onChatPage) return;
+    if (!onChatPage) return;
     if (initializationRef.current) return;
     initializationRef.current = true;
     void refreshThreads()
@@ -331,10 +322,10 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
       .finally(() => {
         initializationRef.current = false;
       });
-  }, [open, onChatPage]);
+  }, [onChatPage]);
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
-  }, [messages, open]);
+  }, [messages]);
   useEffect(() => {
     const refreshConfiguration = () => {
       setStatusLoading(true);
@@ -396,21 +387,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
       window.removeEventListener("selvam-ai-config-changed", refreshConfiguration);
     };
   }, []);
-  useEffect(() => {
-    if (privateMode) {
-      setOpen(false);
-      stop();
-    }
-  }, [privateMode, stop]);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-
   const clear = () => {
     void newThread();
   };
@@ -442,161 +418,6 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
         }}
       >
         {children}
-        {!privateMode && !onChatPage && !open && !launcherDismissed && (
-          <div className="fixed right-4 bottom-5 z-40 flex items-center gap-1 rounded-full bg-primary p-1 text-primary-foreground shadow-lg">
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-10 gap-2 rounded-full px-3 text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground"
-              onClick={() => setOpen(true)}
-              aria-label="Open Selvam assistant"
-            >
-              <MessageCircleIcon className="size-5" /> Ask Selvam
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="rounded-full text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground"
-              onClick={() => setLauncherDismissed(true)}
-              aria-label="Dismiss Ask Selvam button"
-              title="Dismiss"
-            >
-              <XIcon className="size-4" />
-            </Button>
-          </div>
-        )}
-        {!privateMode && !onChatPage && open && (
-          <section
-            role="dialog"
-            aria-label="Selvam assistant"
-            aria-modal="false"
-            className="fixed inset-0 z-50 flex flex-col border bg-background shadow-2xl sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(700px,calc(100dvh-80px))] sm:w-[min(440px,calc(100vw-40px))] sm:rounded-xl"
-          >
-            <header className="flex shrink-0 items-center gap-2 border-b bg-muted/20 px-4 py-3">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-                <MessageCircleIcon />
-              </span>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-semibold">Ask Selvam</h2>
-                <p className="text-xs text-muted-foreground">
-                  Answers from your current financial records
-                </p>
-              </div>
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                onClick={clear}
-                disabled={threadLoading}
-                aria-label="Start a new chat"
-                title="New chat"
-              >
-                <PlusIcon />
-              </Button>
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                render={<Link href="/dashboard/settings?tab=model-keys" />}
-                aria-label="Model key settings"
-              >
-                <KeyRoundIcon />
-              </Button>
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                render={<Link href="/dashboard/chat" />}
-                aria-label="Open full chat page"
-              >
-                <Maximize2Icon />
-              </Button>
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                onClick={() => setOpen(false)}
-                aria-label="Close chat"
-              >
-                <XIcon />
-              </Button>
-            </header>
-            <div
-              className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-muted/10 p-4 [&_table]:my-2 [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_td]:whitespace-nowrap [&_td]:px-2 [&_td]:py-1 [&_th]:whitespace-nowrap [&_th]:border-b [&_th]:px-2 [&_th]:py-1"
-              aria-live="polite"
-            >
-              {messages.length === 0 && (
-                <div className="flex min-h-full flex-col items-center justify-center px-4 text-center">
-                  <span className="mb-3 flex size-11 items-center justify-center rounded-2xl border bg-background text-primary shadow-sm">
-                    <MessageCircleIcon />
-                  </span>
-                  <p className="font-medium">What would you like to understand?</p>
-                  <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-                    Ask about your portfolio, FIRE plan, household budget, or verified returns.
-                  </p>
-                </div>
-              )}
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`w-fit max-w-[92%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${message.role === "user" ? "ml-auto rounded-br-md bg-primary text-primary-foreground" : "mr-auto rounded-bl-md border bg-background shadow-xs"}`}
-                >
-                  {message.parts.map((part, index) =>
-                    part.type === "text" ? (
-                      <div
-                        key={index}
-                        className="prose prose-sm max-w-none break-words dark:prose-invert [&_p]:my-1 [&_ul]:my-1"
-                      >
-                        <Markdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            a: ({ href, children }) =>
-                              href?.startsWith("/dashboard") ? (
-                                <a href={href} className="underline">
-                                  {children}
-                                </a>
-                              ) : (
-                                <span>{children}</span>
-                              ),
-                          }}
-                        >
-                          {part.text}
-                        </Markdown>
-                      </div>
-                    ) : part.type.startsWith("tool-") &&
-                      "state" in part &&
-                      part.state !== "output-available" ? (
-                      <span key={index} className="text-xs text-muted-foreground">
-                        Checking your records…
-                      </span>
-                    ) : null,
-                  )}
-                </div>
-              ))}
-              {(chatStatus === "submitted" || chatStatus === "streaming") && (
-                <p className="text-xs text-muted-foreground">Selvam is checking your records…</p>
-              )}
-              <div ref={endRef} />
-            </div>
-            {(notice || error) && (
-              <div
-                role="alert"
-                className="flex items-center gap-2 border-t px-4 py-2 text-xs text-destructive"
-              >
-                <span className="min-w-0 flex-1">{notice || error?.message}</span>
-                {error && (
-                  <Button type="button" size="sm" variant="ghost" onClick={clearError}>
-                    Dismiss
-                  </Button>
-                )}
-              </div>
-            )}
-            <div className="shrink-0 border-t bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              <SelvamComposer standalone />
-            </div>
-          </section>
-        )}
       </ChatContext.Provider>
     </AssistantRuntimeProvider>
   );

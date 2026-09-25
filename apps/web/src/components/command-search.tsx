@@ -41,7 +41,7 @@ export function CommandSearch() {
         type="button"
         variant="outline"
         size="sm"
-        className="h-9 w-9 justify-center gap-2 px-0 text-muted-foreground md:w-full md:justify-start md:bg-muted/35 md:px-3"
+        className="h-10 w-10 justify-center gap-2 rounded-full border-transparent bg-muted/70 px-0 text-muted-foreground shadow-none transition-colors hover:border-transparent hover:bg-muted hover:text-foreground md:w-full md:justify-start md:px-4"
         onClick={() => setOpen(true)}
         aria-label="Search Selvam"
       >

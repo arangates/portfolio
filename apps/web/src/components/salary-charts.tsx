@@ -83,7 +83,7 @@ export function SalaryCharts({ data, currency }: { data: SalaryPoint[]; currency
           />
           <EChartsComposedChart.Bar
             dataKey="supplementalGross"
-            variant="duotone"
+            variant="default"
             barProps={{ stack: "gross" }}
             enableHoverHighlight
           />

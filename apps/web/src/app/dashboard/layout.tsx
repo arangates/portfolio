@@ -15,18 +15,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <DashboardExperience initialHidden={privacyHidden}>
       <SidebarProvider
+        className="bg-sidebar"
         style={
           {
             "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
+            "--header-height": "calc(var(--spacing) * 14)",
           } as React.CSSProperties
         }
       >
         <AppSidebar user={session.user} variant="inset" />
-        <SidebarInset>
+        {/* Bounded height turns `main` into the scroll region, keeping the header fixed above it. */}
+        <SidebarInset className="h-svh overflow-hidden border border-border/60 shadow-sm md:h-[calc(100svh-1rem)]">
           <GlobalAIChat userId={session.user.id}>
             <SiteHeader />
-            <main className="dashboard-content flex min-w-0 flex-1 flex-col overflow-x-hidden">
+            <main className="dashboard-content flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
               <FinancialContent>{children}</FinancialContent>
             </main>
           </GlobalAIChat>

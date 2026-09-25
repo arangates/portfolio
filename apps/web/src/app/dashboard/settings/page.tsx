@@ -1,4 +1,4 @@
-import { InstallApp } from "@/components/pwa-controls";
+import { AmountModeToggle } from "@/components/amount-preferences";
 import { PageHeader } from "@/components/page-header";
 import { SettingsTabs } from "@/components/settings-tabs";
 import { ModelKeysSettings } from "@/components/model-keys-settings";
@@ -70,7 +70,6 @@ export default async function SettingsPage({
       <div className="flex flex-col gap-5 py-4 sm:py-5 md:gap-6 md:py-6">
         <PageHeader
           title="Settings"
-          action={<InstallApp alwaysShow />}
           description="Your personal control center for Selvam. Tune the details that shape your portfolio, planning and privacy."
         />
         <SettingsTabs
@@ -84,6 +83,17 @@ export default async function SettingsPage({
           }
           portfolio={
             <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Number display</CardTitle>
+                  <CardDescription>
+                    Choose whether financial amounts use compact or exact values across Selvam.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AmountModeToggle />
+                </CardContent>
+              </Card>
               <PreferenceForm preference={preference} />
               <ExchangeRateSyncCard status={exchangeRateStatus} />
               <ExchangeRateForm baseCurrency={preference.baseCurrency} />
