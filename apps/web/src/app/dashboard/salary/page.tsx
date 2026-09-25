@@ -2,6 +2,7 @@ import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { SalaryCharts } from "@/components/salary-charts";
+import { SalaryGapControls } from "@/components/salary-gap-controls";
 import { SalaryUploadDialog } from "@/components/salary-upload-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
@@ -199,31 +200,31 @@ export default async function SalaryPage() {
           ]}
         />
         {gaps.length > 0 || ytdCoverageGaps.length > 0 ? (
-          <div className="px-4 lg:px-6">
-            <Card className="border-amber-500/30 bg-amber-500/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <CalendarClockIcon className="size-4 text-amber-600" />
-                  Coverage gap detected
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1 text-sm text-muted-foreground">
-                {gaps.length > 0 ? (
-                  <p>Missing between the first and latest imported periods: {gaps.join(", ")}.</p>
-                ) : null}
-                {ytdCoverageGaps.length > 0 ? (
-                  <p>
-                    Payroll YTD totals include additional net income not represented by monthly
-                    PDFs:{" "}
-                    {ytdCoverageGaps
-                      .map((gap) => `${gap.year} ${formatCurrency(gap.amount, currency)}`)
-                      .join("; ")}
-                    .
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
-          </div>
+          <>
+            <SalaryGapControls gaps={gaps} />
+            {ytdCoverageGaps.length > 0 ? (
+              <div className="px-4 lg:px-6">
+                <Card className="border-amber-500/30 bg-amber-500/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <CalendarClockIcon className="size-4 text-amber-600" />
+                      Payroll YTD gap detected
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1 text-sm text-muted-foreground">
+                    <p>
+                      Payroll YTD totals include additional net income not represented by monthly
+                      PDFs:{" "}
+                      {ytdCoverageGaps
+                        .map((gap) => `${gap.year} ${formatCurrency(gap.amount, currency)}`)
+                        .join("; ")}
+                      .
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : null}
+          </>
         ) : null}
         <SalaryCharts data={chartData} currency={currency} />
         <div className="grid gap-4 px-4 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)] lg:px-6">

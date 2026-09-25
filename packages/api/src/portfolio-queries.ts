@@ -1026,18 +1026,35 @@ export async function getPortfolioOverview(
     ...new Set(assets.filter((asset) => asset.baseValue === null).map((asset) => asset.currency)),
   ];
 
-  const allocation = [...new Set(valuedAssets.map((asset) => asset.category))]
+  const categoryKey = (asset: (typeof valuedAssets)[number]) =>
+    asset.category === "Cash" ? `Cash · ${asset.currency.toUpperCase()}` : asset.category;
+
+  const allocation = [...new Set(valuedAssets.map((asset) => categoryKey(asset)))]
     .map((category) => ({
       category,
       value: valuedAssets
-        .filter((asset) => asset.category === category)
+        .filter((asset) => categoryKey(asset) === category)
         .reduce((sum, asset) => sum + asset.baseValue, 0),
     }))
+    .sort((left, right) => right.value - left.value);
+
+  const cashByCurrency = [
+    ...new Set(valuedAssets.filter((asset) => asset.category === "Cash")),
+  ].reduce<Map<string, number>>((map, asset) => {
+    const currency = asset.currency.toUpperCase();
+    const value = map.get(currency) ?? 0;
+    map.set(currency, value + asset.baseValue);
+    return map;
+  }, new Map());
+
+  const cashAllocation = [...cashByCurrency.entries()]
+    .map(([currency, value]) => ({ category: `Cash · ${currency}`, value }))
     .sort((left, right) => right.value - left.value);
 
   const liquidBucketFor = (asset: (typeof valuedAssets)[number]) => {
     if (asset.key.startsWith("degiro-equity")) return "Global equity";
     if (asset.category === "Commodities") return "Liquid commodities";
+    if (asset.category === "Cash") return `Cash · ${asset.currency.toUpperCase()}`;
     return asset.category;
   };
   const liquidBuckets = new Map<string, number>();
@@ -1056,6 +1073,7 @@ export async function getPortfolioOverview(
     rates,
     assets,
     allocation,
+    cashAllocation,
     liquidAllocation,
     equityHistory,
     equityBreakdown:
