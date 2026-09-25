@@ -400,6 +400,11 @@ export async function archiveImportedFile(input: ArchiveFileInput): Promise<Driv
     });
     return { status: "stored", documentId };
   } catch (error) {
+    // The stored errorMessage is a generic, user-facing string; log the real cause for diagnosis.
+    console.error(
+      `[drive-archive] upload failed for ${input.sourceType}/${input.sourceId}:`,
+      error,
+    );
     const message = publicError(error);
     const documentId = await saveArchiveRecord(input, {
       fileHash,
