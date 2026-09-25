@@ -3,6 +3,7 @@ import { EmptyDataState } from "@/components/empty-data-state";
 import { NetherlandsTaxCharts } from "@/components/netherlands-tax-charts";
 import { NetherlandsTaxUploadDialog } from "@/components/netherlands-tax-upload-dialog";
 import { PageHeader } from "@/components/page-header";
+import { RecordDetailsDrawer } from "@/components/record-details-drawer";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { formatDate, formatPercent } from "@/lib/format";
@@ -145,6 +146,9 @@ export default async function NetherlandsTaxPage() {
                   <TableHead className="text-right">Credits</TableHead>
                   <TableHead className="text-right">Settlement</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="w-24">
+                    <span className="sr-only">Details</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -207,6 +211,47 @@ export default async function NetherlandsTaxPage() {
                       >
                         {row.validationStatus === "verified" ? "Verified" : "Review"}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <RecordDetailsDrawer
+                        title={`${row.taxYear} Dutch tax assessment`}
+                        description={`${row.taxpayerName} · ${row.assessmentType === "revised_final" ? "Revised final" : "Final"} assessment`}
+                        items={[
+                          {
+                            label: "Aggregate income",
+                            value: formatCurrency(row.aggregateIncome, "EUR"),
+                          },
+                          {
+                            label: "Box 1 taxable income",
+                            value: formatCurrency(row.box1TaxableIncome, "EUR"),
+                          },
+                          {
+                            label: "Box 2 taxable income",
+                            value: formatCurrency(row.box2TaxableIncome, "EUR"),
+                          },
+                          {
+                            label: "Box 3 taxable income",
+                            value: formatCurrency(row.box3TaxableIncome, "EUR"),
+                          },
+                          {
+                            label: "Final tax and social insurance",
+                            value: formatCurrency(row.finalTaxAndSocialInsurance, "EUR"),
+                          },
+                          {
+                            label: "Payroll tax withheld",
+                            value: formatCurrency(row.payrollTaxWithheld, "EUR"),
+                          },
+                          {
+                            label: "Tax credits",
+                            value: formatCurrency(row.totalTaxCredits, "EUR"),
+                          },
+                          {
+                            label: "Settlement",
+                            value: `${row.outcomeType === "payable" ? "Payable" : "Refund"} ${formatCurrency(row.settlementAmount, "EUR")}`,
+                          },
+                          { label: "Assessment date", value: formatDate(row.assessmentDate) },
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

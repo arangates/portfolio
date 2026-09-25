@@ -3,6 +3,7 @@ import { EmptyDataState } from "@/components/empty-data-state";
 import { IncomeTaxCharts } from "@/components/income-tax-charts";
 import { IncomeTaxUploadDialog } from "@/components/income-tax-upload-dialog";
 import { PageHeader } from "@/components/page-header";
+import { RecordDetailsDrawer } from "@/components/record-details-drawer";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { formatPercent } from "@/lib/format";
@@ -145,6 +146,9 @@ export default async function IncomeTaxPage() {
                   <TableHead className="text-right">Refund</TableHead>
                   <TableHead className="text-right">Effective rate</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="w-24">
+                    <span className="sr-only">Details</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -187,6 +191,35 @@ export default async function IncomeTaxPage() {
                       >
                         {row.validationStatus === "verified" ? "Verified" : "Review"}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <RecordDetailsDrawer
+                        title={`AY ${row.assessmentYearLabel} return`}
+                        description={`${row.formType} filed for FY ${row.financialYearLabel}`}
+                        items={[
+                          {
+                            label: "Gross total income",
+                            value: formatCurrency(row.grossTotalIncome, "INR"),
+                          },
+                          {
+                            label: "Chapter VI deductions",
+                            value: formatCurrency(row.chapterViDeductions, "INR"),
+                          },
+                          { label: "Total income", value: formatCurrency(row.totalIncome, "INR") },
+                          {
+                            label: "Tax liability",
+                            value: formatCurrency(row.aggregateTaxLiability, "INR"),
+                          },
+                          { label: "Taxes paid", value: formatCurrency(row.totalTaxesPaid, "INR") },
+                          { label: "Refund due", value: formatCurrency(row.refundDue, "INR") },
+                          { label: "Filing section", value: row.filingSection ?? "Not reported" },
+                          {
+                            label: "Validation",
+                            value:
+                              row.validationStatus === "verified" ? "Verified" : "Review required",
+                          },
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

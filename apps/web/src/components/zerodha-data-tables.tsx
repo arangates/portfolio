@@ -3,6 +3,7 @@ import { useAmountFormat } from "@/components/amount-preferences";
 
 import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { DataTable } from "@/components/data-table/data-table";
+import { RecordDetailsDrawer } from "@/components/record-details-drawer";
 
 import { Badge } from "@portfolio/ui/components/badge";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -19,6 +20,7 @@ type Holding = {
 };
 
 export function HoldingsDataTable({ data }: { data: Holding[] }) {
+  const { formatCurrency } = useAmountFormat();
   const columns: ColumnDef<Holding>[] = [
     {
       accessorKey: "name",
@@ -75,6 +77,24 @@ export function HoldingsDataTable({ data }: { data: Holding[] }) {
       ),
       cell: ({ row }) => <Money value={row.original.unrealizedPnl} />,
     },
+    {
+      id: "details",
+      header: () => <span className="sr-only">Details</span>,
+      cell: ({ row }) => (
+        <RecordDetailsDrawer
+          title={row.original.name}
+          description={`Current ${row.original.category.toLowerCase()} holding`}
+          items={[
+            { label: "ISIN", value: row.original.isin },
+            { label: "Quantity", value: row.original.quantity.toLocaleString("en-IN") },
+            { label: "Average price", value: formatCurrency(row.original.averagePrice, "INR") },
+            { label: "Current price", value: formatCurrency(row.original.currentPrice, "INR") },
+            { label: "Market value", value: formatCurrency(row.original.marketValue, "INR") },
+            { label: "Unrealized P&L", value: formatCurrency(row.original.unrealizedPnl, "INR") },
+          ]}
+        />
+      ),
+    },
   ];
   return (
     <DataTable columns={columns} data={data} searchPlaceholder="Search holdings…" pageSize={12} />
@@ -91,6 +111,7 @@ type FinancialYear = {
 };
 
 export function FinancialYearsDataTable({ data }: { data: FinancialYear[] }) {
+  const { formatCurrency } = useAmountFormat();
   const columns: ColumnDef<FinancialYear>[] = [
     {
       accessorKey: "financialYear",
@@ -122,6 +143,23 @@ export function FinancialYearsDataTable({ data }: { data: FinancialYear[] }) {
       accessorKey: "activeMonths",
       header: "Active months",
       cell: ({ row }) => <NumberCell value={row.original.activeMonths} />,
+    },
+    {
+      id: "details",
+      header: () => <span className="sr-only">Details</span>,
+      cell: ({ row }) => (
+        <RecordDetailsDrawer
+          title={`${row.original.financialYear} tradebook`}
+          description="Deduplicated Zerodha activity for this financial year."
+          items={[
+            { label: "Purchases", value: formatCurrency(row.original.buys, "INR") },
+            { label: "Redemptions", value: formatCurrency(row.original.sells, "INR") },
+            { label: "Net invested", value: formatCurrency(row.original.netInvested, "INR") },
+            { label: "Trades", value: row.original.trades.toLocaleString("en-IN") },
+            { label: "Active months", value: row.original.activeMonths.toLocaleString("en-IN") },
+          ]}
+        />
+      ),
     },
   ];
   return (

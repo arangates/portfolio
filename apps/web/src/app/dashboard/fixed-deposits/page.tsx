@@ -4,6 +4,7 @@ import { EmptyDataState } from "@/components/empty-data-state";
 import { InstitutionConcentrationPieChart } from "@/components/evilcharts/blocks/market-share-echarts-pie-chart";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
+import { RecordDetailsDrawer } from "@/components/record-details-drawer";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { formatDate, formatPercent } from "@/lib/format";
@@ -184,6 +185,32 @@ export default async function FixedDepositsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
+                        <RecordDetailsDrawer
+                          title={`${deposit.bank} fixed deposit`}
+                          description={`Snapshot as of ${formatDate(deposit.asOf)}`}
+                          items={[
+                            { label: "Deposit type", value: deposit.type },
+                            {
+                              label: "Principal",
+                              value: formatCurrency(deposit.principal, deposit.currency),
+                            },
+                            {
+                              label: "Annual interest rate",
+                              value: formatPercent(deposit.interestRate, 2),
+                            },
+                            { label: "Start date", value: formatDate(deposit.startDate) },
+                            { label: "Maturity date", value: formatDate(deposit.maturityDate) },
+                            {
+                              label: "Compounding",
+                              value: `${deposit.compoundingPerYear} times per year`,
+                            },
+                            {
+                              label: "Projected maturity value",
+                              value: formatCurrency(maturityValue(deposit), deposit.currency),
+                            },
+                            { label: "Status", value: deposit.status },
+                          ]}
+                        />
                         <PortfolioRecordDialog
                           compact
                           kind="fixed_deposit"

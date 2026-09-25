@@ -2,6 +2,7 @@ import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioCharts } from "@/components/portfolio-charts";
+import { RecordDetailsDrawer } from "@/components/record-details-drawer";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { UploadDialog } from "@/components/upload-dialog";
@@ -150,6 +151,9 @@ export default async function GlobalEquityPage() {
                       <TableHead className="text-right">Latest trade</TableHead>
                       <TableHead className="text-right">Value</TableHead>
                       <TableHead className="text-right">P&L</TableHead>
+                      <TableHead className="w-24">
+                        <span className="sr-only">Details</span>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -173,6 +177,37 @@ export default async function GlobalEquityPage() {
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
                           {formatCurrency(holding.unrealizedPnl, "EUR")}
+                        </TableCell>
+                        <TableCell>
+                          <RecordDetailsDrawer
+                            title={holding.name}
+                            description="Current holding reconstructed from imported Degiro trades."
+                            items={[
+                              { label: "ISIN", value: holding.isin },
+                              {
+                                label: "Quantity",
+                                value: holding.quantity.toLocaleString("en", {
+                                  maximumFractionDigits: 6,
+                                }),
+                              },
+                              {
+                                label: "Average price",
+                                value: formatCurrency(holding.averagePrice, "EUR"),
+                              },
+                              {
+                                label: "Latest trade price",
+                                value: formatCurrency(holding.latestPrice, "EUR"),
+                              },
+                              {
+                                label: "Market value",
+                                value: formatCurrency(holding.marketValue, "EUR"),
+                              },
+                              {
+                                label: "Unrealized P&L",
+                                value: formatCurrency(holding.unrealizedPnl, "EUR"),
+                              },
+                            ]}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}

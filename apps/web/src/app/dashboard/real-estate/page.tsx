@@ -4,6 +4,7 @@ import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { RealEstateCharts } from "@/components/real-estate-charts";
+import { RecordDetailsDrawer } from "@/components/record-details-drawer";
 import { SectionCards } from "@/components/section-cards";
 import { TableCard } from "@/components/table-card";
 import { formatDate, formatPercent } from "@/lib/format";
@@ -161,6 +162,28 @@ export default async function RealEstatePage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-end gap-1">
+                            <RecordDetailsDrawer
+                              title={property.name}
+                              description={`Property snapshot as of ${formatDate(property.asOf)}`}
+                              items={[
+                                { label: "Owner", value: property.owner },
+                                { label: "Property type", value: property.propertyType },
+                                { label: "Location", value: property.location ?? "Not recorded" },
+                                {
+                                  label: "Area",
+                                  value: `${property.areaSquareFeet.toLocaleString("en-IN")} sq. ft. (${property.areaCents.toLocaleString("en-IN")} cents)`,
+                                },
+                                {
+                                  label: "Ownership share",
+                                  value: formatPercent(property.ownershipShare, 0),
+                                },
+                                {
+                                  label: "Attributable value",
+                                  value: formatCurrency(property.ownedValue, property.currency),
+                                },
+                                { label: "Legal status", value: property.legalStatus },
+                              ]}
+                            />
                             <PortfolioRecordDialog
                               compact
                               kind="real_estate"
