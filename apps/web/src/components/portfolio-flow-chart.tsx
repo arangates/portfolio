@@ -42,6 +42,8 @@ function compactLabel(value: string) {
     "Marketable securities": "Securities",
     "Fixed deposits": "Deposits",
     "Other assets": "Other",
+    "Indian equity - Invested": "Equity invested",
+    "Indian equity - Profit": "Equity profit",
   };
   return labels[value] ?? value;
 }

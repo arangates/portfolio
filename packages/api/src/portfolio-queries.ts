@@ -872,18 +872,32 @@ export async function getPortfolioOverview(
 
   const assets: PortfolioAsset[] = [];
   if (equity && equity.holdings.length > 0) {
-    const marketValue = equity.holdings.reduce((sum, item) => sum + item.marketValue, 0);
+    const investedValue = equity.holdings.reduce((sum, item) => sum + item.investedValue, 0);
+    const unrealizedPnl = equity.holdings.reduce((sum, item) => sum + item.unrealizedPnl, 0);
+    const asOf = equity.statementDate ?? equity.createdAt;
     assets.push({
-      key: "zerodha-equity",
+      key: "zerodha-equity-invested",
       name: "Indian equity",
-      category: "Marketable securities",
-      nativeValue: marketValue,
+      category: "Indian equity - Invested",
+      nativeValue: investedValue,
       currency: "INR",
-      baseValue: convert(marketValue, "INR"),
+      baseValue: convert(investedValue, "INR"),
       isLiquid: true,
       risk: "High",
       location: "Zerodha",
-      asOf: equity.statementDate ?? equity.createdAt,
+      asOf,
+    });
+    assets.push({
+      key: "zerodha-equity-profit",
+      name: "Indian equity",
+      category: "Indian equity - Profit",
+      nativeValue: unrealizedPnl,
+      currency: "INR",
+      baseValue: convert(unrealizedPnl, "INR"),
+      isLiquid: true,
+      risk: "High",
+      location: "Zerodha",
+      asOf,
     });
   }
 
@@ -1017,8 +1031,6 @@ export async function getPortfolioOverview(
   const liquidValue = valuedAssets.reduce((sum, asset) => sum + liquidValueFor(asset), 0);
   const equityInvested = equity?.holdings.reduce((sum, item) => sum + item.investedValue, 0) ?? 0;
   const equityPnl = equity?.holdings.reduce((sum, item) => sum + item.unrealizedPnl, 0) ?? 0;
-  const convertedEquityInvested = convert(equityInvested, "INR") ?? 0;
-  const convertedEquityPnl = convert(equityPnl, "INR") ?? 0;
   const unconvertedCurrencies = [
     ...new Set(assets.filter((asset) => asset.baseValue === null).map((asset) => asset.currency)),
   ];
@@ -1033,7 +1045,6 @@ export async function getPortfolioOverview(
     .sort((left, right) => right.value - left.value);
 
   const liquidBucketFor = (asset: (typeof valuedAssets)[number]) => {
-    if (asset.key === "zerodha-equity") return "Indian equity";
     if (asset.key === "degiro-equity") return "Global equity";
     if (asset.category === "Commodities") return "Liquid commodities";
     return asset.category;
@@ -1042,11 +1053,6 @@ export async function getPortfolioOverview(
   for (const asset of valuedAssets) {
     const value = liquidValueFor(asset);
     if (value <= 0) continue;
-    if (asset.key === "zerodha-equity" && convertedEquityInvested > 0 && convertedEquityPnl > 0) {
-      liquidBuckets.set("Indian equity · invested", convertedEquityInvested);
-      liquidBuckets.set("Indian equity · profit", convertedEquityPnl);
-      continue;
-    }
     const bucket = liquidBucketFor(asset);
     liquidBuckets.set(bucket, (liquidBuckets.get(bucket) ?? 0) + value);
   }
