@@ -429,6 +429,9 @@ export async function parseSalaryPayslip(
   if (headerIndex < 0 || detailsEnd < 0)
     throw new Error("Could not identify the payroll detail table.");
 
+  // Excludes the recipient's postal address (e.g. "5096 CL HULSEL"), which varies per
+  // employee and would otherwise be mistaken for the employer name on the line above it.
+  const dutchPostalAddress = /^\d{4}\s*[A-Z]{2}\b/;
   const employerCandidates = lines
     .slice(0, headerIndex)
     .filter(
@@ -436,11 +439,15 @@ export async function parseSalaryPayslip(
         line === line.toUpperCase() &&
         /[A-Z]/.test(line) &&
         !/^\d/.test(line) &&
+        !dutchPostalAddress.test(line) &&
         !line.startsWith("IF UNDELIVERABLE") &&
         !line.includes("POSTBUS") &&
         !line.includes("EINDHOVEN"),
     );
-  const employerName = employerCandidates.at(-1);
+  // Dutch company names reliably end in "B.V." or "N.V."; prefer that signal over
+  // positional order, since address lines can otherwise slip through the filters above.
+  const companyLikeCandidates = employerCandidates.filter((line) => /\b[BN]\.?V\.?$/i.test(line));
+  const employerName = companyLikeCandidates.at(-1) ?? employerCandidates.at(-1);
   if (!employerName) throw new Error("Could not identify the employer.");
 
   const lineItems = lines
