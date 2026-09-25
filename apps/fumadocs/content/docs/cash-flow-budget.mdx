@@ -35,6 +35,6 @@ Because expat couples often maintain a mix of joint and personal accounts, the e
 
 ### Savings Rate & Categorization
 The engine calculates a strict, 24-month trailing savings rate:
-$$ Savings Rate = \frac{Income - Spending}{Income} \times 100 $$
+Savings Rate = ((Income - Spending) / Income) * 100
 
 Transactions are parsed and aggregated by category. To optimize performance, the aggregation runs entirely inside the database using Drizzle ORM `sql` aggregations (e.g., grouping by `date_trunc('month', date)` and summing), rather than loading thousands of raw transactions into the Node.js memory space.
