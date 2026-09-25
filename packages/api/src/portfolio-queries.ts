@@ -25,6 +25,7 @@ import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 
 import { getCommodityInventoryDashboard } from "./commodity-inventory";
 import { convertCurrency } from "./currency-conversion";
+import { buildGlobalEquityAssets } from "./global-equity-breakdown";
 
 function latestBy<T>(rows: T[], key: (row: T) => string) {
   const latest = new Map<string, T>();
@@ -902,19 +903,9 @@ export async function getPortfolioOverview(
   }
 
   if (globalEquity.holdings.length > 0) {
-    const marketValue = globalEquity.holdings.reduce((sum, item) => sum + item.marketValue, 0);
-    assets.push({
-      key: "degiro-equity",
-      name: "Global equity",
-      category: "Marketable securities",
-      nativeValue: marketValue,
-      currency: "EUR",
-      baseValue: convert(marketValue, "EUR"),
-      isLiquid: true,
-      risk: "High",
-      location: "Degiro",
-      asOf: globalEquity.lastTradeAt,
-    });
+    assets.push(
+      ...buildGlobalEquityAssets(globalEquity.holdings, convert, globalEquity.lastTradeAt),
+    );
   }
 
   for (const balance of degiroAnalytics.balances) {
@@ -1045,7 +1036,7 @@ export async function getPortfolioOverview(
     .sort((left, right) => right.value - left.value);
 
   const liquidBucketFor = (asset: (typeof valuedAssets)[number]) => {
-    if (asset.key === "degiro-equity") return "Global equity";
+    if (asset.key.startsWith("degiro-equity")) return "Global equity";
     if (asset.category === "Commodities") return "Liquid commodities";
     return asset.category;
   };

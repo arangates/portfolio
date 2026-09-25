@@ -40,6 +40,8 @@ function safeKey(value: string) {
 function compactLabel(value: string) {
   const labels: Record<string, string> = {
     "Marketable securities": "Securities",
+    "Global equity - Invested": "Equity invested",
+    "Global equity - Profit": "Equity profit",
     "Fixed deposits": "Deposits",
     "Other assets": "Other",
     "Indian equity - Invested": "Equity invested",
