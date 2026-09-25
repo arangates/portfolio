@@ -70,7 +70,7 @@ export async function GET(request: Request) {
         }
 
         const { object: result } = await generateObject({
-          model: gateway("typesafe-ai/jev"),
+          model: gateway("anthropic/claude-sonnet-4.6"),
           schema: evaluationSchema,
           system: context.rubrics,
           prompt: context.prompt,
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
         await saveEvaluation({
           userId: u.id,
           trigger: "cron",
-          model: "typesafe-ai/jev",
+          model: "anthropic/claude-sonnet-4.6",
           scores: {
             liquidity: result.scores.liquidity_health.score,
             fire: result.scores.fire_trajectory.score,

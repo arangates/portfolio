@@ -19,7 +19,7 @@ export const financialEvaluation = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     trigger: text("trigger").notNull(),
-    model: text("model").notNull().default("typesafe-ai/jev"),
+    model: text("model").notNull().default("anthropic/claude-sonnet-4.6"),
     liquidityScore: integer("liquidity_score"),
     fireScore: integer("fire_score"),
     deploymentScore: integer("deployment_score"),

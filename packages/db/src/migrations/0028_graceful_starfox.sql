@@ -1,0 +1,1 @@
+ALTER TABLE "financial_evaluation" ALTER COLUMN "model" SET DEFAULT 'anthropic/claude-sonnet-4.6';

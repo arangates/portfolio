@@ -71,7 +71,7 @@ export async function POST(request: Request) {
 
   try {
     const { object: result } = await generateObject({
-      model: gateway("typesafe-ai/jev"),
+      model: gateway("anthropic/claude-sonnet-4.6"),
       schema: evaluationSchema,
       system: context.rubrics,
       prompt: context.prompt,
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     const evaluationId = await saveEvaluation({
       userId: session.user.id,
       trigger,
-      model: "typesafe-ai/jev",
+      model: "anthropic/claude-sonnet-4.6",
       scores: {
         liquidity: result.scores.liquidity_health.score,
         fire: result.scores.fire_trajectory.score,
