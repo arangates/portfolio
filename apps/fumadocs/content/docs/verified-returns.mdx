@@ -1,0 +1,45 @@
+---
+title: Verified Returns & XIRR
+description: Engineering details for calculating strict, cash-flow-based portfolio returns
+---
+
+# Verified Returns Engine
+
+The Verified Returns Engine (`packages/api/src/verified-returns-queries.ts`) is designed to calculate the absolute truth of the portfolio's performance. Unlike simple point-to-point yield calculators, this engine uses strict cash-flow timing to compute accurate annualized returns.
+
+## XIRR (Extended Internal Rate of Return)
+
+The engine uses the XIRR algorithm to account for the exact dates when capital was deployed (bought) or extracted (sold). 
+
+### The Algorithm (Newton-Raphson Method)
+XIRR solves for the discount rate $r$ that makes the Net Present Value (NPV) of all cash flows equal to zero:
+
+```text
+NPV = \sum \frac{C_i}{(1 + r)^{\frac{d_i - d_0}{365}}} = 0
+```
+
+Where:
+- $C_i$ = Cash flow amount (negative for investments/buys, positive for redemptions/sells and final current value).
+- $d_i$ = Date of the cash flow.
+- $d_0$ = Date of the initial cash flow.
+
+Because this equation cannot be solved algebraically, the engine uses the **Newton-Raphson method** to approximate $r$ iteratively until the result converges within a strict tolerance threshold (typically `0.0000001`).
+
+## Source Isolation & Currency
+
+Returns are isolated by brokerage and currency to prevent FX fluctuations from masking underlying asset performance.
+
+1. **Zerodha (INR)**: Computes the XIRR strictly for the Indian mutual fund and equity portfolio. It relies on the `ledgerEntry` and `tradebook` schemas to reconstruct the exact cash flows.
+2. **Degiro (EUR)**: Computes the XIRR for the global ETF/stock portfolio. Handles complex fee structures (e.g., Degiro connectivity fees, transaction fees) by treating them as negative cash flows (drag) on the return.
+
+## Evidence Quality & Value Coverage
+
+The engine refuses to present an XIRR if it cannot trust the underlying data. It calculates a metric called **Verified Value Coverage**.
+
+- **Exact**: 100% of the current portfolio value can be traced back to immutable, verified ledger entries and trade imports.
+- **Reconciled**: The vast majority of the value is verified, but some minor discrepancies (e.g., corporate actions like splits or bonuses that haven't been manually reconciled) exist.
+- **Limited/Blocked**: The gap between the imported cash flows and the current stated market value is too large. The engine will refuse to calculate XIRR, as the result would be mathematically invalid.
+
+## Modified Dietz (Snapshot Estimates)
+
+For assets where exact transaction-level ledgers are unavailable (e.g., manual real estate estimates, basic bank accounts), the engine falls back to the **Modified Dietz method**. This provides a time-weighted return estimate based on monthly snapshot balances, though it is explicitly flagged as "derived" rather than "verified" in the UI.

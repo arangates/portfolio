@@ -1,0 +1,47 @@
+---
+title: Capital Deployment & Allocation
+description: Engineering details for the capital deployment engine and drift calculations
+---
+
+# Capital Deployment Engine
+
+The Capital Deployment Engine (`packages/api/src/capital-deployment-queries.ts` and `capital-deployment-calculations.ts`) dictates how monthly surpluses and uninvested cash should be deployed into the market based on target allocations.
+
+## Target Allocation Policy
+
+Users define their target asset allocation via the `deploymentPolicy` schema. Buckets include:
+- `indian_equity`
+- `global_equity`
+- `fixed_income`
+- `hybrid`
+- `cash`
+- `other_marketable`
+
+The engine enforces that the sum of all target weights equals exactly 100%.
+
+## The Deployment Algorithm
+
+When a user has new capital to deploy (e.g., from their monthly salary surplus), the engine calculates exactly where that capital should go to minimize portfolio drift.
+
+### 1. Identifying the Deployment Base
+The engine calculates the `monthlyDeploymentBase`, which is the total capital available to invest. This comes from the Financial Twin (monthly surplus) or manually entered cash sitting in staging accounts.
+
+### 2. Calculating Drift
+For every asset bucket:
+- **Current Weight**: `Current Value / Total Portfolio Value`
+- **Drift**: `Current Weight - Target Weight`
+
+A negative drift means the bucket is underweight; a positive drift means it's overweight.
+
+### 3. Contribution-Only Rebalancing
+The engine strictly uses a **Contribution-Only** rebalancing algorithm. It does *not* sell overweight assets to buy underweight assets (which would trigger capital gains taxes). Instead, it directs the new `monthlyDeploymentBase` capital exclusively toward the most underweight buckets.
+
+- Capital is distributed proportionally to the buckets with the largest negative drift.
+- If the new capital is enough to bring an underweight bucket back to its target, the remaining capital flows to the next most underweight bucket.
+- This creates the `nextContribution` array, telling the user exactly how many Euros/Rupees to buy of each asset class this month.
+
+## Currency Normalization
+
+Because the user holds assets in both EUR and INR, the deployment engine relies on the `exchangeRateSnapshot` table to normalize all current values into the user's selected base currency before calculating weights and drifts. 
+
+The `missingCurrencies` array tracks if any asset lacks a valid exchange rate, which would skew the deployment math. If critical exchange rates are missing, the UI flags this as a warning so the user doesn't execute trades based on bad math.

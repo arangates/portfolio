@@ -1,3 +1,4 @@
+import EvaluationSection from "@/components/evaluation-section";
 import { SnapshotChanges } from "@/components/snapshot-changes";
 import { getSnapshotChanges } from "@portfolio/api/snapshot-insights-queries";
 import { getAmountFormatter } from "@/lib/amount-format-server";
@@ -245,6 +246,9 @@ export default async function DashboardPage() {
                 Add stored FX rates in Settings for {overview.unconvertedCurrencies.join(", ")}.
               </div>
             ) : null}
+            <div className="px-4 lg:px-6">
+              <EvaluationSection />
+            </div>
             <PortfolioCharts
               allocation={overview.liquidAllocation}
               equityHistory={overview.equityHistory}

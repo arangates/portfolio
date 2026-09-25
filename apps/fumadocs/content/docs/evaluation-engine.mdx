@@ -1,0 +1,83 @@
+---
+title: Evaluation Engine (Selvam Evaluate)
+description: Proactive AI-driven financial intelligence layer
+---
+
+# Selvam Evaluate
+
+The **Selvam Evaluate** feature is an AI-driven, proactive financial intelligence layer designed specifically for an Indian tech professional operating in the Netherlands (dual-country finances: INR + EUR). 
+
+Instead of waiting for the user to ask questions in the chat interface, Selvam Evaluate continuously scores the user's financial posture across 5 critical dimensions and surfaces actionable, cross-domain alerts.
+
+## Scoring Dimensions
+
+The evaluation engine assigns a score from 0-100 for each of the following dimensions:
+
+1. **Liquidity Health** (`liquidity_health`)
+   - Assesses emergency fund adequacy (months of expenses covered by liquid assets).
+   - Monitors cash flow savings rate and FD maturity coverage for upcoming obligations.
+   - Evaluates unconverted currency exposure risks.
+2. **FIRE Trajectory** (`fire_trajectory`)
+   - Assesses Monte Carlo success probability.
+   - Measures savings gap (actual vs. plan) and portfolio return vs. expected.
+   - Checks coast FIRE proximity and expense creep.
+3. **Deployment Discipline** (`deployment_discipline`)
+   - Measures allocation drift from targets.
+   - Assesses deployment velocity consistency and surplus utilization rate.
+4. **Evidence Freshness** (`evidence_freshness`)
+   - Evaluates data recency (e.g., stale asset snapshots >30 days, missing exchange rates, payslip recency).
+5. **Tax Efficiency** (`tax_efficiency`)
+   - Assesses effective tax rate optimization.
+   - Checks 30% ruling utilization and Box 3 optimization (Netherlands).
+
+**Overall Score**: A weighted average is computed (Liquidity 25%, FIRE 25%, Deployment 20%, Evidence 15%, Tax 15%).
+
+## System Architecture
+
+### 1. Database Schema (`@portfolio/db`)
+
+Two tables in `packages/db/src/schema/evaluation.ts` support this feature:
+
+- **`financialEvaluation`**: Stores the complete history of evaluations, including the scores for all 5 dimensions, the overall score, the exact prompt/rubric trigger context, and the full structured JSON response from the model. 
+  - Uses `contextHash` (SHA-256) to prevent redundant API calls when the financial data hasn't materially changed.
+- **`evaluationAlert`**: Stores individual alerts generated during evaluations.
+  - Supports severity levels (`info`, `warning`, `critical`).
+  - Supports deep-linking (`actionHref`, `actionLabel`) to specific dashboard pages.
+  - Users can acknowledge (dismiss) alerts, setting `acknowledgedAt`.
+
+### 2. The Engine (`@portfolio/api/evaluation-engine`)
+
+The `buildEvaluationContext` function concurrently fetches data from over 10 different financial query modules (e.g., `getFinancialTwin`, `getFirePlan`, `getCapitalDeploymentEngine`, `getPortfolioOverview`). 
+
+- It formats the financial data into a highly concise, token-efficient markdown context.
+- It computes a SHA-256 `contextHash` of key financial metrics (net worth, liquid value, equity PnL, missing evidence, etc.).
+- It produces a strict prompt combined with an explicit scoring rubric for the AI.
+
+### 3. Vercel AI SDK & Jev Model (`typesafe-ai/jev`)
+
+Evaluations run via Vercel's AI SDK (`generateObject`) routed through the Vercel AI Gateway:
+- **Model**: `gateway("typesafe-ai/jev")`
+- **Cost**: The 32K context window and Jev model access are currently free when routed through Vercel's OIDC authentication, bypassing manual API key management entirely.
+- **Structured Output**: The output is strictly validated against a `zod` schema (`evaluationSchema`), ensuring that scores and alerts are typed and predictable.
+
+### 4. API Routes & Cron Jobs
+
+- **Manual Trigger**: `POST /api/evaluate` (called by the user on the dashboard).
+- **Daily Cron**: `GET /api/cron/evaluate` (runs daily at 9:30 AM via `vercel.json` crons). 
+  - Authenticated via the `CRON_SECRET` bearer token.
+  - Loops sequentially through all users. 
+  - Safely skips users whose `contextHash` hasn't changed since their last evaluation.
+- **Alert Management**: `GET/PATCH /api/evaluate/alerts` (for fetching and acknowledging alerts).
+
+### 5. UI Integration (`apps/web`)
+
+- **Dashboard Intelligence Page**: `/dashboard/intelligence` provides a dedicated, full-page view of the latest evaluation and active alerts.
+- **Dashboard Section**: Embedded on the main overview page (`/dashboard`), providing an at-a-glance summary score and immediate alerts.
+- Components use SVG circular progress rings and color-coded severities to communicate health intuitively.
+
+### 6. Chat System Integration (`Ask Selvam`)
+
+The evaluation results and active alerts are automatically included in the AI Chat context when the `evaluation` section is requested, allowing the chatbot to answer questions like:
+- *"Why did my liquidity score drop this month?"*
+- *"Help me fix the critical alert on my tax efficiency."*
+- *"Based on my latest financial evaluation, what's my biggest risk?"*

@@ -1,0 +1,52 @@
+---
+title: AI Chat Assistant (Ask Selvam)
+description: Engineering details for the BYO-key, context-aware financial chatbot
+---
+
+# Ask Selvam (AI Chat)
+
+The **Ask Selvam** feature is a conversational AI interface embedded directly into the application. It acts as a specialized financial advisor that has access to the user's specific, real-time financial context.
+
+## Bring Your Own Key (BYO-Key) Security
+
+Because personal financial data is highly sensitive, the application uses a Bring Your Own Key (BYO-key) model for the chat feature. 
+
+1. **Provider Support**: Supports OpenAI, Anthropic, Google (Gemini), Mistral, and OpenCode Zen.
+2. **Key Encryption**: User-provided API keys are encrypted at rest using AES-256-GCM. 
+   - The encryption key is derived from the `ENCRYPTION_SECRET` environment variable.
+   - The keys are stored in the `ai_provider` database table with `encryptedKey`, `iv`, and `authTag`.
+3. **Decryption at Runtime**: Keys are decrypted only in memory during the `POST /api/ai/chat/route.ts` request lifecycle and passed directly to the Vercel AI SDK.
+4. *(Note: The `Selvam Evaluate` feature uses OIDC via Vercel AI Gateway for `typesafe-ai/jev` and does not require a user key).*
+
+## Context Injection
+
+When a user asks a question, the assistant doesn't just rely on general knowledge; it is injected with the exact state of the user's finances.
+
+### 1. Global Context
+Every chat request automatically includes a **Portfolio Overview** built via `getChatOverview(userId)`. This includes:
+- Total Net Worth and Liquid Value (in the user's base currency).
+- Asset allocations and breakdowns (e.g., Equity vs Debt, India vs Global).
+- A list of missing/unconverted currencies.
+
+### 2. Section-Specific Context
+To avoid exceeding token limits and keep the AI focused, users can optionally toggle specific "sections" of their financial life into the chat context. Handled by `getChatSection(userId, section)` in `apps/web/src/lib/ai-financial-context.ts`, the supported sections are:
+- `fire`: Monte Carlo outcomes, required corpus, and gap analysis.
+- `household`: Monthly household budget, run rates, and scenarios.
+- `personal_cash_flow` / `joint_cash_flow`: 24-month historical income, spending, and savings rates.
+- `salary`: Recent payslips, gross vs. net, and tax deductions.
+- `verified_returns`: XIRR, Modified Dietz returns, and evidence quality.
+- `fixed_deposits`: Active FDs and maturity dates.
+- `global_equity`: Specific EUR/Global holdings.
+- `evaluation`: The latest Proactive Intelligence evaluation scores and alerts (from Selvam Evaluate).
+
+## System Prompt
+
+The system prompt strictly instructs the LLM to:
+- Act as an expert advisor for an Indian tech professional operating as an expat in the Netherlands.
+- Use the injected JSON data to provide highly personalized advice.
+- Never invent numbers or make up data; if something isn't in the context, it must ask the user to configure it.
+- Understand the interplay between Dutch Box 3 taxes and Indian mutual funds/deposits.
+
+## Streaming Architecture
+
+The chat interface uses the Vercel AI SDK (`ai` package) with React Server Components and `useChat`. Responses are streamed back to the client (`streamText()`) for a fast, responsive UX. Chat history is persisted in the `ai_chat_session` and `ai_chat_message` Drizzle schema tables, scoped strictly by `userId`.

@@ -1,0 +1,42 @@
+---
+title: Cash Flow & Budgeting
+description: Engineering details for household budgeting and historic cash flow tracking
+---
+
+# Cash Flow & Budgeting Engine
+
+The Cash Flow and Budgeting Engine provides strict boundaries between deterministic forward-looking budgets and historical, reconciled cash flows.
+
+## Household Budgeting (Forward-Looking)
+
+The household budget (`packages/api/src/household-queries.ts`) is designed for scenario planning rather than penny-tracking.
+
+### Gross vs. Net Isolation
+- The engine separates **Gross Expenses** from **Refunds/Subsidies** (e.g., Dutch Kinderopvangtoeslag or healthcare allowances). 
+- Refunds are mathematically treated as income offsets, not negative expenses. This prevents charts from distorting the actual scale of capital flowing out of the household.
+
+### Scenario Planning
+The budget schema supports multi-scenario arithmetic. By default, it evaluates:
+- **Baseline**: The current expected monthly run rate.
+- **Minimum-Away**: A stress-test scenario that strips out all discretionary spending (vacations, dining out, luxury) to calculate the absolute floor needed for survival (critical for the FIRE Engine's "Essential Floor" spending policy).
+- **Custom Scenarios**: Users can project the impact of moving houses, having a child, or changing tax brackets.
+
+### Service Contracts
+The budget integrates with a `serviceContracts` schema, tracking finite commitments (e.g., energy contracts, gym memberships, internet). The engine flags contracts approaching expiration and cross-references them against the ongoing budget lines to ensure the budget reflects contractual reality.
+
+## Cash Flow Tracking (Historical)
+
+The Cash Flow engine (`packages/api/src/cash-flow-queries.ts`) tracks where money actually went, isolating personal from joint finances.
+
+### Dual-Scope Architecture
+Because expat couples often maintain a mix of joint and personal accounts, the engine requires a `scope` parameter (`personal` or `joint`) for all queries.
+- **Personal Scope**: Tracks the individual user's salary inflows and personal discretionary spending.
+- **Joint Scope**: Tracks household contribution inflows and shared expenses (groceries, rent/mortgage, utilities).
+
+### Savings Rate & Categorization
+The engine calculates a strict, 24-month trailing savings rate:
+```text
+Savings Rate = ((Income - Spending) / Income) * 100
+```
+
+Transactions are parsed and aggregated by category. To optimize performance, the aggregation runs entirely inside the database using Drizzle ORM `sql` aggregations (e.g., grouping by `date_trunc('month', date)` and summing), rather than loading thousands of raw transactions into the Node.js memory space.

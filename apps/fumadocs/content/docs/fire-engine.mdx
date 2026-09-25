@@ -1,0 +1,48 @@
+---
+title: FIRE Engine & Monte Carlo
+description: Engineering details for the Financial Independence, Retire Early (FIRE) simulation engine
+---
+
+# FIRE Engine
+
+The FIRE Engine is responsible for projecting whether the user's current wealth and savings velocity can safely sustain them through their planned retirement, handling complex dual-country tax implications and inflation.
+
+## Architecture
+
+The engine is divided into three primary components:
+1. **User Profile & Policy (`fireProfile`)**: The deterministic parameters (retirement age, life expectancy, assumed inflation, expected returns, and spending policies).
+2. **Current Wealth Engine**: Calculates the starting "Investable Assets" by summing all liquid/deployable assets from the portfolio, minus dedicated short-term liabilities.
+3. **Simulation Engine (`packages/api/src/fire-calculations.ts`)**: Runs both deterministic and stochastic (Monte Carlo) projections.
+
+## Deterministic Projection
+
+The deterministic projection uses fixed return and inflation rates to calculate the required corpus and the gap.
+
+### Sequence of Computation:
+1. **Accumulation Phase**: From current age to retirement age, the engine compounds current investable assets at the `expectedReturnRate` (real or nominal, depending on settings) while adding `annualSavings`.
+2. **Decumulation Phase**: From retirement age to `planEndAge` (life expectancy), the engine calculates the required drawdown based on the configured `monthlyExpenses` (adjusted for inflation).
+3. **Corpus Calculation**: The `requiredCorpus` is the Present Value of all future cash flows during the decumulation phase, discounted at the safe withdrawal rate or expected real return.
+4. **Gap Analysis**: `gap = requiredCorpus - projectedCorpusAtRetirement`.
+
+## Monte Carlo Simulation
+
+Because straight-line returns are unrealistic, the engine runs a 1,000-path Monte Carlo simulation (`runMonteCarlo`).
+
+### The Algorithm:
+- Uses Geometric Brownian Motion (GBM) to simulate 1,000 different paths for market returns, based on the user's `expectedReturnRate` and `returnVolatility`.
+- Simulates inflation variability.
+- Runs the accumulation and decumulation sequence for each path.
+- **Success Probability**: The percentage of the 1,000 paths where the final corpus at `planEndAge` is greater than zero.
+- **Percentiles**: The engine extracts the 10th (p10), 50th (Median), and 90th (p90) percentile paths to display "Poor", "Expected", and "Excellent" market scenarios on the frontend charts.
+
+## Phase-Aware Expenses
+
+Unlike simple FIRE calculators that assume a single continuous expense number, the Selvam FIRE engine supports Phase-Aware Expenses.
+- **Life Events**: Users can model discrete events (e.g., "Child's University from 2035 to 2039", "Buy House in 2030").
+- The engine computes a **Recurring Safe-Withdrawal Reserve** and a separate **Event Reserve** for one-time capital drops, ensuring the safe withdrawal rate isn't artificially spiked by temporary cash needs.
+
+## Spending Policies
+
+The engine supports dynamic spending rules:
+- **Fixed Real**: Spending increases strictly with inflation.
+- **Essential Floor**: Discretionary spending is cut when the portfolio drops below a defined guardrail, but essential spending is strictly protected. This models real-world retiree behavior (the "Guyton-Klinger" style rules) to improve Monte Carlo success rates without requiring a massive initial corpus.

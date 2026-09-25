@@ -3,6 +3,7 @@ export * from "./ai-chat";
 export * from "./cash-flow";
 export * from "./capital-deployment";
 export * from "./document-archive";
+export * from "./evaluation";
 export * from "./fire";
 export * from "./household";
 export * from "./mutual-funds";
