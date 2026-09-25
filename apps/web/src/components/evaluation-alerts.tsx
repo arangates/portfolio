@@ -80,12 +80,13 @@ export default function EvaluationAlerts({ alerts, onDismiss, onDismissAll }: Pr
                     <p className="text-sm text-muted-foreground mt-1">{alert.description}</p>
                     {alert.actionHref && alert.actionLabel && (
                       <div className="mt-3">
-                        <Button asChild variant="link" className="p-0 h-auto text-sm font-medium">
-                          <Link href={alert.actionHref}>
-                            {alert.actionLabel}
-                            <ArrowRightIcon className="w-3 h-3 ml-1" />
-                          </Link>
-                        </Button>
+                        <Link
+                          href={alert.actionHref as any}
+                          className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+                        >
+                          {alert.actionLabel}
+                          <ArrowRightIcon className="w-3 h-3 ml-1" />
+                        </Link>
                       </div>
                     )}
                   </div>
