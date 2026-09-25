@@ -165,6 +165,52 @@ export default async function RealEstatePage() {
                             <RecordDetailsDrawer
                               title={property.name}
                               description={`Property snapshot as of ${formatDate(property.asOf)}`}
+                              insights={[
+                                {
+                                  label: "Value per sq. ft.",
+                                  value: formatCurrency(
+                                    property.pricePerSquareFoot,
+                                    property.currency,
+                                  ),
+                                  detail: "Stored valuation divided by recorded area.",
+                                },
+                                {
+                                  label: "Portfolio share",
+                                  value:
+                                    property.baseOwnedValue === null
+                                      ? "Unavailable"
+                                      : formatPercent(
+                                          totals.ownedValue === 0
+                                            ? 0
+                                            : property.baseOwnedValue / totals.ownedValue,
+                                          1,
+                                        ),
+                                  detail:
+                                    property.baseOwnedValue === null
+                                      ? "A current exchange rate is needed for base-currency comparison."
+                                      : "Share of attributable property value in the base currency.",
+                                },
+                              ]}
+                              breakdown={{
+                                title: "Ownership allocation",
+                                description:
+                                  "Current market value split by the recorded ownership share.",
+                                segments: [
+                                  {
+                                    label: "Your attributable share",
+                                    amount: property.ownedValue,
+                                    value: formatCurrency(property.ownedValue, property.currency),
+                                  },
+                                  {
+                                    label: "Other ownership",
+                                    amount: property.marketValue - property.ownedValue,
+                                    value: formatCurrency(
+                                      property.marketValue - property.ownedValue,
+                                      property.currency,
+                                    ),
+                                  },
+                                ],
+                              }}
                               items={[
                                 { label: "Owner", value: property.owner },
                                 { label: "Property type", value: property.propertyType },

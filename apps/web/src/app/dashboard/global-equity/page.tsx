@@ -182,6 +182,27 @@ export default async function GlobalEquityPage() {
                           <RecordDetailsDrawer
                             title={holding.name}
                             description="Current holding reconstructed from imported Degiro trades."
+                            insights={[
+                              {
+                                label: "Unrealized return",
+                                value: formatPercent(
+                                  holding.costBasis === 0
+                                    ? 0
+                                    : holding.unrealizedPnl / holding.costBasis,
+                                  2,
+                                ),
+                                detail:
+                                  "Current unrealized P&L relative to reconstructed cost basis.",
+                              },
+                              {
+                                label: "Portfolio weight",
+                                value: formatPercent(
+                                  marketValue === 0 ? 0 : holding.marketValue / marketValue,
+                                  1,
+                                ),
+                                detail: "Share of the current global-equity market value.",
+                              },
+                            ]}
                             items={[
                               { label: "ISIN", value: holding.isin },
                               {

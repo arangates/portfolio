@@ -216,6 +216,44 @@ export default async function NetherlandsTaxPage() {
                       <RecordDetailsDrawer
                         title={`${row.taxYear} Dutch tax assessment`}
                         description={`${row.taxpayerName} · ${row.assessmentType === "revised_final" ? "Revised final" : "Final"} assessment`}
+                        insights={[
+                          {
+                            label: "Effective final tax",
+                            value: formatPercent(
+                              row.aggregateIncome === 0
+                                ? 0
+                                : row.finalTaxAndSocialInsurance / row.aggregateIncome,
+                              1,
+                            ),
+                            detail: "Final tax and social insurance relative to aggregate income.",
+                          },
+                          {
+                            label: "Assessment outcome",
+                            value: `${row.outcomeType === "payable" ? "Payable" : "Refund"} ${formatCurrency(row.settlementAmount, "EUR")}`,
+                            detail: "Final settlement recorded on the assessment.",
+                          },
+                        ]}
+                        breakdown={{
+                          title: "Taxable income by box",
+                          description: "Accepted taxable income shown in the final assessment.",
+                          segments: [
+                            {
+                              label: "Box 1",
+                              amount: Math.max(row.box1TaxableIncome, 0),
+                              value: formatCurrency(row.box1TaxableIncome, "EUR"),
+                            },
+                            {
+                              label: "Box 2",
+                              amount: Math.max(row.box2TaxableIncome, 0),
+                              value: formatCurrency(row.box2TaxableIncome, "EUR"),
+                            },
+                            {
+                              label: "Box 3",
+                              amount: Math.max(row.box3TaxableIncome, 0),
+                              value: formatCurrency(row.box3TaxableIncome, "EUR"),
+                            },
+                          ],
+                        }}
                         items={[
                           {
                             label: "Aggregate income",

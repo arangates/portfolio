@@ -196,6 +196,54 @@ export default async function IncomeTaxPage() {
                       <RecordDetailsDrawer
                         title={`AY ${row.assessmentYearLabel} return`}
                         description={`${row.formType} filed for FY ${row.financialYearLabel}`}
+                        insights={[
+                          {
+                            label: "Effective tax rate",
+                            value: formatPercent(
+                              row.totalIncome === 0
+                                ? 0
+                                : row.aggregateTaxLiability / row.totalIncome,
+                              1,
+                            ),
+                            detail: "Aggregate liability relative to reported total income.",
+                          },
+                          {
+                            label: "Tax settlement",
+                            value:
+                              row.refundDue > 0
+                                ? `Refund ${formatCurrency(row.refundDue, "INR")}`
+                                : row.balanceTaxPayable > 0
+                                  ? `Payable ${formatCurrency(row.balanceTaxPayable, "INR")}`
+                                  : "Settled",
+                            detail: "Based on the imported return, not payment confirmation.",
+                          },
+                        ]}
+                        breakdown={{
+                          title: "Reported income mix",
+                          description: "Income heads included in gross total income.",
+                          segments: [
+                            {
+                              label: "Salary",
+                              amount: Math.max(row.salaryIncome, 0),
+                              value: formatCurrency(row.salaryIncome, "INR"),
+                            },
+                            {
+                              label: "Business",
+                              amount: Math.max(row.businessIncome, 0),
+                              value: formatCurrency(row.businessIncome, "INR"),
+                            },
+                            {
+                              label: "Capital gains",
+                              amount: Math.max(row.capitalGains, 0),
+                              value: formatCurrency(row.capitalGains, "INR"),
+                            },
+                            {
+                              label: "Other sources",
+                              amount: Math.max(row.otherSourcesIncome, 0),
+                              value: formatCurrency(row.otherSourcesIncome, "INR"),
+                            },
+                          ],
+                        }}
                         items={[
                           {
                             label: "Gross total income",

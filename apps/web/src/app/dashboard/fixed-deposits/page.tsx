@@ -39,6 +39,10 @@ function maturityValue(deposit: {
   );
 }
 
+function daysUntil(date: string) {
+  return Math.max(0, Math.ceil((new Date(date).getTime() - Date.now()) / 86_400_000));
+}
+
 export default async function FixedDepositsPage() {
   const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
@@ -188,6 +192,21 @@ export default async function FixedDepositsPage() {
                         <RecordDetailsDrawer
                           title={`${deposit.bank} fixed deposit`}
                           description={`Snapshot as of ${formatDate(deposit.asOf)}`}
+                          insights={[
+                            {
+                              label: "Time to maturity",
+                              value: `${daysUntil(deposit.maturityDate).toLocaleString("en-IN")} days`,
+                              detail: "Based on the recorded maturity date.",
+                            },
+                            {
+                              label: "Projected interest",
+                              value: formatCurrency(
+                                maturityValue(deposit) - deposit.principal,
+                                deposit.currency,
+                              ),
+                              detail: "Compounding estimate through maturity; tax is excluded.",
+                            },
+                          ]}
                           items={[
                             { label: "Deposit type", value: deposit.type },
                             {

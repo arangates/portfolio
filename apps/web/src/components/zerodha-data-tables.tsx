@@ -4,6 +4,7 @@ import { useAmountFormat } from "@/components/amount-preferences";
 import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { DataTable } from "@/components/data-table/data-table";
 import { RecordDetailsDrawer } from "@/components/record-details-drawer";
+import { formatPercent } from "@/lib/format";
 
 import { Badge } from "@portfolio/ui/components/badge";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -21,6 +22,7 @@ type Holding = {
 
 export function HoldingsDataTable({ data }: { data: Holding[] }) {
   const { formatCurrency } = useAmountFormat();
+  const totalMarketValue = data.reduce((sum, holding) => sum + holding.marketValue, 0);
   const columns: ColumnDef<Holding>[] = [
     {
       accessorKey: "name",
@@ -84,6 +86,27 @@ export function HoldingsDataTable({ data }: { data: Holding[] }) {
         <RecordDetailsDrawer
           title={row.original.name}
           description={`Current ${row.original.category.toLowerCase()} holding`}
+          insights={[
+            {
+              label: "Unrealized return",
+              value: formatPercent(
+                row.original.marketValue === row.original.unrealizedPnl
+                  ? 0
+                  : row.original.unrealizedPnl /
+                      (row.original.marketValue - row.original.unrealizedPnl),
+                2,
+              ),
+              detail: "Current unrealized P&L relative to the implied cost basis.",
+            },
+            {
+              label: "Portfolio weight",
+              value: formatPercent(
+                totalMarketValue === 0 ? 0 : row.original.marketValue / totalMarketValue,
+                1,
+              ),
+              detail: "Share of the holdings currently shown in this register.",
+            },
+          ]}
           items={[
             { label: "ISIN", value: row.original.isin },
             { label: "Quantity", value: row.original.quantity.toLocaleString("en-IN") },
@@ -151,6 +174,39 @@ export function FinancialYearsDataTable({ data }: { data: FinancialYear[] }) {
         <RecordDetailsDrawer
           title={`${row.original.financialYear} tradebook`}
           description="Deduplicated Zerodha activity for this financial year."
+          insights={[
+            {
+              label: "Average trade size",
+              value: formatCurrency(
+                row.original.trades === 0
+                  ? 0
+                  : (row.original.buys + row.original.sells) / row.original.trades,
+                "INR",
+              ),
+              detail: "Purchases plus redemptions divided by recorded trades.",
+            },
+            {
+              label: "Monthly activity",
+              value: `${row.original.activeMonths} of 12 months`,
+              detail: "Months with at least one deduplicated transaction.",
+            },
+          ]}
+          breakdown={{
+            title: "Cash-flow mix",
+            description: "Gross purchases and redemptions recorded during the financial year.",
+            segments: [
+              {
+                label: "Purchases",
+                amount: row.original.buys,
+                value: formatCurrency(row.original.buys, "INR"),
+              },
+              {
+                label: "Redemptions",
+                amount: row.original.sells,
+                value: formatCurrency(row.original.sells, "INR"),
+              },
+            ],
+          }}
           items={[
             { label: "Purchases", value: formatCurrency(row.original.buys, "INR") },
             { label: "Redemptions", value: formatCurrency(row.original.sells, "INR") },
