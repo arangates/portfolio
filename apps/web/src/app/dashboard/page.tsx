@@ -22,6 +22,20 @@ import {
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Asset keys use lowercase prefixes; snapshot-evidence keys use the human-readable kind instead.
+const evidenceKindByAssetPrefix: Array<[string, string]> = [
+  ["bank-", "Bank"],
+  ["deposit-", "Deposit"],
+  ["commodity-", "Commodity"],
+  ["real-estate-", "Property"],
+  ["manual-", "Manual asset"],
+];
+
+function evidenceKeyForAsset(assetKey: string) {
+  const mapping = evidenceKindByAssetPrefix.find(([prefix]) => assetKey.startsWith(prefix));
+  return mapping ? `${mapping[1]}-${assetKey.slice(mapping[0].length)}` : null;
+}
+
 export default async function DashboardPage() {
   const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
@@ -33,6 +47,17 @@ export default async function DashboardPage() {
   ]);
   const { baseCurrency } = overview.preference;
   const hasAssets = overview.assets.length > 0;
+  const changeByEvidenceKey = new Map(changes.map((change) => [change.current.key, change]));
+  const categoryTotals = Object.fromEntries(
+    overview.allocation.map((category) => [category.category, category.value]),
+  );
+  const assetsWithIntelligence = overview.assets.map((asset) => {
+    const evidenceKey = evidenceKeyForAsset(asset.key);
+    return {
+      ...asset,
+      change: evidenceKey ? (changeByEvidenceKey.get(evidenceKey) ?? null) : null,
+    };
+  });
   const equityReturn =
     overview.totals.equityInvested === 0
       ? 0
@@ -230,7 +255,12 @@ export default async function DashboardPage() {
               allocationMetricLabel="liquid value"
             />
             <SnapshotChanges changes={changes} />
-            <DataTable assets={overview.assets} baseCurrency={baseCurrency} />
+            <DataTable
+              assets={assetsWithIntelligence}
+              baseCurrency={baseCurrency}
+              netWorth={overview.totals.netWorth}
+              categoryTotals={categoryTotals}
+            />
           </>
         )}
       </div>
