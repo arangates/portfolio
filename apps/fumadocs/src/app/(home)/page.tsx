@@ -80,6 +80,15 @@ export default function HomePage() {
               Explore the handbook
               <ArrowRightIcon className="size-4" />
             </Link>
+            <a
+              href="https://myselvam.vercel.app/"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="inline-flex items-center gap-2 rounded-full border bg-fd-background/65 px-5 py-3 text-sm font-medium shadow-sm backdrop-blur-xl transition-colors hover:bg-fd-accent"
+            >
+              Open Web App
+              <ArrowRightIcon className="size-4" />
+            </a>
             {sourceUrl ? (
               <a
                 href={sourceUrl}

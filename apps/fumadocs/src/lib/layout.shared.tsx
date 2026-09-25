@@ -22,7 +22,7 @@ export function baseOptions(): BaseLayoutProps {
       { text: "Features", url: "/docs/features", active: "nested-url" },
       { text: "Architecture", url: "/docs/architecture", active: "nested-url" },
       { text: "Security", url: "/docs/security", active: "nested-url" },
-      { type: "button", text: "Read the docs", url: "/docs", secondary: false },
+      { type: "button", text: "Launch App", url: "https://myselvam.vercel.app/", secondary: false },
     ],
     ...(sourceUrl ? { githubUrl: sourceUrl } : {}),
   };
