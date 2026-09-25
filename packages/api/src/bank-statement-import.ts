@@ -188,7 +188,7 @@ export async function processBankStatementImport(input: {
           set: { amount: parsed.closingBalance.toString() },
         });
     }
-    await db.batch([
+    await Promise.all([
       db
         .update(bankStatementImport)
         .set({

@@ -127,7 +127,7 @@ export async function processIncomeTaxImport(input: {
   if (!savedImport) throw new Error("Could not prepare the ITR import.");
   const returnId = randomUUID();
   try {
-    await db.batch([
+    await Promise.all([
       db.insert(incomeTaxReturn).values({
         id: returnId,
         userId: input.userId,

@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import "server-only";
 
 import {
@@ -605,7 +606,7 @@ function buildDegiroScope(
   };
 }
 
-export async function getVerifiedReturnsEngine(userId: string) {
+async function getVerifiedReturnsEngineUncached(userId: string) {
   const [preference, zerodhaPortfolio, zerodhaSnapshots, zerodhaTrades, degiroTrades, accountRows] =
     await Promise.all([
       getPortfolioPreference(userId),
@@ -710,3 +711,11 @@ export async function getVerifiedReturnsEngine(userId: string) {
 export async function getVerifiedReturnsExport(userId: string) {
   return getVerifiedReturnsEngine(userId);
 }
+
+export const getVerifiedReturnsEngine = unstable_cache(
+  async (userId: string) => {
+    return getVerifiedReturnsEngineUncached(userId);
+  },
+  ["verified-returns"],
+  { tags: ["returns", "portfolio"], revalidate: 3600 },
+);

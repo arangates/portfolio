@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import "server-only";
 
 import {
@@ -836,7 +837,7 @@ export type PortfolioAsset = {
   asOf: Date | string | null;
 };
 
-export async function getPortfolioOverview(
+async function getPortfolioOverviewUncached(
   userId: string,
   rateMode: ExchangeRateMode = "valuation",
 ) {
@@ -1093,3 +1094,11 @@ export async function getPortfolioOverview(
         .sort((left, right) => right.getTime() - left.getTime())[0] ?? null,
   };
 }
+
+export const getPortfolioOverview = unstable_cache(
+  async (userId: string, rateMode: ExchangeRateMode = "valuation") => {
+    return getPortfolioOverviewUncached(userId, rateMode);
+  },
+  ["portfolio-overview"],
+  { tags: ["portfolio"], revalidate: 3600 },
+);

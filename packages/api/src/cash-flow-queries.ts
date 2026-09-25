@@ -1,14 +1,21 @@
+import { unstable_cache } from "next/cache";
 import "server-only";
 
 import { bankAccount, bankTransaction, db } from "@portfolio/db";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, gte } from "drizzle-orm";
 
 import { getSalaryPayslips } from "./salary-queries";
 import { reconcileSalaryPayouts } from "./salary-reconciliation-calculations";
 
 export type CashFlowScope = "all" | "personal" | "joint";
 
-export async function getCashFlowDashboard(userId: string, scope: CashFlowScope = "all") {
+async function getCashFlowDashboardUncached(
+  userId: string,
+  scope: CashFlowScope = "all",
+  limitMonths: number = 24,
+) {
+  const minDate = new Date();
+  minDate.setMonth(minDate.getMonth() - limitMonths);
   const [rows, payslips] = await Promise.all([
     db
       .select({
@@ -34,7 +41,7 @@ export async function getCashFlowDashboard(userId: string, scope: CashFlowScope 
         bankAccount,
         and(eq(bankTransaction.accountId, bankAccount.id), eq(bankAccount.userId, userId)),
       )
-      .where(eq(bankTransaction.userId, userId))
+      .where(and(eq(bankTransaction.userId, userId), gte(bankTransaction.bookedAt, minDate)))
       .orderBy(asc(bankTransaction.bookedAt)),
     getSalaryPayslips(userId),
   ]);
@@ -181,3 +188,11 @@ export async function updateBankTransactionCategory(
   if (!updated) throw new Error("Transaction not found.");
   return updated;
 }
+
+export const getCashFlowDashboard = unstable_cache(
+  async (userId: string, scope: CashFlowScope = "all", limitMonths: number = 24) => {
+    return getCashFlowDashboardUncached(userId, scope, limitMonths);
+  },
+  ["cashflow-dashboard"],
+  { tags: ["cashflow", "portfolio"], revalidate: 3600 },
+);

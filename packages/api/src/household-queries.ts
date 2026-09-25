@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import "server-only";
 
 import {
@@ -56,7 +57,7 @@ function contractHealth(status: string, contractEndDate: string | null) {
   return "active";
 }
 
-export async function getHouseholdDashboard(userId: string) {
+async function getHouseholdDashboardUncached(userId: string) {
   const [
     profiles,
     itemRows,
@@ -308,3 +309,11 @@ export async function getHouseholdExport(userId: string) {
     contractHistory: dashboard.contractHistory,
   };
 }
+
+export const getHouseholdDashboard = unstable_cache(
+  async (userId: string) => {
+    return getHouseholdDashboardUncached(userId);
+  },
+  ["household-dashboard"],
+  { tags: ["household", "portfolio"], revalidate: 3600 },
+);

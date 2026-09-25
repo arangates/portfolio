@@ -11,6 +11,7 @@ import {
 } from "@portfolio/api/portfolio-mutations";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
 const saveRequest = z.object({
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
                 : input.kind === "preference"
                   ? await savePortfolioPreference(session.user.id, input.data)
                   : await saveExchangeRate(session.user.id, input.data);
+    revalidateTag("portfolio", { expire: 0 });
     return Response.json(result, { status: 201 });
   } catch (error) {
     const rawMessage = error instanceof Error ? error.message : "";
@@ -72,6 +74,7 @@ export async function DELETE(request: Request) {
     const url = new URL(request.url);
     const kind = archiveKind.parse(url.searchParams.get("kind")) as ArchiveKind;
     const id = z.uuid().parse(url.searchParams.get("id"));
+    revalidateTag("portfolio", { expire: 0 });
     return Response.json(await archivePortfolioRecord(session.user.id, kind, id));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not archive record";

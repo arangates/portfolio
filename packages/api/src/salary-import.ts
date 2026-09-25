@@ -137,7 +137,7 @@ export async function processSalaryImport(input: {
   const payslipId = randomUUID();
 
   try {
-    await db.batch([
+    await Promise.all([
       db.insert(salaryPayslip).values({
         id: payslipId,
         userId: input.userId,

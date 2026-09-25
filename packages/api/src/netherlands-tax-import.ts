@@ -206,7 +206,7 @@ export async function processNetherlandsTaxImport(input: {
   };
 
   try {
-    await db.batch([
+    await Promise.all([
       db.insert(netherlandsTaxAssessment).values({
         id: assessmentId,
         userId: input.userId,

@@ -1,6 +1,7 @@
 import { processSalaryImport } from "@portfolio/api/salary-import";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
+import { revalidateTag } from "next/cache";
 
 import { archiveImportedFile } from "@/lib/google-drive-archive";
 
@@ -45,6 +46,8 @@ export async function POST(request: Request) {
       mimeType: file.type,
       bytes,
     });
+    revalidateTag("portfolio", { expire: 0 });
+    revalidateTag("household", { expire: 0 });
     return Response.json({ result: { ...result, archive } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Payslip import failed";

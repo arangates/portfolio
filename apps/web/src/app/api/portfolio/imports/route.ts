@@ -1,6 +1,7 @@
 import { getRecentPortfolioImports, processPortfolioImport } from "@portfolio/api/portfolio-import";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { archiveImportedFile, type ArchiveSourceType } from "@/lib/google-drive-archive";
@@ -73,6 +74,8 @@ export async function POST(request: Request) {
         return { ...result, archive };
       }),
     );
+    revalidateTag("portfolio", { expire: 0 });
+    revalidateTag("returns", { expire: 0 });
     return Response.json({ results: resultsWithArchive });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Import failed";
