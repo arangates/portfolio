@@ -1,8 +1,9 @@
 import { PageHeader } from "@/components/page-header";
 import EvaluationSection from "@/components/evaluation-section";
 import { AmbientInsightsSection } from "@/components/ambient-insights";
+import { LabsScenarioEngine } from "@/components/labs-scenario-engine";
+import { LabsDeploymentPlan } from "@/components/labs-deployment-plan";
 import { redirect } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardDescription } from "@portfolio/ui/components/card";
 
 export default function LabsPage() {
   if (process.env.NEXT_PUBLIC_ENABLE_LABS !== "true") {
@@ -28,42 +29,22 @@ export default function LabsPage() {
             <EvaluationSection />
           </section>
 
-          {/* Scenario Engine placeholder */}
+          {/* Scenario Engine */}
           <section>
             <h2 className="text-2xl font-bold tracking-tight mb-2">Scenario Engine</h2>
             <p className="text-muted-foreground text-sm mb-4">
               Hypothetical projection of life events against your FIRE plan.
             </p>
-            <Card>
-              <CardHeader>
-                <CardTitle>What-If Scenarios</CardTitle>
-                <CardDescription>
-                  This experimental engine mathematically simulates life events (market crashes,
-                  sabbaticals, large expenses) against your live portfolio in-memory. Use the API at{" "}
-                  <code className="bg-muted px-1 py-0.5 rounded">/api/scenarios</code> to test it
-                  programmatically.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <LabsScenarioEngine />
           </section>
 
-          {/* Capital Deployment Plan placeholder */}
+          {/* Capital Deployment Plan */}
           <section>
             <h2 className="text-2xl font-bold tracking-tight mb-2">Autonomous Deployer</h2>
             <p className="text-muted-foreground text-sm mb-4">
               Actionable shopping list to close allocation drift.
             </p>
-            <Card>
-              <CardHeader>
-                <CardTitle>Capital Deployment Plan</CardTitle>
-                <CardDescription>
-                  This engine generates a deterministic purchase plan for your surplus cash based on
-                  your exact target drift. Use the API at{" "}
-                  <code className="bg-muted px-1 py-0.5 rounded">/api/deployment-plan</code> to test
-                  it programmatically.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <LabsDeploymentPlan />
           </section>
         </div>
       </div>
