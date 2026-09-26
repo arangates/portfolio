@@ -1,3 +1,4 @@
+import { AmbientInsightsSection } from "@/components/ambient-insights";
 import EvaluationSection from "@/components/evaluation-section";
 import { SnapshotChanges } from "@/components/snapshot-changes";
 import { getSnapshotChanges } from "@portfolio/api/snapshot-insights-queries";
@@ -79,6 +80,10 @@ export default async function DashboardPage() {
             />
           }
         />
+
+        <div className="px-4 lg:px-6 mb-2">
+          <AmbientInsightsSection />
+        </div>
 
         {!hasAssets ? (
           <div className="px-4 lg:px-6">
