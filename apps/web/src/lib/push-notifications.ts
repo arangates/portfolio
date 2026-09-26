@@ -133,15 +133,7 @@ function dateInTimeZone(now: Date, timeZone: string) {
   }).format(now);
 }
 
-function hourInTimeZone(now: Date, timeZone: string) {
-  return Number(
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone,
-      hour: "2-digit",
-      hourCycle: "h23",
-    }).format(now),
-  );
-}
+/* function hourInTimeZone(now: Date, timeZone: string) { ... removed for Vercel Hobby tier ... } */
 
 function addDays(day: string, count: number) {
   const date = new Date(`${day}T12:00:00.000Z`);
@@ -271,7 +263,7 @@ export async function sendScheduledReminders(now = new Date()) {
   let failed = 0;
   for (const preference of preferences) {
     const timeZone = preference.timeZone ?? "UTC";
-    if (hourInTimeZone(now, timeZone) !== preference.reminderHour) continue;
+    // // if (hourInTimeZone(now, timeZone) !== preference.reminderHour) continue; // Disabled for Vercel Hobby tier // Disabled due to Vercel Hobby tier 1x/day cron limit
     try {
       const subscriptions = await db
         .select()
