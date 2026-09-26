@@ -16,6 +16,7 @@ export const env = createEnv({
     VAPID_PRIVATE_KEY: z.string().min(1).optional(),
     VAPID_SUBJECT: z.string().min(1).optional(),
     CRON_SECRET: z.string().min(16).optional(),
+    NEXT_PUBLIC_ENABLE_LABS: z.string().optional(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   },
   runtimeEnv: process.env,

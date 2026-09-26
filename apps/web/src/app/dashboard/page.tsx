@@ -1,5 +1,3 @@
-import { AmbientInsightsSection } from "@/components/ambient-insights";
-import EvaluationSection from "@/components/evaluation-section";
 import { SnapshotChanges } from "@/components/snapshot-changes";
 import { getSnapshotChanges } from "@portfolio/api/snapshot-insights-queries";
 import { getAmountFormatter } from "@/lib/amount-format-server";
@@ -80,10 +78,6 @@ export default async function DashboardPage() {
             />
           }
         />
-
-        <div className="px-4 lg:px-6 mb-2">
-          <AmbientInsightsSection />
-        </div>
 
         {!hasAssets ? (
           <div className="px-4 lg:px-6">
@@ -251,9 +245,7 @@ export default async function DashboardPage() {
                 Add stored FX rates in Settings for {overview.unconvertedCurrencies.join(", ")}.
               </div>
             ) : null}
-            <div className="px-4 lg:px-6">
-              <EvaluationSection />
-            </div>
+
             <PortfolioCharts
               allocation={overview.liquidAllocation}
               equityHistory={overview.equityHistory}

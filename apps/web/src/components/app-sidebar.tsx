@@ -39,9 +39,14 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {dashboardNavigation.map((group) => (
-          <NavMain key={group.label} label={group.label} items={group.items} />
-        ))}
+        {dashboardNavigation.map((group) => {
+          const items = group.items.filter(
+            (item) =>
+              item.url !== "/dashboard/labs" || process.env.NEXT_PUBLIC_ENABLE_LABS === "true",
+          );
+          if (items.length === 0) return null;
+          return <NavMain key={group.label} label={group.label} items={items} />;
+        })}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

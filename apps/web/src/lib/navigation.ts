@@ -39,6 +39,13 @@ export const dashboardNavigation = [
         keywords: "dashboard net worth allocation",
       },
       {
+        title: "Selvam Labs",
+        url: "/dashboard/labs",
+        icon: SparklesIcon,
+        keywords: "experiments labs ai insights what-if scenarios",
+      },
+
+      {
         title: "Analytics",
         url: "/dashboard/analytics",
         icon: ChartNoAxesCombinedIcon,
