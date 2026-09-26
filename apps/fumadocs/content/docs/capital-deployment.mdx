@@ -45,3 +45,13 @@ The engine strictly uses a **Contribution-Only** rebalancing algorithm. It does 
 Because the user holds assets in both EUR and INR, the deployment engine relies on the `exchangeRateSnapshot` table to normalize all current values into the user's selected base currency before calculating weights and drifts. 
 
 The `missingCurrencies` array tracks if any asset lacks a valid exchange rate, which would skew the deployment math. If critical exchange rates are missing, the UI flags this as a warning so the user doesn't execute trades based on bad math.
+
+## The Shopping List (Actionable Deployment Plan)
+
+The engine exposes a programmatic endpoint at `/api/deployment-plan` that transforms the drift calculations into an exact, actionable "shopping list". 
+
+Instead of just telling a user they are "5% underweight in Indian Equity," it calculates the exact cash amounts required to close the gaps based on their real-time available bank surplus and broker cash.
+
+- **Priority Rebalancing:** Underweight buckets receive capital first, capped precisely at their `targetGap`.
+- **Proportional Distribution:** If surplus cash remains after all gaps are filled, it is distributed across all configured buckets proportionally according to their target weights.
+- **Overrides:** The API accepts an optional `amount` parameter to generate a hypothetical deployment plan for a specific lump sum.

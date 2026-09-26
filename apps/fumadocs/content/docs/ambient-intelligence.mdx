@@ -1,0 +1,34 @@
+---
+title: Ambient Intelligence
+description: Zero-cost proactive alerts and automated financial insights.
+---
+
+## Proactive Dashboard Insights
+
+The **Ambient Intelligence** module (`@portfolio/api/ambient-insights`) continuously evaluates a user's financial state to surface highly contextual, actionable alerts directly on the dashboard.
+
+Unlike the *Selvam Evaluate* feature (which relies on external LLMs to score financial posture), Ambient Intelligence is completely **deterministic, zero-cost, and runs instantly in-memory**. It requires no LLM API calls and no paid database branching.
+
+### Available Insights
+
+The engine currently monitors for the following conditions:
+
+- **Idle Cash Trap:** Warns the user if their liquid cash exceeds 6 months of living expenses (as calculated by the Financial Twin) and computes the exact monthly drag caused by inflation.
+- **Deployment Drift:** Monitors the Capital Deployment Engine. If any allocated asset bucket drifts more than 5 percentage points from its target weight, it flags a priority rebalance opportunity.
+- **Savings Rate Alerts:** Flags exceptional financial discipline (savings rate > 50%) or warns if the savings rate drops below the recommended 20% floor.
+- **FIRE Milestones:** Celebrates major milestones (25%, 50%, 75%, 90%) as the user progresses toward their FIRE (Financial Independence, Retire Early) required corpus.
+- **FD Maturity:** Surfaces upcoming liquidity events by alerting when any Fixed Deposit is within 30 days of maturity.
+- **Stale Data:** Checks snapshot evidence and warns if any imported data (broker statements, bank exports) is more than 30 days old.
+
+### Severity Tiers
+
+Alerts are sorted strictly by severity to prevent dashboard fatigue:
+1. `critical` (Red border/icon)
+2. `warning` (Amber border/icon)
+3. `info` (Blue border/icon)
+
+Only the top 5 most relevant insights are displayed at any time.
+
+### Architecture
+
+The engine uses Next.js server components to aggregate existing queries (`getPortfolioOverview`, `getFinancialTwin`, `getFirePlan`, `getCapitalDeploymentEngine`, `getSnapshotEvidence`, `getCurrentFixedDeposits`). Because these underlying queries utilize Next.js `unstable_cache` with tag-based invalidation, the Ambient Intelligence engine evaluates almost instantaneously without thrashing the Neon database.
