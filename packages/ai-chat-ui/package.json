@@ -17,7 +17,7 @@
     "react": "catalog:"
   },
   "devDependencies": {
-    "@assistant-ui/react": "^0.15.21",
+    "@assistant-ui/react": "^0.15.22",
     "@portfolio/config": "workspace:*",
     "@types/react": "catalog:",
     "ai": "^7.0.107",
