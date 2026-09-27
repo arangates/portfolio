@@ -1,7 +1,25 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "tw-shimmer";
+@theme inline {
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+@utility shimmer {
+  color: transparent;
+  background-image: linear-gradient(110deg, currentColor 35%, color-mix(in oklch, currentColor 35%, white) 50%, currentColor 65%);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shimmer 2s linear infinite;
+}
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
