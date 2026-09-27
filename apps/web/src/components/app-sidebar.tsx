@@ -1,8 +1,9 @@
 "use client";
 
-import { WalletCardsIcon } from "lucide-react";
+import { BrainCircuitIcon, Settings2Icon, WalletCardsIcon } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
+import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import { dashboardNavigation } from "@/lib/navigation";
 import {
@@ -47,6 +48,12 @@ export function AppSidebar({
           if (items.length === 0) return null;
           return <NavMain key={group.label} label={group.label} items={items} />;
         })}
+        <NavSecondary
+          items={[
+            { title: "Financial twin", url: "/dashboard/twin", icon: BrainCircuitIcon },
+            { title: "Settings", url: "/dashboard/settings", icon: Settings2Icon },
+          ]}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
