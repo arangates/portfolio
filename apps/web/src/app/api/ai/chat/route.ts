@@ -215,7 +215,7 @@ export async function POST(request: Request) {
                 .slice(0, 2)
                 .map((m) => `${m.role}: ${m.parts.map((p) => (p as any).text || "").join(" ")}`)
                 .join("\n"),
-              maxTokens: 20,
+              maxOutputTokens: 20,
             });
             if (text?.trim()) {
               generatedTitle = text.trim();
@@ -244,7 +244,7 @@ export async function POST(request: Request) {
               system:
                 "Summarize this financial conversation in 200 words or fewer. Focus on key financial figures, decisions discussed, and conclusions reached. Be factual and precise with numbers.",
               prompt: conversationText,
-              maxTokens: 300,
+              maxOutputTokens: 300,
             });
             summary = summaryText?.trim() || undefined;
           } catch {
