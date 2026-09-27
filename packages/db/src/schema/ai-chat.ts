@@ -37,6 +37,7 @@ export const aiChatThread = pgTable(
       >()
       .notNull()
       .default([]),
+    summary: text("summary"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },

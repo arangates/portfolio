@@ -1,0 +1,159 @@
+---
+title: AI Chat Roadmap
+description: Planned features and improvements for the Selvam AI Chat Assistant
+---
+
+# AI Chat Roadmap
+
+This roadmap outlines planned features for the **Ask Selvam** AI Chat Assistant, prioritized by impact and effort. All features are designed to be implemented using existing dependencies — no new major packages required.
+
+## Priority Legend
+
+- 🔴 **High Priority** — Transformative features that significantly expand the assistant's capabilities
+- 🟠 **Medium Priority** — Quality-of-life improvements that enhance the user experience
+
+---
+
+## 🔴 Inline Financial Charts in Chat
+
+**Status**: Planned · **Effort**: Medium · **Dependencies**: `recharts` (already in `@portfolio/ui`)
+
+Render interactive charts directly inside assistant messages instead of dumping numerical data as text.
+
+### Architecture
+1. Add a `renderChart` tool definition alongside `getFinancialSection`
+2. Tool returns structured chart data: `{ type: 'bar' | 'line' | 'pie', title, labels, datasets }`
+3. Frontend intercepts `tool-call` parts with type `renderChart` and renders `<Recharts />` inline
+
+### Planned Chart Types
+- Monthly cash flow bar chart (income vs. spending)
+- FIRE progress line chart (assets vs. required corpus over time)
+- Expense category pie/donut chart
+- Portfolio allocation breakdown
+- Salary trend over months (gross vs. net)
+
+### Why It Matters
+Transforms the chat from a text-only Q&A into a **visual analytics dashboard inside the conversation**. Financial data is inherently visual — charts make patterns and trends immediately apparent.
+
+---
+
+## 🔴 Proactive Financial Insights
+
+**Status**: Planned · **Effort**: Medium · **Dependencies**: AI SDK, existing financial context collectors, Drizzle ORM
+
+The assistant currently only responds when asked. This feature adds a **proactive mode** that generates insights automatically.
+
+### Architecture
+1. Server-side scheduled function (daily/weekly)
+2. Calls `getChatOverview(userId)` + relevant `getFinancialSection` data
+3. Asks the LLM: "Given these portfolio changes since last check, generate 2-3 brief insights"
+4. Stores insights in a new `ai_insights` table
+5. Surfaces as notification badges or "Daily Digest" card at the top of chat
+
+### Example Insights
+- "Your FIRE gap decreased by €2,400 this month"
+- "Fixed deposit #3 matures in 14 days"
+- "Spending in Dining category spiked 40% vs. last month"
+- "Net worth crossed the €X milestone this week"
+
+### Database Schema
+```sql
+CREATE TABLE ai_insight (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  type TEXT NOT NULL, -- 'fire_update' | 'spending_alert' | 'maturity_reminder' | 'milestone'
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  data JSONB,
+  read BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+---
+
+## 🔴 Document & Statement Upload
+
+**Status**: Planned · **Effort**: Medium · **Dependencies**: AI SDK multi-modal support (OpenAI/Gemini/Anthropic)
+
+The composer already has an attachment button in the UI. This feature wires it up for bank statements, tax documents, and payslips.
+
+### Architecture
+1. Accept PDF/image uploads via the existing `ComposerPrimitive.AddAttachment` button
+2. For PDFs: Extract text server-side (requires adding `pdf-parse` package)
+3. For images: Pass directly to vision-capable models (GPT-4o, Gemini Flash, Claude Sonnet)
+4. Cross-reference uploaded documents against existing Selvam records
+
+### Use Cases
+- "Upload your bank statement and I'll reconcile it against your recorded cash flows"
+- "Upload your tax assessment and I'll verify against your recorded salary data"
+- "Upload a payslip and I'll compare it with what's recorded in Selvam"
+
+### Security Considerations
+- Documents processed in memory only, never persisted to disk
+- Max file size: 10MB
+- Allowed types: PDF, PNG, JPG, JPEG
+- Scanned documents inherit existing privacy mode protections
+
+---
+
+## 🟠 Conversation Forking & Branching
+
+**Status**: Planned · **Effort**: Medium · **Dependencies**: `@assistant-ui/react` BranchPicker primitives
+
+Allow users to explicitly fork a conversation at any point to explore different financial scenarios.
+
+### Architecture
+1. "Fork from here" action on any past message
+2. Creates a new thread with `parent_thread_id` and `fork_point` columns
+3. New thread starts with messages up to the fork point
+4. Enables side-by-side scenario exploration
+
+### Use Cases
+- "What if I increase my savings rate to 40%?" vs. "What if I retire 2 years later?"
+- Compare tax implications of different investment strategies
+- Explore multiple FIRE scenarios in parallel
+
+### Schema Changes
+```sql
+ALTER TABLE ai_chat_thread ADD COLUMN parent_thread_id UUID REFERENCES ai_chat_thread(id);
+ALTER TABLE ai_chat_thread ADD COLUMN fork_message_index INTEGER;
+```
+
+---
+
+## 🟠 Voice Input & Output
+
+**Status**: Planned · **Effort**: Medium · **Dependencies**: Web Speech API (browser-native)
+
+Full voice interaction support using the browser's native `SpeechRecognition` API.
+
+### Features
+- Voice-to-text transcription → insert into composer
+- Visual waveform indicator during recording
+- Fallback to OpenAI Whisper API (user already has an OpenAI key)
+- Optional text-to-speech for assistant responses
+
+---
+
+## Implementation Timeline
+
+| Feature | Target | Blocking Dependencies |
+|---------|--------|----------------------|
+| Inline Charts | Next sprint | None — `recharts` available |
+| Document Upload | Next sprint | `pdf-parse` package needed for PDFs |
+| Proactive Insights | Q4 2026 | Scheduled function infrastructure |
+| Conversation Forking | Q4 2026 | Schema migration |
+| Voice Input/Output | Q1 2027 | Browser API availability |
+
+---
+
+## Contributing
+
+Each roadmap item includes an architecture section that serves as a technical specification. When implementing:
+
+1. Start with the database schema changes and migration
+2. Build the server-side API endpoints
+3. Add the frontend UI components
+4. Write integration tests
+5. Update this documentation

@@ -36,6 +36,8 @@ type ChatContextValue = {
   deleteThreads: (ids?: string[]) => Promise<void>;
   renameThread: (id: string, title: string) => Promise<void>;
   shareTranscript: () => Promise<void>;
+  exportMarkdown: () => void;
+  searchThreads: (query: string) => Promise<void>;
   sendPrompt: (text: string) => void;
   status: Status | null;
   statusLoading: boolean;
@@ -86,12 +88,56 @@ export function SelvamComposer({ standalone = false }: { standalone?: boolean })
         { id: "fire", label: "FIRE plan", type: "financial section" },
         { id: "cash-flow", label: "Cash flow", type: "financial section" },
         { id: "returns", label: "Verified returns", type: "financial section" },
+        { id: "salary", label: "Salary & payslips", type: "financial section" },
+        { id: "fixed-deposits", label: "Fixed deposits", type: "financial section" },
+        { id: "global-equity", label: "Global equity holdings", type: "financial section" },
+        { id: "household", label: "Household budget", type: "financial section" },
       ]}
       commands={[
         {
           id: "summarize",
           description: "Summarize the conversation",
           execute: () => chat.sendPrompt("Summarize this conversation using my current records."),
+        },
+        {
+          id: "fire-check",
+          description: "Quick FIRE progress snapshot with gap analysis",
+          execute: () =>
+            chat.sendPrompt(
+              "Give me a quick FIRE progress snapshot. Include my current investable assets, required corpus, gap, and success probability.",
+            ),
+        },
+        {
+          id: "budget-review",
+          description: "Review this month's household budget",
+          execute: () =>
+            chat.sendPrompt(
+              "Review my household budget for the current month. Show gross expenses, refunds, and net spending compared to budget.",
+            ),
+        },
+        {
+          id: "compare",
+          description: "Compare cash flow between two periods",
+          execute: () =>
+            chat.sendPrompt(
+              "Compare my cash flow this month vs last month. Highlight the biggest changes in income and spending categories.",
+            ),
+        },
+        {
+          id: "salary",
+          description: "Show latest salary breakdown",
+          execute: () =>
+            chat.sendPrompt(
+              "Show my latest salary payslip breakdown including gross pay, net pay, and tax deductions.",
+            ),
+        },
+        {
+          id: "returns",
+          description: "Show verified investment returns",
+          execute: () =>
+            chat.sendPrompt(
+              "What are my verified investment returns? Show XIRR and time-weighted returns with evidence quality.",
+            ),
         },
         {
           id: "help",
@@ -164,12 +210,21 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     setThreadLoading(false);
   }, [pendingHistory, activeThreadId, setMessages]);
 
-  async function refreshThreads() {
-    const response = await fetch("/api/ai/threads", { cache: "no-store" });
+  async function refreshThreads(query?: string) {
+    const url = query ? `/api/ai/threads?q=${encodeURIComponent(query)}` : "/api/ai/threads";
+    const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) throw new Error("Could not load conversations");
     const data = (await response.json()) as { threads: ChatThread[] };
     setThreads(data.threads);
     return data.threads;
+  }
+
+  async function searchThreads(query: string) {
+    try {
+      await refreshThreads(query || undefined);
+    } catch {
+      setNotice("Could not search conversations.");
+    }
   }
 
   async function selectThread(id: string) {
@@ -278,6 +333,34 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     } catch {
       setNotice("Could not copy the transcript.");
     }
+  }
+
+  function exportMarkdown() {
+    const threadTitle = threads.find((t) => t.id === activeThreadId)?.title || "selvam-chat";
+    const fileName = `${threadTitle
+      .replace(/[^a-z0-9]+/gi, "-")
+      .toLowerCase()
+      .slice(0, 50)}.md`;
+    const lines = [
+      `# ${threadTitle}`,
+      `_Exported from Selvam on ${new Date().toLocaleDateString()}_\n`,
+      ...messages.map((message) => {
+        const role = message.role === "user" ? "**You**" : "**Selvam**";
+        const text = message.parts
+          .filter((part) => part.type === "text")
+          .map((part) => (part.type === "text" ? part.text : ""))
+          .join("\n");
+        return `### ${role}\n\n${text}`;
+      }),
+      "\n---\n_AI can make mistakes. Verify decisions against the linked source records._",
+    ];
+    const blob = new Blob([lines.join("\n\n")], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
   function sendPrompt(text: string) {
     if (!status?.[provider]) {
@@ -408,6 +491,8 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
           deleteThreads,
           renameThread,
           shareTranscript,
+          exportMarkdown,
+          searchThreads,
           sendPrompt,
           status,
           statusLoading,

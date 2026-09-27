@@ -1,7 +1,7 @@
 import "server-only";
 
 import { aiChatThread, db } from "@portfolio/db";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 export type StoredChatMessage = {
   id: string;
@@ -71,15 +71,59 @@ export async function saveChatThread(
   messages: StoredChatMessage[],
   provider: string,
   model: string,
+  options?: { title?: string; summary?: string },
 ) {
   const title =
+    options?.title ||
     messages
       .find((message) => message.role === "user")
-      ?.parts.map((part) => part.text)
+      ?.parts.map((part) => (part as any).text || "")
       .join(" ")
-      .slice(0, 70) || "New chat";
+      .slice(0, 70) ||
+    "New chat";
   await db
     .update(aiChatThread)
-    .set({ messages: messages.slice(-100), provider, model, title, updatedAt: new Date() })
+    .set({
+      messages: messages.slice(-100),
+      provider,
+      model,
+      title,
+      ...(options?.summary !== undefined ? { summary: options.summary } : {}),
+      updatedAt: new Date(),
+    })
     .where(and(eq(aiChatThread.id, id), eq(aiChatThread.userId, userId)));
+}
+
+export async function searchChatThreads(userId: string, query: string) {
+  const sanitized = query
+    .replace(/[^\w\s]/g, " ")
+    .trim()
+    .slice(0, 100);
+  if (!sanitized) return listChatThreads(userId);
+  const tsQuery = sanitized
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => `${w}:*`)
+    .join(" & ");
+  return db
+    .select({
+      id: aiChatThread.id,
+      title: aiChatThread.title,
+      provider: aiChatThread.provider,
+      model: aiChatThread.model,
+      updatedAt: aiChatThread.updatedAt,
+    })
+    .from(aiChatThread)
+    .where(
+      and(
+        eq(aiChatThread.userId, userId),
+        sql`(
+          to_tsvector('english', ${aiChatThread.title}) ||
+          to_tsvector('english', coalesce(${aiChatThread.summary}, '')) ||
+          to_tsvector('english', coalesce(${aiChatThread.messages}::text, ''))
+        ) @@ to_tsquery('english', ${tsQuery})`,
+      ),
+    )
+    .orderBy(desc(aiChatThread.updatedAt))
+    .limit(100);
 }

@@ -42,7 +42,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, type FC } from "react";
+import { useState, useEffect, type FC } from "react";
 import { SelvamComposer, useSelvamChat } from "@/components/global-ai-chat";
 import { Checkbox } from "@portfolio/ui/components/checkbox";
 
@@ -163,8 +163,29 @@ const ThreadWelcome: FC = () => {
 // Financial Tool Status - Custom for Selvam
 // ============================================================================
 
-function FinancialToolStatus({ toolName, status }: { toolName: string; status: { type: string } }) {
+const sectionLabels: Record<string, string> = {
+  fire: "FIRE plan and retirement scenarios",
+  household: "household budget and expenses",
+  personal_cash_flow: "personal cash flow records",
+  joint_cash_flow: "joint household cash flow",
+  fixed_deposits: "fixed deposit records",
+  salary: "salary and payslip data",
+  verified_returns: "verified investment returns",
+  global_equity: "global equity holdings",
+};
+
+function FinancialToolStatus({
+  toolName,
+  args,
+  status,
+}: {
+  toolName: string;
+  args: Record<string, unknown>;
+  status: { type: string };
+}) {
   const running = status.type === "running" || status.type === "requires-action";
+  const section = typeof args?.section === "string" ? args.section : "";
+  const label = sectionLabels[section] || "your latest Selvam records";
   return (
     <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
       {running ? (
@@ -173,8 +194,7 @@ function FinancialToolStatus({ toolName, status }: { toolName: string; status: {
         <CheckIcon className="size-3.5 text-emerald-500" />
       )}
       <span>
-        {running ? "Checking" : "Checked"}{" "}
-        {toolName === "getFinancialSection" ? "your latest Selvam records" : toolName}
+        {running ? "Checking" : "Checked"} {toolName === "getFinancialSection" ? label : toolName}
       </span>
     </div>
   );
@@ -291,7 +311,13 @@ const AssistantMessage: FC = () => (
                 </details>
               );
             case "tool-call":
-              return <FinancialToolStatus toolName={part.toolName} status={part.status} />;
+              return (
+                <FinancialToolStatus
+                  toolName={part.toolName}
+                  args={part.args as Record<string, unknown>}
+                  status={part.status}
+                />
+              );
             case "indicator":
               return <AssistantWorkingIndicator />;
             case "data":
@@ -522,6 +548,30 @@ export default function ChatPage() {
   const visibleThreads = chat.threads.filter((thread) =>
     thread.title.toLocaleLowerCase().includes(historyQuery.trim().toLocaleLowerCase()),
   );
+
+  // Keyboard shortcuts for chat
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const isMeta = event.metaKey || event.ctrlKey;
+
+      // ⌘+Shift+N: New thread
+      if (isMeta && event.shiftKey && event.key === "N") {
+        event.preventDefault();
+        chat.clear();
+        return;
+      }
+
+      // Escape: Close mobile history panel
+      if (event.key === "Escape" && mobileHistoryOpen) {
+        event.preventDefault();
+        setMobileHistoryOpen(false);
+        return;
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [chat, mobileHistoryOpen]);
 
   function toggleThreadSelection(id: string) {
     setSelectedThreadIds((current) => {

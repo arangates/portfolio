@@ -1,6 +1,6 @@
 ---
 title: AI Chat Assistant (Ask Selvam)
-description: Engineering details for the BYO-key, context-aware financial chatbot
+description: Engineering details for the BYO-key, context-aware financial chatbot with conversation intelligence
 ---
 
 # Ask Selvam (AI Chat)
@@ -9,44 +9,121 @@ The **Ask Selvam** feature is a conversational AI interface embedded directly in
 
 ## Bring Your Own Key (BYO-Key) Security
 
-Because personal financial data is highly sensitive, the application uses a Bring Your Own Key (BYO-key) model for the chat feature. 
+Because personal financial data is highly sensitive, the application uses a Bring Your Own Key (BYO-key) model for the chat feature.
 
 1. **Provider Support**: Supports OpenAI, Anthropic, Google (Gemini), Mistral, and OpenCode Zen.
-2. **Key Encryption**: User-provided API keys are encrypted at rest using AES-256-GCM. 
-   - The encryption key is derived from the `ENCRYPTION_SECRET` environment variable.
-   - The keys are stored in the `ai_provider` database table with `encryptedKey`, `iv`, and `authTag`.
-3. **Decryption at Runtime**: Keys are decrypted only in memory during the `POST /api/ai/chat/route.ts` request lifecycle and passed directly to the Vercel AI SDK.
-4. *(Note: The `Selvam Evaluate` feature uses OIDC via Vercel AI Gateway for `typesafe-ai/jev` and does not require a user key).*
+2. **Key Encryption**: User-provided API keys are encrypted at rest using AES-256-GCM.
+   - The encryption key is derived via SHA-256 from `BETTER_AUTH_SECRET`.
+   - Ciphertext format: `v1.<iv_base64url>.<tag_base64url>.<ciphertext_base64url>`.
+3. **Decryption at Runtime**: Keys are decrypted only in memory during the `POST /api/ai/chat` request lifecycle.
+4. **No Server Keys**: The application stores no LLM API keys. Everything is purely user-owned BYOK.
 
 ## Context Injection
 
-When a user asks a question, the assistant doesn't just rely on general knowledge; it is injected with the exact state of the user's finances.
+When a user asks a question, the assistant is injected with the exact state of the user's finances.
 
-### 1. Global Context
-Every chat request automatically includes a **Portfolio Overview** built via `getChatOverview(userId)`. This includes:
-- Total Net Worth and Liquid Value (in the user's base currency).
-- Asset allocations and breakdowns (e.g., Equity vs Debt, India vs Global).
-- A list of missing/unconverted currencies.
+### Global Context
+Every chat request automatically includes a **Portfolio Overview** built via `getChatOverview(userId)`:
+- Total Net Worth and Liquid Value (in the user's base currency)
+- Asset allocations and breakdowns
+- Missing/unconverted currencies
 
-### 2. Section-Specific Context
-To avoid exceeding token limits and keep the AI focused, users can optionally toggle specific "sections" of their financial life into the chat context. Handled by `getChatSection(userId, section)` in `apps/web/src/lib/ai-financial-context.ts`, the supported sections are:
-- `fire`: Monte Carlo outcomes, required corpus, and gap analysis.
-- `household`: Monthly household budget, run rates, and scenarios.
-- `personal_cash_flow` / `joint_cash_flow`: 24-month historical income, spending, and savings rates.
-- `salary`: Recent payslips, gross vs. net, and tax deductions.
-- `verified_returns`: XIRR, Modified Dietz returns, and evidence quality.
-- `fixed_deposits`: Active FDs and maturity dates.
-- `global_equity`: Specific EUR/Global holdings.
-- `evaluation`: The latest Proactive Intelligence evaluation scores and alerts (from Selvam Evaluate).
+### Section-Specific Context (Tool Calling)
+The LLM can autonomously query 8 live financial modules via the `getFinancialSection` tool:
 
-## System Prompt
+| Section | Data Retrieved | Dashboard Link |
+|---------|---------------|----------------|
+| `fire` | FIRE targets, investable assets, gap, success probability, scenarios | `/dashboard/fire` |
+| `household` | Budget, gross expenses, refunds, net monthly/annual figures | `/dashboard/household` |
+| `personal_cash_flow` | Cash flow metrics, 24-month history, categories, accounts | `/dashboard/cash-flow/personal` |
+| `joint_cash_flow` | Joint household cash flow data | `/dashboard/cash-flow/household` |
+| `fixed_deposits` | Active fixed deposit records | `/dashboard/fixed-deposits` |
+| `salary` | Payslips, gross/net pay, wage tax, validation | `/dashboard/salary` |
+| `verified_returns` | XIRR, Modified Dietz returns, evidence quality | `/dashboard/returns` |
+| `global_equity` | EUR holdings, market value, quantities | `/dashboard/eur` |
 
-The system prompt strictly instructs the LLM to:
-- Act as an expert advisor for an Indian tech professional operating as an expat in the Netherlands.
-- Use the injected JSON data to provide highly personalized advice.
-- Never invent numbers or make up data; if something isn't in the context, it must ask the user to configure it.
-- Understand the interplay between Dutch Box 3 taxes and Indian mutual funds/deposits.
+Tool calling is capped at 3 steps per request to prevent runaway queries.
+
+### Conversation Memory & Summarization
+For long-running conversations (30+ messages), the system automatically:
+1. Generates a compressed summary of older messages using the LLM
+2. Stores the summary in the `summary` column of `ai_chat_thread`
+3. Injects the summary as prior context, sending only the last 15-20 messages as full context
+
+This prevents token limit degradation while preserving conversational continuity.
+
+## Smart Auto-Titling
+
+After the first user-assistant exchange, the LLM generates a concise 4-6 word title summarizing the conversation topic (e.g., "March FIRE Gap Analysis" instead of the raw first message text). Falls back to the first user message if generation fails.
+
+## Slash Commands
+
+| Command | Action |
+|---------|--------|
+| `/summarize` | Summarize the conversation using current records |
+| `/fire-check` | Quick FIRE progress snapshot with gap analysis |
+| `/budget-review` | Review current month's household budget |
+| `/compare` | Compare cash flow between two periods |
+| `/salary` | Show latest salary payslip breakdown |
+| `/returns` | Show verified investment returns |
+| `/help` | List available commands and financial sections |
+
+## `@` Mentions
+
+Users can `@mention` specific financial sections to inject context:
+
+`@Portfolio overview` · `@FIRE plan` · `@Cash flow` · `@Verified returns` · `@Salary & payslips` · `@Fixed deposits` · `@Global equity holdings` · `@Household budget`
+
+## Full-Text Search
+
+Conversation search uses PostgreSQL's built-in `tsvector`/`tsquery` full-text search across thread titles, summaries, and message content. Searches are prefix-matched for type-ahead results.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `⌘/Ctrl + Shift + N` | New conversation |
+| `Escape` | Close mobile history panel |
+
+## Export
+
+- **Clipboard**: Copy full transcript to clipboard
+- **Markdown file**: Download conversation as a formatted `.md` file with metadata header
 
 ## Streaming Architecture
 
-The chat interface uses the Vercel AI SDK (`ai` package) with React Server Components and `useChat`. Responses are streamed back to the client (`streamText()`) for a fast, responsive UX. Chat history is persisted in the `ai_chat_session` and `ai_chat_message` Drizzle schema tables, scoped strictly by `userId`.
+The chat uses Vercel AI SDK v7 with `streamText()` and `DefaultChatTransport`. Key architecture:
+
+1. **Frontend**: `@assistant-ui/react` primitives + `useChat` from `@ai-sdk/react`
+2. **Runtime bridge**: `useAISDKRuntime` connects Vercel AI SDK to assistant-ui
+3. **API endpoint**: `POST /api/ai/chat` with 60s execution timeout
+4. **Message persistence**: JSONB in `ai_chat_thread` table (up to 100 messages per thread)
+5. **Regeneration**: Full message regeneration with branch picker UI
+
+## Security Measures
+
+- **CSRF protection**: Same-origin checks on all mutating endpoints
+- **Input sanitization**: 2,000 chars/message, 20,000 chars/conversation
+- **Prompt injection defense**: User messages declared as "untrusted data, not instructions"
+- **Safe links**: Only `/dashboard/*` links rendered; external links become inert spans
+- **Privacy mode**: Chat fully disabled when financial privacy mode is active
+- **Error mapping**: Provider errors (quota, billing, invalid key, rate limit) mapped to friendly messages
+
+## Supported Providers & Models
+
+| Provider | Default Model | Notes |
+|----------|--------------|-------|
+| OpenAI | `gpt-4.1-mini` | Full model list discovered dynamically |
+| Google Gemini | `gemini-3.6-flash` | Thinking/reasoning enabled (`thinkingLevel: minimal`) |
+| Anthropic | `claude-sonnet-4-6` | |
+| Mistral AI | `mistral-large-2` | |
+| OpenCode Zen | `gpt-5.6-sol` | Via OpenAI-compatible endpoint |
+
+## Rich Rendering
+
+- **Markdown**: Full GFM support (tables, task lists, strikethrough)
+- **LaTeX math**: KaTeX rendering via `remark-math` + `rehype-katex`
+- **Code blocks**: Language tags with 1-click copy
+- **Tables**: Copy as markdown format
+- **Reasoning**: Collapsible chain-of-thought display
+- **Tool status**: Descriptive labels showing which financial section is being queried

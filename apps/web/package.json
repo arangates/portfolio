@@ -15,8 +15,8 @@
     "@ai-sdk/mistral": "^4.0.48",
     "@ai-sdk/openai": "^4.0.71",
     "@ai-sdk/react": "^4.0.110",
-    "@assistant-ui/ai-sdk": "^0.0.7",
-    "@assistant-ui/react": "^0.15.21",
+    "@assistant-ui/ai-sdk": "^0.0.8",
+    "@assistant-ui/react": "^0.15.22",
     "@assistant-ui/react-markdown": "^0.14.16",
     "@portfolio/ai-chat-ui": "workspace:*",
     "@portfolio/api": "workspace:*",
@@ -34,6 +34,7 @@
     "ai": "^7.0.107",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "catalog:",
+    "class-variance-authority": "^0.7.1",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.2",
     "embla-carousel-autoplay": "^8.6.0",
@@ -41,6 +42,7 @@
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
+    "radix-ui": "^1.6.7",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",
@@ -49,7 +51,8 @@
     "remark-math": "^6.0.0",
     "sonner": "catalog:",
     "web-push": "^3.6.7",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@portfolio/config": "workspace:*",

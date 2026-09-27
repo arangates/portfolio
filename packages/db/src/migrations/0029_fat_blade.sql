@@ -1,0 +1,1 @@
+ALTER TABLE "ai_chat_thread" ADD COLUMN "summary" text;
