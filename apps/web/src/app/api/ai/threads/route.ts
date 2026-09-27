@@ -1,4 +1,9 @@
-import { createChatThread, deleteChatThreads, listChatThreads } from "@/lib/ai-chat-threads";
+import {
+  createChatThread,
+  deleteChatThreads,
+  listChatThreads,
+  searchChatThreads,
+} from "@/lib/ai-chat-threads";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -8,13 +13,13 @@ async function currentUser() {
   return session?.user.id ?? null;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const userId = await currentUser();
   if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
-  return Response.json(
-    { threads: await listChatThreads(userId) },
-    { headers: { "Cache-Control": "no-store" } },
-  );
+  const url = new URL(request.url);
+  const query = url.searchParams.get("q")?.trim();
+  const threads = query ? await searchChatThreads(userId, query) : await listChatThreads(userId);
+  return Response.json({ threads }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request: Request) {

@@ -204,6 +204,13 @@
       "when": 1790376761810,
       "tag": "0028_graceful_starfox",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1790516203050,
+      "tag": "0029_fat_blade",
+      "breakpoints": true
     }
   ]
 }
