@@ -21,11 +21,13 @@ This roadmap outlines planned features for the **Ask Selvam** AI Chat Assistant,
 Render interactive charts directly inside assistant messages instead of dumping numerical data as text.
 
 ### Architecture
+
 1. Add a `renderChart` tool definition alongside `getFinancialSection`
 2. Tool returns structured chart data: `{ type: 'bar' | 'line' | 'pie', title, labels, datasets }`
 3. Frontend intercepts `tool-call` parts with type `renderChart` and renders `<Recharts />` inline
 
 ### Planned Chart Types
+
 - Monthly cash flow bar chart (income vs. spending)
 - FIRE progress line chart (assets vs. required corpus over time)
 - Expense category pie/donut chart
@@ -33,6 +35,7 @@ Render interactive charts directly inside assistant messages instead of dumping 
 - Salary trend over months (gross vs. net)
 
 ### Why It Matters
+
 Transforms the chat from a text-only Q&A into a **visual analytics dashboard inside the conversation**. Financial data is inherently visual — charts make patterns and trends immediately apparent.
 
 ---
@@ -44,6 +47,7 @@ Transforms the chat from a text-only Q&A into a **visual analytics dashboard ins
 The assistant currently only responds when asked. This feature adds a **proactive mode** that generates insights automatically.
 
 ### Architecture
+
 1. Server-side scheduled function (daily/weekly)
 2. Calls `getChatOverview(userId)` + relevant `getFinancialSection` data
 3. Asks the LLM: "Given these portfolio changes since last check, generate 2-3 brief insights"
@@ -51,12 +55,14 @@ The assistant currently only responds when asked. This feature adds a **proactiv
 5. Surfaces as notification badges or "Daily Digest" card at the top of chat
 
 ### Example Insights
+
 - "Your FIRE gap decreased by €2,400 this month"
 - "Fixed deposit #3 matures in 14 days"
 - "Spending in Dining category spiked 40% vs. last month"
 - "Net worth crossed the €X milestone this week"
 
 ### Database Schema
+
 ```sql
 CREATE TABLE ai_insight (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -79,17 +85,20 @@ CREATE TABLE ai_insight (
 The composer already has an attachment button in the UI. This feature wires it up for bank statements, tax documents, and payslips.
 
 ### Architecture
+
 1. Accept PDF/image uploads via the existing `ComposerPrimitive.AddAttachment` button
 2. For PDFs: Extract text server-side (requires adding `pdf-parse` package)
 3. For images: Pass directly to vision-capable models (GPT-4o, Gemini Flash, Claude Sonnet)
 4. Cross-reference uploaded documents against existing Selvam records
 
 ### Use Cases
+
 - "Upload your bank statement and I'll reconcile it against your recorded cash flows"
 - "Upload your tax assessment and I'll verify against your recorded salary data"
 - "Upload a payslip and I'll compare it with what's recorded in Selvam"
 
 ### Security Considerations
+
 - Documents processed in memory only, never persisted to disk
 - Max file size: 10MB
 - Allowed types: PDF, PNG, JPG, JPEG
@@ -104,17 +113,20 @@ The composer already has an attachment button in the UI. This feature wires it u
 Allow users to explicitly fork a conversation at any point to explore different financial scenarios.
 
 ### Architecture
+
 1. "Fork from here" action on any past message
 2. Creates a new thread with `parent_thread_id` and `fork_point` columns
 3. New thread starts with messages up to the fork point
 4. Enables side-by-side scenario exploration
 
 ### Use Cases
+
 - "What if I increase my savings rate to 40%?" vs. "What if I retire 2 years later?"
 - Compare tax implications of different investment strategies
 - Explore multiple FIRE scenarios in parallel
 
 ### Schema Changes
+
 ```sql
 ALTER TABLE ai_chat_thread ADD COLUMN parent_thread_id UUID REFERENCES ai_chat_thread(id);
 ALTER TABLE ai_chat_thread ADD COLUMN fork_message_index INTEGER;
@@ -129,6 +141,7 @@ ALTER TABLE ai_chat_thread ADD COLUMN fork_message_index INTEGER;
 Full voice interaction support using the browser's native `SpeechRecognition` API.
 
 ### Features
+
 - Voice-to-text transcription → insert into composer
 - Visual waveform indicator during recording
 - Fallback to OpenAI Whisper API (user already has an OpenAI key)
@@ -138,13 +151,13 @@ Full voice interaction support using the browser's native `SpeechRecognition` AP
 
 ## Implementation Timeline
 
-| Feature | Target | Blocking Dependencies |
-|---------|--------|----------------------|
-| Inline Charts | Next sprint | None — `recharts` available |
-| Document Upload | Next sprint | `pdf-parse` package needed for PDFs |
-| Proactive Insights | Q4 2026 | Scheduled function infrastructure |
-| Conversation Forking | Q4 2026 | Schema migration |
-| Voice Input/Output | Q1 2027 | Browser API availability |
+| Feature              | Target      | Blocking Dependencies               |
+| -------------------- | ----------- | ----------------------------------- |
+| Inline Charts        | Next sprint | None — `recharts` available         |
+| Document Upload      | Next sprint | `pdf-parse` package needed for PDFs |
+| Proactive Insights   | Q4 2026     | Scheduled function infrastructure   |
+| Conversation Forking | Q4 2026     | Schema migration                    |
+| Voice Input/Output   | Q1 2027     | Browser API availability            |
 
 ---
 

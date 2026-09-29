@@ -9,13 +9,15 @@ The Verified Returns Engine (`packages/api/src/verified-returns-queries.ts`) is 
 
 ## XIRR (Extended Internal Rate of Return)
 
-The engine uses the XIRR algorithm to account for the exact dates when capital was deployed (bought) or extracted (sold). 
+The engine uses the XIRR algorithm to account for the exact dates when capital was deployed (bought) or extracted (sold).
 
 ### The Algorithm (Newton-Raphson Method)
+
 XIRR solves for the discount rate $r$ that makes the Net Present Value (NPV) of all cash flows equal to zero:
 NPV = Sum(C_i / (1 + r)^((d_i - d_0)/365)) = 0
 
 Where:
+
 - $C_i$ = Cash flow amount (negative for investments/buys, positive for redemptions/sells and final current value).
 - $d_i$ = Date of the cash flow.
 - $d_0$ = Date of the initial cash flow.

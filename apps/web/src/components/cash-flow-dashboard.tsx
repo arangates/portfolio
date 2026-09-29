@@ -1,11 +1,14 @@
 "use client";
 
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
+import { MonthlyCashFlowCard } from "@/components/monthly-cash-flow-card";
 import { AllocationPieChart } from "@/components/allocation-pie-chart";
 import { useAmountFormat } from "@/components/amount-preferences";
 import { DataTable } from "@/components/data-table/data-table";
 import { appFetch } from "@/lib/app-activity";
 import { formatDate, formatPercent } from "@/lib/format";
+import type { ChartConfig } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
+
 import { BANK_CATEGORIES } from "@portfolio/api/bank-statement-parser";
 import { Badge } from "@portfolio/ui/components/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@portfolio/ui/components/tabs";
@@ -13,7 +16,7 @@ import {
   EChartsVisualization,
   type EChartsVisualizationOption,
 } from "@portfolio/ui/components/echarts-visualization";
-import type { ChartConfig } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
+
 import type { ColumnDef } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -47,80 +50,11 @@ export function CashFlowDashboard({
   const { formatCurrency } = useAmountFormat();
   const router = useRouter();
   const [saving, setSaving] = useState<string | null>(null);
-  const [timeBin, setTimeBin] = useState<"month" | "quarter" | "year">("month");
-  const binnedMonthly = useMemo(() => {
-    if (timeBin === "month") return data.monthly;
-    const bins = new Map<string, (typeof data.monthly)[number]>();
-    for (const row of data.monthly) {
-      const [year, month = "01"] = row.month.split("-");
-      const key = timeBin === "year" ? year : `${year} Q${Math.floor((Number(month) - 1) / 3) + 1}`;
-      const current = bins.get(key);
-      bins.set(key, {
-        ...row,
-        month: key,
-        income: (current?.income ?? 0) + row.income,
-        spending: (current?.spending ?? 0) + row.spending,
-        invested: (current?.invested ?? 0) + row.invested,
-      });
-    }
-    return [...bins.values()];
-  }, [data.monthly, timeBin]);
   const axis = {
     axisLine: { lineStyle: { color: "#52525b" } },
     axisLabel: { color: "#a1a1aa" },
     splitLine: { lineStyle: { color: "rgba(113,113,122,.2)" } },
   };
-  const monthlyOption = useMemo<EChartsVisualizationOption>(() => {
-    const peakIndex = binnedMonthly.reduce(
-      (best, row, index, rows) =>
-        row.income + row.spending + row.invested >
-        rows[best].income + rows[best].spending + rows[best].invested
-          ? index
-          : best,
-      0,
-    );
-    const seriesData = (key: "income" | "spending" | "invested") =>
-      binnedMonthly.map((row, index) => ({
-        value: row[key],
-        itemStyle: { opacity: index === peakIndex ? 1 : 0.45 },
-      }));
-    return {
-      tooltip: {
-        trigger: "axis",
-        valueFormatter: (value: unknown) => formatCurrency(Number(value), "EUR"),
-      },
-      legend: { bottom: 0, textStyle: { color: "#a1a1aa" } },
-      grid: { left: 12, right: 14, top: 20, bottom: 44, containLabel: true },
-      xAxis: { type: "category", data: binnedMonthly.map((row) => row.month), ...axis },
-      yAxis: { type: "value", ...axis },
-      series: [
-        {
-          name: "Income",
-          type: "bar",
-          data: seriesData("income"),
-          showBackground: true,
-          backgroundStyle: { color: "rgba(113,113,122,.08)", borderRadius: [5, 5, 0, 0] },
-          itemStyle: { color: "#34d399", borderRadius: [5, 5, 0, 0] },
-        },
-        {
-          name: "Household spending",
-          type: "bar",
-          data: seriesData("spending"),
-          showBackground: true,
-          backgroundStyle: { color: "rgba(113,113,122,.08)", borderRadius: [5, 5, 0, 0] },
-          itemStyle: { color: "#fb7185", borderRadius: [5, 5, 0, 0] },
-        },
-        {
-          name: "Invested",
-          type: "bar",
-          data: seriesData("invested"),
-          showBackground: true,
-          backgroundStyle: { color: "rgba(113,113,122,.08)", borderRadius: [5, 5, 0, 0] },
-          itemStyle: { color: "#60a5fa", borderRadius: [5, 5, 0, 0] },
-        },
-      ],
-    };
-  }, [binnedMonthly, formatCurrency]);
   const categoryData = data.categories.map((row) => ({
     id: row.name,
     value: row.value,
@@ -273,41 +207,7 @@ export function CashFlowDashboard({
       </div>
       <TabsContent value="insights">
         <div className="grid min-w-0 grid-cols-1 gap-4 px-4 xl:grid-cols-2 lg:px-6">
-          <AnalyticsChartCard
-            id="monthly-cash-flow"
-            title={
-              scope === "personal"
-                ? "Salary, personal spending and investing"
-                : scope === "joint"
-                  ? "Household income and spending"
-                  : "Income, spending and investing"
-            }
-            description="Internal transfers are removed so money is counted once."
-            metric={formatPercent(data.metrics.savingsRate, 1)}
-            metricLabel="income retained before investing"
-          >
-            <div className="flex justify-end px-2 pt-1">
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                Time bin
-                <select
-                  value={timeBin}
-                  onChange={(event) =>
-                    setTimeBin(event.target.value as "month" | "quarter" | "year")
-                  }
-                  className="h-8 rounded-md border bg-background px-2 text-foreground"
-                >
-                  <option value="month">Month</option>
-                  <option value="quarter">Quarter</option>
-                  <option value="year">Year</option>
-                </select>
-              </label>
-            </div>
-            <EChartsVisualization
-              option={monthlyOption}
-              className="h-[330px] w-full"
-              ariaLabel="Monthly income, household spending, and investing"
-            />
-          </AnalyticsChartCard>
+          <MonthlyCashFlowCard data={data} scope={scope} />
           <AnalyticsChartCard
             id="spending-by-category"
             title={scope === "personal" ? "Where personal cash went" : "Where household cash went"}
