@@ -63,7 +63,7 @@ import {
 } from "@portfolio/ui/components/evilcharts/ui/echarts-legend";
 import type { ComposeOption, ImagePatternObject } from "echarts/core";
 import { LineChart, type LineSeriesOption } from "echarts/charts";
-import { motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 import * as echarts from "echarts/core";
 
 // Re-export the shared types that were previously declared inline here, so
@@ -2356,15 +2356,10 @@ export function EChartsAreaChart<TData extends Record<string, unknown>>({
 
       {isLoading && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
-          <motion.div
-            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="text-primary bg-background flex items-center justify-center gap-2 rounded-md border px-2 py-0.5 text-sm"
-          >
+          <div className="text-primary bg-background flex items-center justify-center gap-2 rounded-md border px-2 py-0.5 text-sm">
             <div className="border-border border-t-primary h-3 w-3 animate-spin rounded-full border" />
             <span>Loading</span>
-          </motion.div>
+          </div>
         </div>
       )}
     </div>

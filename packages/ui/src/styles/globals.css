@@ -124,7 +124,63 @@
   body {
     @apply font-sans bg-background text-foreground;
   }
+  [data-slot="button"],
+  [data-slot="input"],
+  [data-slot="select-trigger"],
+  [data-slot="toggle"],
+  [data-slot="tabs-trigger"],
+  [data-sidebar="menu-button"],
+  [data-sidebar="menu-sub-button"] {
+    min-height: 2.5rem;
+  }
+  [data-slot="button"][data-size^="icon"] {
+    min-width: 2.5rem;
+  }
   html {
     @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+  img:not([data-no-outline]):not([data-slot="avatar-image"]) {
+    outline: 1px solid oklch(0 0 0 / 0.1);
+    outline-offset: -1px;
+  }
+  .dark img:not([data-no-outline]):not([data-slot="avatar-image"]) {
+    outline-color: oklch(1 0 0 / 0.1);
+  }
+}
+
+@media (pointer: coarse) {
+  [data-slot="button"],
+  [data-slot="input"],
+  [data-slot="select-trigger"],
+  [data-slot="toggle"],
+  [data-slot="tabs-trigger"],
+  [data-sidebar="menu-button"],
+  [data-sidebar="menu-sub-button"] {
+    min-height: 2.75rem;
+  }
+  [data-slot="tabs-list"] {
+    min-height: 2.75rem;
+  }
+  [data-slot="button"][data-size^="icon"] {
+    min-width: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

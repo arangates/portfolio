@@ -34,7 +34,7 @@ import {
 } from "react";
 import { TooltipComponent, type TooltipComponentOption } from "echarts/components";
 import { SankeyChart, type SankeySeriesOption } from "echarts/charts";
-import { motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 import type { ComposeOption } from "echarts/core";
 import * as echarts from "echarts/core";
 
@@ -1407,15 +1407,10 @@ export function EChartsSankeyChart({
 
       {isLoading && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
-          <motion.div
-            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="text-primary bg-background flex items-center justify-center gap-2 rounded-md border px-2 py-0.5 text-sm"
-          >
+          <div className="text-primary bg-background flex items-center justify-center gap-2 rounded-md border px-2 py-0.5 text-sm">
             <div className="border-border border-t-primary h-3 w-3 animate-spin rounded-full border" />
             <span>Loading</span>
-          </motion.div>
+          </div>
         </div>
       )}
     </div>

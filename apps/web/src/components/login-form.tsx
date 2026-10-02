@@ -16,6 +16,7 @@ import { cn } from "@portfolio/ui/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -29,6 +30,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div"> & { googleEnabled: boolean; oauthFailed?: boolean }) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const form = useForm({
     defaultValues: { email: "", password: "" },
     validators: {
@@ -36,6 +38,11 @@ export function LoginForm({
         email: z.email("Enter a valid email address"),
         password: z.string().min(1, "Enter your password"),
       }),
+    },
+    onSubmitInvalid: () => {
+      requestAnimationFrame(() => {
+        formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
     },
     onSubmit: async ({ value }) => {
       await authClient.signIn.email(
@@ -59,6 +66,8 @@ export function LoginForm({
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form
+            ref={formRef}
+            noValidate
             className="p-6 md:p-8"
             onSubmit={(event) => {
               event.preventDefault();
@@ -105,9 +114,12 @@ export function LoginForm({
                       onBlur={field.handleBlur}
                       onChange={(event) => field.handleChange(event.target.value)}
                       aria-invalid={field.state.meta.errors.length > 0}
+                      aria-describedby={
+                        field.state.meta.errors.length ? "login-email-error" : undefined
+                      }
                       required
                     />
-                    <FieldError>
+                    <FieldError id="login-email-error" role={undefined}>
                       {field.state.meta.errors
                         .map((error) => error?.message)
                         .filter(Boolean)
@@ -129,9 +141,12 @@ export function LoginForm({
                       onBlur={field.handleBlur}
                       onChange={(event) => field.handleChange(event.target.value)}
                       aria-invalid={field.state.meta.errors.length > 0}
+                      aria-describedby={
+                        field.state.meta.errors.length ? "login-password-error" : undefined
+                      }
                       required
                     />
-                    <FieldError>
+                    <FieldError id="login-password-error" role={undefined}>
                       {field.state.meta.errors
                         .map((error) => error?.message)
                         .filter(Boolean)
@@ -141,14 +156,9 @@ export function LoginForm({
                 )}
               </form.Field>
               <Field>
-                <form.Subscribe
-                  selector={(state) => ({
-                    canSubmit: state.canSubmit,
-                    isSubmitting: state.isSubmitting,
-                  })}
-                >
-                  {({ canSubmit, isSubmitting }) => (
-                    <Button type="submit" disabled={!canSubmit || isSubmitting}>
+                <form.Subscribe selector={(state) => state.isSubmitting}>
+                  {(isSubmitting) => (
+                    <Button type="submit" disabled={isSubmitting}>
                       {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
                       {isSubmitting ? "Signing in…" : "Sign in"}
                     </Button>
@@ -172,7 +182,7 @@ export function LoginForm({
           </div>
         </CardContent>
       </Card>
-      <FieldDescription className="px-6 text-center">
+      <FieldDescription className="px-6 text-center text-foreground/80">
         Your portfolio data is private and isolated to your account.
       </FieldDescription>
     </div>

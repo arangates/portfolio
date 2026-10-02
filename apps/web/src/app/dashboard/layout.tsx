@@ -23,12 +23,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
           } as React.CSSProperties
         }
       >
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-3 focus:text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          Skip to content
+        </a>
         <AppSidebar user={session.user} variant="inset" />
         {/* Bounded height turns `main` into the scroll region, keeping the header fixed above it. */}
         <SidebarInset className="h-svh overflow-hidden border border-border/60 shadow-sm md:h-[calc(100svh-1rem)]">
           <GlobalAIChat userId={session.user.id}>
             <SiteHeader />
-            <main className="dashboard-content flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
+            <main
+              id="main-content"
+              tabIndex={-1}
+              className="dashboard-content flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
+            >
               <FinancialContent>{children}</FinancialContent>
             </main>
           </GlobalAIChat>

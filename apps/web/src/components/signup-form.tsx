@@ -16,6 +16,7 @@ import { cn } from "@portfolio/ui/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -30,7 +31,7 @@ const signupSchema = z
     confirmPassword: z.string(),
   })
   .refine((value) => value.password === value.confirmPassword, {
-    message: "Passwords do not match",
+    message: "Enter the same password in both fields",
     path: ["confirmPassword"],
   });
 
@@ -41,9 +42,15 @@ export function SignupForm({
   ...props
 }: React.ComponentProps<"div"> & { googleEnabled: boolean; oauthFailed?: boolean }) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const form = useForm({
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
     validators: { onSubmit: signupSchema },
+    onSubmitInvalid: () => {
+      requestAnimationFrame(() => {
+        formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
+    },
     onSubmit: async ({ value }) => {
       await authClient.signUp.email(
         { name: value.name.trim(), email: value.email, password: value.password },
@@ -66,6 +73,8 @@ export function SignupForm({
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form
+            ref={formRef}
+            noValidate
             className="p-6 md:p-8"
             onSubmit={(event) => {
               event.preventDefault();
@@ -111,9 +120,12 @@ export function SignupForm({
                       onBlur={field.handleBlur}
                       onChange={(event) => field.handleChange(event.target.value)}
                       aria-invalid={field.state.meta.errors.length > 0}
+                      aria-describedby={
+                        field.state.meta.errors.length ? "signup-name-error" : undefined
+                      }
                       required
                     />
-                    <FieldError>
+                    <FieldError id="signup-name-error" role={undefined}>
                       {field.state.meta.errors
                         .map((error) => error?.message)
                         .filter(Boolean)
@@ -136,12 +148,15 @@ export function SignupForm({
                       onBlur={field.handleBlur}
                       onChange={(event) => field.handleChange(event.target.value)}
                       aria-invalid={field.state.meta.errors.length > 0}
+                      aria-describedby={
+                        field.state.meta.errors.length ? "signup-email-error" : undefined
+                      }
                       required
                     />
                     <FieldDescription>
                       Used only for authentication and account communication.
                     </FieldDescription>
-                    <FieldError>
+                    <FieldError id="signup-email-error" role={undefined}>
                       {field.state.meta.errors
                         .map((error) => error?.message)
                         .filter(Boolean)
@@ -164,9 +179,13 @@ export function SignupForm({
                         onBlur={field.handleBlur}
                         onChange={(event) => field.handleChange(event.target.value)}
                         aria-invalid={field.state.meta.errors.length > 0}
+                        aria-describedby={
+                          field.state.meta.errors.length ? "signup-password-error" : undefined
+                        }
+                        minLength={12}
                         required
                       />
-                      <FieldError>
+                      <FieldError id="signup-password-error" role={undefined}>
                         {field.state.meta.errors
                           .map((error) => error?.message)
                           .filter(Boolean)
@@ -188,9 +207,14 @@ export function SignupForm({
                         onBlur={field.handleBlur}
                         onChange={(event) => field.handleChange(event.target.value)}
                         aria-invalid={field.state.meta.errors.length > 0}
+                        aria-describedby={
+                          field.state.meta.errors.length
+                            ? "signup-confirm-password-error"
+                            : undefined
+                        }
                         required
                       />
-                      <FieldError>
+                      <FieldError id="signup-confirm-password-error" role={undefined}>
                         {field.state.meta.errors
                           .map((error) => error?.message)
                           .filter(Boolean)
@@ -200,16 +224,11 @@ export function SignupForm({
                   )}
                 </form.Field>
               </Field>
-              <FieldDescription>Use at least 12 characters.</FieldDescription>
+              <FieldDescription>Password must contain at least 12 characters.</FieldDescription>
               <Field>
-                <form.Subscribe
-                  selector={(state) => ({
-                    canSubmit: state.canSubmit,
-                    isSubmitting: state.isSubmitting,
-                  })}
-                >
-                  {({ canSubmit, isSubmitting }) => (
-                    <Button type="submit" disabled={!canSubmit || isSubmitting}>
+                <form.Subscribe selector={(state) => state.isSubmitting}>
+                  {(isSubmitting) => (
+                    <Button type="submit" disabled={isSubmitting}>
                       {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
                       {isSubmitting ? "Creating account…" : "Create account"}
                     </Button>
@@ -233,7 +252,7 @@ export function SignupForm({
           </div>
         </CardContent>
       </Card>
-      <FieldDescription className="px-6 text-center">
+      <FieldDescription className="px-6 text-center text-foreground/80">
         Every portfolio record is isolated to your account.
       </FieldDescription>
     </div>
