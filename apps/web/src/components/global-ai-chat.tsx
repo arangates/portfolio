@@ -13,7 +13,7 @@ import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { buttonVariants } from "@portfolio/ui/components/button";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { KeyRoundIcon } from "lucide-react";
+import { ArrowUpRightIcon, KeyRoundIcon } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -53,7 +53,7 @@ export function useSelvamChat() {
   return context;
 }
 
-export function SelvamComposer({ standalone = false }: { standalone?: boolean }) {
+export function SelvamComposer() {
   const chat = useSelvamChat();
 
   if (chat.statusLoading || !chat.status) {
@@ -66,16 +66,27 @@ export function SelvamComposer({ standalone = false }: { standalone?: boolean })
     return (
       <Link
         href="/dashboard/settings?tab=model-keys"
-        className={buttonVariants({ variant: "outline", className: "w-full" })}
+        className={buttonVariants({
+          variant: "outline",
+          className: "h-auto min-h-14 w-full justify-start gap-3 rounded-2xl px-4 py-3 text-left",
+        })}
       >
-        <KeyRoundIcon /> Add an API key to start chatting
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted">
+          <KeyRoundIcon />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium">Connect an AI provider</span>
+          <span className="block text-xs font-normal text-muted-foreground">
+            Add an API key to send messages
+          </span>
+        </span>
+        <ArrowUpRightIcon className="size-4 shrink-0 text-muted-foreground" />
       </Link>
     );
   }
 
   return (
     <ChatComposer
-      standalone={standalone}
       modelSelector={
         <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">
           {chat.models.find(
@@ -83,16 +94,6 @@ export function SelvamComposer({ standalone = false }: { standalone?: boolean })
           )?.label ?? chat.model}
         </span>
       }
-      mentions={[
-        { id: "portfolio", label: "Portfolio overview", type: "financial section" },
-        { id: "fire", label: "FIRE plan", type: "financial section" },
-        { id: "cash-flow", label: "Cash flow", type: "financial section" },
-        { id: "returns", label: "Verified returns", type: "financial section" },
-        { id: "salary", label: "Salary & payslips", type: "financial section" },
-        { id: "fixed-deposits", label: "Fixed deposits", type: "financial section" },
-        { id: "global-equity", label: "Global equity holdings", type: "financial section" },
-        { id: "household", label: "Household budget", type: "financial section" },
-      ]}
       commands={[
         {
           id: "summarize",

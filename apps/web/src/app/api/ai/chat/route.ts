@@ -118,6 +118,13 @@ export async function POST(request: Request) {
           .slice(0, regeneratedAssistantIndex)
           .findLastIndex((message) => message.role === "user")
       : -1;
+    const editedUserIndex =
+      !regenerate && submitted[0]?.role === "user"
+        ? thread.messages.findIndex(
+            (message) => message.id === submitted[0]?.id && message.role === "user",
+          )
+        : -1;
+    const editing = editedUserIndex >= 0;
     if (regenerate && (regeneratedAssistantIndex < 0 || lastUserIndex < 0))
       return Response.json(
         { error: "This response can no longer be regenerated." },
@@ -126,7 +133,9 @@ export async function POST(request: Request) {
     const messages = (
       regenerate
         ? thread.messages.slice(0, lastUserIndex + 1).slice(-20)
-        : [...thread.messages.slice(-19), ...submitted]
+        : editing
+          ? [...thread.messages.slice(0, editedUserIndex), ...submitted].slice(-20)
+          : [...thread.messages.slice(-19), ...submitted]
     ) as UIMessage[];
     if (
       messages.reduce(
@@ -163,9 +172,10 @@ export async function POST(request: Request) {
     stage = "financial-context";
     const overview = await getChatOverview(session.user.id);
     stage = "stream-setup";
-    const summaryContext = thread.summary
-      ? `\nConversation history summary: ${thread.summary}`
-      : "";
+    const summaryContext =
+      !editing && !regenerate && thread.summary
+        ? `\nConversation history summary: ${thread.summary}`
+        : "";
     const result = streamText({
       model,
       providerOptions:
@@ -199,13 +209,20 @@ export async function POST(request: Request) {
           );
           return parts.length ? [{ id: message.id, role: message.role, parts }] : [];
         });
-        const existing = regenerate ? thread.messages.slice(0, lastUserIndex + 1) : thread.messages;
+        const existing = editing
+          ? thread.messages.slice(0, editedUserIndex)
+          : regenerate
+            ? thread.messages.slice(0, lastUserIndex + 1)
+            : thread.messages;
         const overlap = safe[0] ? existing.findIndex((message) => message.id === safe[0]?.id) : -1;
         const history =
           overlap >= 0 ? [...existing.slice(0, overlap), ...safe] : [...existing, ...safe];
 
         let generatedTitle: string | undefined;
-        if (thread.messages.length === 0 && safe.length >= 2) {
+        if (
+          (thread.messages.length === 0 || (editing && editedUserIndex === 0)) &&
+          safe.length >= 2
+        ) {
           try {
             const { text } = await generateText({
               model,
@@ -254,7 +271,7 @@ export async function POST(request: Request) {
 
         await saveChatThread(session.user.id, raw.threadId, history, raw.provider, raw.model, {
           title: generatedTitle,
-          summary,
+          summary: regenerate || editing ? (summary ?? null) : summary,
         });
       },
       onError: (error) => providerErrorMessage(error, raw.provider),
