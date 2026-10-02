@@ -4,7 +4,7 @@ import { getAmountFormatter } from "@/lib/amount-format-server";
 import { DataTable } from "@/components/data-table";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { PageHeader } from "@/components/page-header";
-import { PortfolioCharts } from "@/components/portfolio-charts";
+import { LazyPortfolioCharts } from "@/components/lazy-portfolio-charts";
 import { PortfolioRecordDialog } from "@/components/portfolio-record-dialog";
 import { SectionCards } from "@/components/section-cards";
 import { UploadDialog } from "@/components/upload-dialog";
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
               </div>
             ) : null}
 
-            <PortfolioCharts
+            <LazyPortfolioCharts
               allocation={overview.liquidAllocation}
               equityHistory={overview.equityHistory}
               currency={baseCurrency}
