@@ -58,15 +58,15 @@ export function LabsDeploymentPlan() {
   }
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
-        <CardTitle>Capital Deployment Plan</CardTitle>
+    <Card className="flex flex-col rounded-2xl">
+      <CardHeader className="border-b pb-5">
+        <CardTitle>Build a deployment plan</CardTitle>
         <CardDescription>
-          Generates a deterministic purchase plan for your surplus cash based on your exact target
-          drift.
+          Use your target allocation and current drift to decide where the next euro or rupee should
+          go.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col gap-4 pt-5">
         <div className="flex gap-3">
           <Input
             placeholder="Override deployment amount (optional)"

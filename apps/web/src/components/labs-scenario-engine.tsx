@@ -82,15 +82,15 @@ export function LabsScenarioEngine() {
   }
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader>
-        <CardTitle>What-If Scenarios</CardTitle>
+    <Card className="flex flex-col rounded-2xl">
+      <CardHeader className="border-b pb-5">
+        <CardTitle>What changes if…</CardTitle>
         <CardDescription>
-          Hypothetical projection of life events against your FIRE plan running mathematically
-          in-memory.
+          Run a transparent projection using your current financial twin. Nothing is saved or
+          changed.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="flex flex-col gap-6 pt-5">
         <div className="space-y-3">
           <h4 className="text-sm font-semibold">Select a Scenario</h4>
           <div className="flex flex-wrap gap-2">
