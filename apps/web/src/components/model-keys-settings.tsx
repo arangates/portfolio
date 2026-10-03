@@ -4,14 +4,8 @@ import { providerLabels, type ChatProvider, type ModelEntry } from "@/lib/ai-mod
 import { Badge } from "@portfolio/ui/components/badge";
 import { Button } from "@portfolio/ui/components/button";
 import { Card } from "@portfolio/ui/components/card";
+import { Checkbox } from "@portfolio/ui/components/checkbox";
 import { Input } from "@portfolio/ui/components/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@portfolio/ui/components/select";
 import { Spinner } from "@portfolio/ui/components/spinner";
 import {
   CheckCircle2Icon,
@@ -41,6 +35,7 @@ export function ModelKeysSettings() {
     {} as Record<ChatProvider, ModelEntry[]>,
   );
   const [selected, setSelected] = useState<Partial<Record<ChatProvider, string[]>>>({});
+  const [filters, setFilters] = useState<Partial<Record<ChatProvider, string>>>({});
   const [open, setOpen] = useState<ChatProvider | null>(null);
 
   async function loadModels() {
@@ -92,18 +87,21 @@ export function ModelKeysSettings() {
     }
   }
 
-  async function saveModel(provider: ChatProvider, modelId: string) {
+  async function saveModels(provider: ChatProvider, next: string[]) {
+    if (next.length === 0) {
+      toast.error("Keep at least one model selected.");
+      return;
+    }
     const previous = selected[provider];
-    setSelected((current) => ({ ...current, [provider]: [modelId] }));
+    setSelected((current) => ({ ...current, [provider]: next }));
     try {
       const response = await fetch("/api/ai/models", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider, selectedModels: [modelId] }),
+        body: JSON.stringify({ provider, selectedModels: next }),
       });
       const body = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(body.error ?? "Could not save model choice.");
-      toast.success(`Default ${providerLabels[provider]} model updated`);
       window.dispatchEvent(new Event("selvam-ai-config-changed"));
     } catch (error) {
       setSelected((current) => ({ ...current, [provider]: previous }));
@@ -125,7 +123,15 @@ export function ModelKeysSettings() {
           const connected = status?.[provider] ?? false;
           const expanded = open === provider;
           const providerModels = models[provider] ?? [];
-          const currentModel = selected[provider]?.[0] ?? providerModels[0]?.id;
+          const chosen = selected[provider]?.length
+            ? selected[provider]!
+            : providerModels.slice(0, 1).map((model) => model.id);
+          const query = (filters[provider] ?? "").trim().toLowerCase();
+          const visible = query
+            ? providerModels.filter((model) =>
+                `${model.label} ${model.id}`.toLowerCase().includes(query),
+              )
+            : providerModels;
           const pending = busy === provider;
           const panelId = `${provider}-panel`;
           return (
@@ -176,7 +182,10 @@ export function ModelKeysSettings() {
                       placeholder={connected ? "Paste a new key" : "Paste your key"}
                       value={keys[provider] ?? ""}
                       onChange={(event) =>
-                        setKeys((current) => ({ ...current, [provider]: event.target.value }))
+                        setKeys((current) => ({
+                          ...current,
+                          [provider]: event.target.value,
+                        }))
                       }
                     />
                     <Button
@@ -200,31 +209,53 @@ export function ModelKeysSettings() {
                     </p>
                   )}
                 </form>
-                {connected && providerModels.length > 0 && currentModel && (
-                  <div className="space-y-2">
-                    <label htmlFor={`${provider}-model`} className="text-sm font-medium">
-                      Default model in chat
-                    </label>
-                    <Select
-                      value={currentModel}
-                      items={providerModels.map((model) => ({
-                        value: model.id,
-                        label: model.label,
-                      }))}
-                      onValueChange={(value) => value !== null && void saveModel(provider, value)}
-                    >
-                      <SelectTrigger id={`${provider}-model`} className="w-full sm:max-w-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {providerModels.map((model) => (
-                          <SelectItem key={model.id} value={model.id}>
-                            {model.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {connected && providerModels.length > 0 && (
+                  <fieldset className="space-y-2">
+                    <legend className="text-sm font-medium">
+                      Models available in chat ({chosen.length} selected)
+                    </legend>
+                    {providerModels.length > 8 && (
+                      <Input
+                        value={filters[provider] ?? ""}
+                        onChange={(event) =>
+                          setFilters((current) => ({
+                            ...current,
+                            [provider]: event.target.value,
+                          }))
+                        }
+                        placeholder="Search models"
+                        aria-label={`Search ${providerLabels[provider]} models`}
+                        className="sm:max-w-sm"
+                      />
+                    )}
+                    <div className="max-h-64 overflow-y-auto rounded-lg border">
+                      {visible.length === 0 && (
+                        <p className="p-3 text-sm text-muted-foreground">No models match.</p>
+                      )}
+                      {visible.map((model) => {
+                        const checked = chosen.includes(model.id);
+                        return (
+                          <label
+                            key={model.id}
+                            className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-muted/40"
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(value) =>
+                                void saveModels(
+                                  provider,
+                                  value
+                                    ? [...chosen, model.id]
+                                    : chosen.filter((id) => id !== model.id),
+                                )
+                              }
+                            />
+                            <span className="min-w-0 flex-1 truncate">{model.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
                 )}
                 {connected && (
                   <Button

@@ -145,6 +145,12 @@ export const dashboardNavigation = [
         keywords: "property house mortgage",
       },
       {
+        title: "Mortgage",
+        url: "/dashboard/mortgage",
+        icon: HouseIcon,
+        keywords: "mortgage hypotheek ing loan interest amortization repayment annuity rate",
+      },
+      {
         title: "Commodities",
         url: "/dashboard/commodities",
         icon: CoinsIcon,
