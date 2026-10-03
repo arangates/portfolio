@@ -8,6 +8,7 @@ import { createMistral } from "@ai-sdk/mistral";
 import { auth } from "@portfolio/auth";
 import {
   convertToModelMessages,
+  generateId,
   generateText,
   stepCountIs,
   streamText,
@@ -64,9 +65,11 @@ function providerErrorMessage(error: unknown, provider: string): string {
   if (
     details.includes("no credits remaining") ||
     details.includes("insufficient_quota") ||
-    details.includes("credit_balance_exhausted")
+    details.includes("credit_balance_exhausted") ||
+    details.includes("exceeded your current quota") ||
+    details.includes("quota exceeded")
   )
-    return `Your ${provider === "opencode" ? "OpenCode Zen" : provider === "openai" ? "OpenAI" : provider === "mistral" ? "Mistral" : provider} API project has no credits remaining. Add provider billing credits or select another configured model.`;
+    return `Your ${provider === "opencode" ? "OpenCode Zen" : provider === "openai" ? "OpenAI" : provider === "mistral" ? "Mistral" : provider} API project has no credits or quota remaining. Add billing, wait for the quota to reset, or select another configured model.`;
   if (details.includes("no longer available") || details.includes("model not found"))
     return "This model is unavailable to your API key. Select Gemini 3.6 Flash or another available model.";
   if (
@@ -178,7 +181,7 @@ export async function POST(request: Request) {
     if (approving) {
       const stored = thread.messages.at(-1);
       let matched = false;
-      if (stored?.role === "assistant" && stored.id === submitted[0]?.id) {
+      if (stored?.role === "assistant" && submitted[0]?.role === "assistant") {
         const parts = stored.parts.map((part) => {
           const approval = (part as { approval?: { id?: string } }).approval;
           const approved = approval?.id ? approvalResponses.get(approval.id) : undefined;
@@ -191,7 +194,12 @@ export async function POST(request: Request) {
           matched = true;
           return { ...part, state: "approval-responded", approval: { id: approval.id, approved } };
         });
-        if (matched) approvedMessage = { id: stored.id, role: "assistant", parts } as UIMessage;
+        if (matched)
+          approvedMessage = {
+            id: stored.id || submitted[0].id,
+            role: "assistant",
+            parts,
+          } as UIMessage;
       }
       if (!approvedMessage)
         return Response.json({ error: "This approval is no longer pending." }, { status: 409 });
@@ -272,6 +280,7 @@ export async function POST(request: Request) {
     });
     return result.toUIMessageStreamResponse({
       originalMessages: messages,
+      generateMessageId: generateId,
       sendReasoning: true,
       sendSources: true,
       onEnd: async ({ messages: completed }) => {

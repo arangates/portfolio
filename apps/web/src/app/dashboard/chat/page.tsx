@@ -202,16 +202,29 @@ const MessageError: FC = () => {
 // ============================================================================
 
 const AssistantWorkingIndicator: FC = () => {
-  const isEmpty = useAuiState((s) => s.message.content.length === 0);
+  const state = useAuiState((s) => {
+    const parts = s.message.content as readonly {
+      type: string;
+      result?: unknown;
+      approval?: { approved?: boolean; resolution?: string };
+    }[];
+    if (parts.length === 0) return "empty";
+    const last = parts.at(-1);
+    return last?.type === "tool-call" && last.approval && last.approval.approved === undefined
+      ? "waiting"
+      : "working";
+  });
 
-  if (isEmpty) {
+  if (state === "waiting") return null;
+  if (state === "empty") {
     return (
       <span
         data-slot="aui_assistant-message-indicator"
-        className="text-muted-foreground inline-flex items-center gap-2 align-middle"
+        role="status"
+        className="text-muted-foreground inline-flex items-center gap-2 align-middle text-sm"
       >
-        <div className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        <span className="text-sm">Reading your current records...</span>
+        <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        Reading your current records…
       </span>
     );
   }
@@ -380,7 +393,7 @@ const UserMessage: FC = () => {
         </div>
       </div>
 
-      <div className="col-span-full col-start-1 flex min-h-10 items-center justify-between px-1">
+      <div className="col-span-full col-start-1 flex min-h-10 items-center justify-end gap-1 px-1">
         <BranchPicker data-slot="aui_user-branch-picker" />
         {chat.status?.[chat.provider] && (
           <ActionBarPrimitive.Root className="flex items-center">
@@ -506,12 +519,6 @@ const Thread: FC = () => {
         <div className="relative z-10 shrink-0 border-t bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-3">
             <ThreadScrollToBottom />
-            <AuiIf condition={(s) => s.thread.isRunning}>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground" role="status">
-                <div className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Reading your current records and preparing an answer...
-              </div>
-            </AuiIf>
             <SelvamComposer />
           </div>
         </div>
