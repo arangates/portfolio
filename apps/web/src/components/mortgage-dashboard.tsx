@@ -9,8 +9,9 @@ import {
   MortgageSensitivityChart,
   MortgageYearlyChart,
 } from "@/components/mortgage-charts";
-import { MortgageSettings, type MortgageSettingsState } from "@/components/mortgage-settings";
+import { MortgageSettings } from "@/components/mortgage-settings";
 import { MortgageSimulator } from "@/components/mortgage-simulator";
+import { MortgageUploadDialog } from "@/components/mortgage-upload-dialog";
 import {
   MortgageAmortizationTable,
   MortgagePaymentCalendar,
@@ -20,14 +21,17 @@ import {
 } from "@/components/mortgage-tables";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
+import { appFetch } from "@/lib/app-activity";
 import { formatFullCurrency, formatPercent } from "@/lib/format";
 import {
   ING_MORTGAGE_OVERVIEW,
   buildMortgageModel,
   comparePayments,
   type ActualPayment,
+  type MortgageSettingsState,
   type Insight,
 } from "@portfolio/api/mortgage-calculations";
+import type { MortgageRecord, MortgageSnapshot } from "@portfolio/api/mortgage-queries";
 import { Badge } from "@portfolio/ui/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@portfolio/ui/components/card";
 import { Progress } from "@portfolio/ui/components/progress";
@@ -48,9 +52,10 @@ import {
   TableIcon,
   WalletIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
-const STORAGE_KEY = "selvam-mortgage-settings-v1";
+const UNSAVED_LOAN_NUMBER = "R 106-784564";
 const eur = (value: number) => formatFullCurrency(value, "EUR");
 const longDate = (iso: string) =>
   new Intl.DateTimeFormat("en-GB", {
@@ -79,35 +84,47 @@ const TONE_STYLE: Record<Insight["tone"], { icon: typeof InfoIcon; className: st
 };
 
 export function MortgageDashboard({
+  record,
+  snapshots,
   bankPayments,
   coverageStart,
+  coverageEnd,
 }: {
+  record: MortgageRecord | null;
+  snapshots: MortgageSnapshot[];
   bankPayments: ActualPayment[];
   coverageStart: string | null;
+  coverageEnd: string | null;
 }) {
-  const [settings, setSettings] = useState<MortgageSettingsState>(DEFAULT_SETTINGS);
-  const [loaded, setLoaded] = useState(false);
+  const router = useRouter();
+  const initial = record?.settings ?? DEFAULT_SETTINGS;
+  const [settings, setSettings] = useState<MortgageSettingsState>(initial);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const dirty = JSON.stringify(settings) !== JSON.stringify(initial);
+  const loanNumber = record?.loanNumber ?? UNSAVED_LOAN_NUMBER;
+  const lender = record?.lender ?? "ING";
+  const nhg = record ? record.nhg : true;
+  const energyLabel = record ? record.energyLabel : "A";
 
-  useEffect(() => {
+  async function save() {
+    setSaving(true);
+    setSaveError(null);
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as Partial<MortgageSettingsState>;
-        setSettings({
-          ...DEFAULT_SETTINGS,
-          ...saved,
-          terms: { ...DEFAULT_SETTINGS.terms, ...saved.terms },
-        });
-      }
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
+      const response = await appFetch("/api/mortgage/settings", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...settings, loanNumber, energyLabel, nhg }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Could not save the mortgage");
+      router.refresh();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Could not save the mortgage");
+    } finally {
+      setSaving(false);
     }
-    setLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (loaded) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  }, [loaded, settings]);
+  }
 
   const model = useMemo(
     () =>
@@ -119,8 +136,25 @@ export function MortgageDashboard({
     [settings],
   );
   const comparison = useMemo(
-    () => comparePayments(model.history, bankPayments, coverageStart),
-    [model.history, bankPayments, coverageStart],
+    () => comparePayments(model.history, bankPayments, coverageStart, coverageEnd),
+    [model.history, bankPayments, coverageStart, coverageEnd],
+  );
+  const suggestedExtras = useMemo(
+    () =>
+      comparison
+        .filter((row) => row.status === "extra" && row.actual !== null)
+        .map((row) => ({
+          date: row.date,
+          amount: Math.round((row.actual! - row.scheduled) * 100) / 100,
+        }))
+        .filter(
+          (extra) =>
+            extra.amount > 0 &&
+            !settings.extras.some(
+              (existing) => existing.date.slice(0, 7) === extra.date.slice(0, 7),
+            ),
+        ),
+    [comparison, settings.extras],
   );
   const { terms, summary } = model;
   const matched = comparison.filter((row) => row.status === "match").length;
@@ -155,13 +189,20 @@ export function MortgageDashboard({
       <div className="flex flex-col gap-4 py-4 sm:py-5 md:gap-5 md:py-6">
         <PageHeader
           title="Mortgage"
-          description={`ING annuity mortgage R 106-784564 · figures from the lender overview of ${asOf}. Past instalments are modelled from the annuity formula and checked against your bank debits.`}
+          description={`${lender} ${model.terms.monthlyPayment ? "annuity " : ""}mortgage ${loanNumber} · figures from the lender overview of ${asOf}. Past instalments are modelled from the annuity formula and checked against your bank debits.`}
           action={
             <>
               <Badge variant="secondary">
                 <LandmarkIcon /> Rate {formatPercent(summary.rate, 2)} ({settings.rateBasis})
               </Badge>
-              <Badge variant="outline">NHG · Energy label A</Badge>
+              {nhg || energyLabel ? (
+                <Badge variant="outline">
+                  {[nhg ? "NHG" : null, energyLabel ? `Energy label ${energyLabel}` : null]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </Badge>
+              ) : null}
+              <MortgageUploadDialog label={record ? "Import newer overview" : "Import overview"} />
             </>
           }
         />
@@ -318,6 +359,14 @@ export function MortgageDashboard({
               settings={settings}
               onChange={setSettings}
               onReset={() => setSettings(DEFAULT_SETTINGS)}
+              onSave={save}
+              saving={saving}
+              saveError={saveError}
+              dirty={dirty || !record}
+              saved={Boolean(record)}
+              issues={record?.validationIssues ?? []}
+              snapshots={snapshots}
+              suggestedExtras={suggestedExtras}
               defaultSettings={DEFAULT_SETTINGS}
               impliedRate={summary.impliedRate}
               balanceGap={summary.balanceGap}

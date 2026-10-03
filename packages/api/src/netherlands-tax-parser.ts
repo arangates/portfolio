@@ -33,7 +33,7 @@ export type ParsedNetherlandsTaxAssessment = {
   validationIssues: string[];
 };
 
-function layoutLines(pages: StructuredTextItem[][]) {
+export function layoutLines(pages: StructuredTextItem[][]) {
   return pages.flatMap((page) => {
     const rows: { y: number; items: StructuredTextItem[] }[] = [];
     for (const item of [...page].sort((left, right) => right.y - left.y || left.x - right.x)) {

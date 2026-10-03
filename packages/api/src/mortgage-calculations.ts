@@ -27,6 +27,14 @@ export type RateBasis = "implied" | "stated" | "net";
 
 export type ExtraRepayment = { date: string; amount: number };
 
+export type MortgageSettingsState = {
+  terms: MortgageTerms;
+  rateBasis: RateBasis;
+  extras: ExtraRepayment[];
+  /** Assumed annual property growth as a fraction. */
+  appreciation: number;
+};
+
 export type ScheduleRow = {
   date: string;
   kind: "past" | "future";
@@ -63,7 +71,13 @@ export type Insight = {
   text: string;
 };
 
-export type ActualPayment = { date: string; amount: number; description?: string };
+export type ActualPayment = {
+  date: string;
+  amount: number;
+  description?: string;
+  account?: string;
+  joint?: boolean;
+};
 
 export type PaymentComparisonRow = {
   date: string;
@@ -253,6 +267,7 @@ export function comparePayments(
   history: ScheduleRow[],
   actual: ActualPayment[],
   coverageStart: string | null,
+  coverageEnd: string | null = null,
 ): PaymentComparisonRow[] {
   const byMonth = new Map<number, number>();
   for (const payment of actual) {
@@ -262,11 +277,18 @@ export function comparePayments(
     byMonth.set(key, (byMonth.get(key) ?? 0) + Math.abs(payment.amount));
   }
   const coverageIndex = coverageStart ? monthIndex(coverageStart) : null;
+  // A statement ending on the 1st does not yet show that month's instalment.
+  const coverageEndIndex = coverageEnd
+    ? monthIndex(coverageEnd) - (Number(coverageEnd.slice(8, 10)) < 2 ? 1 : 0)
+    : null;
   return history.map((row) => {
     const index = monthIndex(row.date);
     const paid = byMonth.get(index) ?? null;
     if (paid === null) {
-      const covered = coverageIndex !== null && index >= coverageIndex + 1;
+      const covered =
+        coverageIndex !== null &&
+        index >= coverageIndex + 1 &&
+        (coverageEndIndex === null || index <= coverageEndIndex);
       return {
         date: row.date,
         scheduled: row.payment,

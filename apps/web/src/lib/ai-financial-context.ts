@@ -5,6 +5,12 @@ import {
   getCurrentFixedDeposits,
   getGlobalEquityPortfolio,
 } from "@portfolio/api/portfolio-queries";
+import { buildMortgageModel, comparePayments } from "@portfolio/api/mortgage-calculations";
+import {
+  getMortgageBankPayments,
+  getMortgageRecord,
+  getMortgageSnapshots,
+} from "@portfolio/api/mortgage-queries";
 import { getFirePlan } from "@portfolio/api/fire-queries";
 import { getHouseholdDashboard } from "@portfolio/api/household-queries";
 import { getCashFlowDashboard } from "@portfolio/api/cash-flow-queries";
@@ -46,6 +52,7 @@ export const sections = [
   "salary",
   "verified_returns",
   "global_equity",
+  "mortgage",
 ] as const;
 export type ChatSection = (typeof sections)[number];
 
@@ -160,6 +167,67 @@ export async function getChatSection(userId: string, section: ChatSection) {
         retrievedAt: new Date().toISOString(),
         summary: data.summary,
         evidence: data.evidence,
+      };
+    }
+    case "mortgage": {
+      const record = await getMortgageRecord(userId);
+      if (!record) {
+        return {
+          source: "/dashboard/mortgage",
+          retrievedAt: new Date().toISOString(),
+          configured: false,
+          note: "No mortgage overview has been imported or saved yet.",
+        };
+      }
+      const [bank, snapshots] = await Promise.all([
+        getMortgageBankPayments(userId, record.settings.terms.monthlyPayment),
+        getMortgageSnapshots(userId, record.loanId),
+      ]);
+      const model = buildMortgageModel(record.settings);
+      const reconciliation = comparePayments(
+        model.history,
+        bank.payments,
+        bank.coverageStart,
+        bank.coverageEnd,
+      );
+      return {
+        source: "/dashboard/mortgage",
+        retrievedAt: new Date().toISOString(),
+        configured: true,
+        currency: "EUR",
+        loan: {
+          lender: record.lender,
+          loanNumber: record.loanNumber,
+          repaymentType: record.repaymentType,
+          nhg: record.nhg,
+          energyLabel: record.energyLabel,
+          sustainabilityDiscount: record.sustainabilityDiscount,
+          bouwdepotOriginal: record.bouwdepotOriginal,
+          bouwdepotRemaining: record.bouwdepotRemaining,
+          dataSource: record.source,
+          validationStatus: record.validationStatus,
+          validationIssues: record.validationIssues,
+        },
+        terms: record.settings.terms,
+        rateBasis: record.settings.rateBasis,
+        appreciation: record.settings.appreciation,
+        extraRepayments: record.settings.extras,
+        summary: model.summary,
+        insights: model.insights.map(({ title, text }) => ({ title, text })),
+        rateSensitivity: model.sensitivity,
+        yearly: model.yearly,
+        upcomingSchedule: model.baseline.rows.slice(0, 24),
+        snapshots,
+        bankReconciliation: {
+          coverageStart: bank.coverageStart,
+          coverageEnd: bank.coverageEnd,
+          months: reconciliation.map(({ date, scheduled, actual, status }) => ({
+            date,
+            scheduled,
+            actual,
+            status,
+          })),
+        },
       };
     }
     case "global_equity": {

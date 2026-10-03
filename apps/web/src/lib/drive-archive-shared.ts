@@ -25,6 +25,7 @@ export function driveArchiveSourceLabel(sourceType: string) {
   if (sourceType === "salary_payslip") return "Salary payslip";
   if (sourceType === "india_income_tax") return "Indian income tax";
   if (sourceType === "netherlands_income_tax") return "Dutch income tax";
+  if (sourceType === "mortgage_overview") return "Mortgage overview";
   if (sourceType === "bank_statement") return "Bank statement";
   return sourceType;
 }

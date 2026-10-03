@@ -33,6 +33,9 @@ export async function getSourceDocumentHistory(userId: string, page: number) {
       select id::text, 'netherlands_income_tax', file_name, created_at, status,
         null::integer, null::integer, null::integer from netherlands_tax_import where user_id = ${userId}
       union all
+      select id::text, 'mortgage_overview', file_name, created_at, status,
+        null::integer, null::integer, null::integer from mortgage_import where user_id = ${userId}
+      union all
       select id::text, 'bank_statement', file_name, created_at, status,
         row_count, inserted_rows, skipped_rows from bank_statement_import where user_id = ${userId}
     ), archives as (

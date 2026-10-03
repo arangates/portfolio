@@ -18,6 +18,7 @@ export type ArchiveSourceType =
   | "salary_payslip"
   | "india_income_tax"
   | "netherlands_income_tax"
+  | "mortgage_overview"
   | "bank_statement";
 
 export type DriveArchiveResult = {
@@ -52,6 +53,7 @@ const folderNames: Record<ArchiveSourceType, string> = {
   salary_payslip: "Salary payslips",
   india_income_tax: "Indian income tax",
   netherlands_income_tax: "Dutch income tax",
+  mortgage_overview: "Mortgage overviews",
   bank_statement: "Bank statements",
 };
 

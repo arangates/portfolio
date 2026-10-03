@@ -3,9 +3,11 @@
 import { formatFullCurrency, formatPercent } from "@/lib/format";
 import type {
   ExtraRepayment,
+  MortgageSettingsState,
   MortgageTerms,
   RateBasis,
 } from "@portfolio/api/mortgage-calculations";
+import type { MortgageSnapshot } from "@portfolio/api/mortgage-queries";
 import { Button } from "@portfolio/ui/components/button";
 import {
   Card,
@@ -16,16 +18,8 @@ import {
 } from "@portfolio/ui/components/card";
 import { Input } from "@portfolio/ui/components/input";
 import { Label } from "@portfolio/ui/components/label";
-import { PlusIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, RotateCcwIcon, SaveIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
-
-export type MortgageSettingsState = {
-  terms: MortgageTerms;
-  rateBasis: RateBasis;
-  extras: ExtraRepayment[];
-  /** Annual property appreciation as a fraction. */
-  appreciation: number;
-};
 
 const eur = (value: number) => formatFullCurrency(value, "EUR");
 
@@ -77,6 +71,14 @@ export function MortgageSettings({
   onReset,
   impliedRate,
   balanceGap,
+  onSave,
+  saving,
+  saveError,
+  dirty,
+  saved,
+  issues,
+  snapshots,
+  suggestedExtras,
 }: {
   settings: MortgageSettingsState;
   defaultSettings: MortgageSettingsState;
@@ -84,6 +86,14 @@ export function MortgageSettings({
   onReset: () => void;
   impliedRate: number;
   balanceGap: number;
+  onSave: () => void;
+  saving: boolean;
+  saveError: string | null;
+  dirty: boolean;
+  saved: boolean;
+  issues: string[];
+  snapshots: MortgageSnapshot[];
+  suggestedExtras: ExtraRepayment[];
 }) {
   const { terms } = settings;
   const [extraDate, setExtraDate] = useState("");
@@ -114,12 +124,24 @@ export function MortgageSettings({
 
   return (
     <>
+      {issues.length > 0 ? (
+        <Card className="gap-0 border-amber-500/40 py-0 shadow-xs">
+          <CardContent className="space-y-1 p-4 text-sm sm:p-5">
+            <p className="font-medium">The imported overview needs review</p>
+            <ul className="list-disc pl-5 text-muted-foreground">
+              {issues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : null}
       <Card className="gap-0 py-0 shadow-xs">
         <CardHeader className="border-b px-4 py-4 sm:px-5">
           <CardTitle className="text-base">Mortgage terms</CardTitle>
           <CardDescription>
             Prefilled from the ING overview. Edit after a new overview or rate renewal — changes are
-            saved in this browser and every chart recalculates.
+            saved to your account with Save, and every chart recalculates.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 p-4 sm:p-5">
@@ -291,12 +313,77 @@ export function MortgageSettings({
           ) : (
             <p className="text-sm text-muted-foreground">No extra repayments recorded.</p>
           )}
+          {suggestedExtras.length > 0 ? (
+            <div className="space-y-2 rounded-lg border border-dashed p-3">
+              <p className="text-sm font-medium">Detected in your bank</p>
+              <p className="text-xs text-muted-foreground">
+                These mortgage debits exceeded the instalment. Add them if they were extra
+                repayments.
+              </p>
+              {suggestedExtras.map((extra) => (
+                <div key={extra.date} className="flex items-center gap-3 text-sm">
+                  <span>{extra.date}</span>
+                  <span className="ml-auto tabular-nums">{eur(extra.amount)}</span>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() =>
+                      onChange({
+                        ...settings,
+                        extras: [...settings.extras, extra].toSorted((a, b) =>
+                          a.date.localeCompare(b.date),
+                        ),
+                      })
+                    }
+                  >
+                    <PlusIcon data-icon="inline-start" />
+                    Add
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <p className="text-xs text-muted-foreground">
             Defaults: {formatPercent(defaultSettings.terms.statedRate, 2)} stated rate,{" "}
             {eur(defaultSettings.terms.monthlyPayment)} per month.
           </p>
         </CardContent>
       </Card>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button onClick={onSave} disabled={saving || !dirty}>
+          <SaveIcon data-icon="inline-start" />
+          {saving ? "Saving" : saved ? "Save changes" : "Save to account"}
+        </Button>
+        {saveError ? <p className="text-sm text-destructive">{saveError}</p> : null}
+        {!saved ? (
+          <p className="text-xs text-muted-foreground">
+            Showing built-in defaults — import the overview PDF or save these values.
+          </p>
+        ) : null}
+      </div>
+      {snapshots.length > 0 ? (
+        <Card className="gap-0 py-0 shadow-xs">
+          <CardHeader className="border-b px-4 py-4 sm:px-5">
+            <CardTitle className="text-base">Overview history</CardTitle>
+            <CardDescription>Every imported or saved balance snapshot.</CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y p-0">
+            {snapshots.map((snapshot) => (
+              <div
+                key={snapshot.id}
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 text-sm sm:px-5"
+              >
+                <span className="font-medium">{snapshot.asOf}</span>
+                <span className="text-muted-foreground">{snapshot.source}</span>
+                <span className="ml-auto tabular-nums">{eur(snapshot.currentBalance)}</span>
+                <span className="tabular-nums text-muted-foreground">
+                  {formatPercent(snapshot.statedRate, 2)}
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
     </>
   );
 }
