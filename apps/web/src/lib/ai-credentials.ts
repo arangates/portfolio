@@ -5,7 +5,7 @@ import { aiProviderCredential, db } from "@portfolio/db";
 import { env } from "@portfolio/env/server";
 import { and, eq } from "drizzle-orm";
 
-export type AIProvider = "openai" | "google" | "anthropic" | "opencode" | "mistral";
+export type AIProvider = "openai" | "google" | "anthropic" | "opencode" | "mistral" | "gateway";
 
 const encryptionKey = () =>
   createHash("sha256")
@@ -60,6 +60,7 @@ export async function providerStatus(userId: string) {
     anthropic: valid("anthropic"),
     opencode: valid("opencode"),
     mistral: valid("mistral"),
+    gateway: valid("gateway"),
   };
 }
 

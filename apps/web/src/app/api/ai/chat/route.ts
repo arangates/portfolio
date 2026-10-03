@@ -14,6 +14,7 @@ import {
   streamText,
   tool,
   type UIMessage,
+  createGateway,
 } from "ai";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -33,7 +34,7 @@ const APPROVAL_SECTIONS: readonly string[] = ["salary", "personal_cash_flow", "j
 
 const requestSchema = z.object({
   threadId: z.uuid(),
-  provider: z.enum(["openai", "google", "anthropic", "opencode", "mistral"]),
+  provider: z.enum(["openai", "google", "anthropic", "opencode", "mistral", "gateway"]),
   model: z.string().trim().min(1).max(200),
   trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
   messageId: z.string().max(100).optional(),
@@ -69,7 +70,7 @@ function providerErrorMessage(error: unknown, provider: string): string {
     details.includes("exceeded your current quota") ||
     details.includes("quota exceeded")
   )
-    return `Your ${provider === "opencode" ? "OpenCode Zen" : provider === "openai" ? "OpenAI" : provider === "mistral" ? "Mistral" : provider} API project has no credits or quota remaining. Add billing, wait for the quota to reset, or select another configured model.`;
+    return `Your ${provider === "opencode" ? "OpenCode Zen" : provider === "gateway" ? "Vercel AI Gateway" : provider === "openai" ? "OpenAI" : provider === "mistral" ? "Mistral" : provider} API project has no credits or quota remaining. Add billing, wait for the quota to reset, or select another configured model.`;
   if (details.includes("no longer available") || details.includes("model not found"))
     return "This model is unavailable to your API key. Select Gemini 3.6 Flash or another available model.";
   if (
@@ -244,7 +245,9 @@ export async function POST(request: Request) {
             ? createAnthropic({ apiKey: key })(raw.model)
             : raw.provider === "mistral"
               ? createMistral({ apiKey: key })(raw.model)
-              : createOpenAI({ apiKey: key, baseURL: "https://opencode.ai/zen/v1" })(raw.model);
+              : raw.provider === "gateway"
+                ? createGateway({ apiKey: key })(raw.model)
+                : createOpenAI({ apiKey: key, baseURL: "https://opencode.ai/zen/v1" })(raw.model);
     stage = "financial-context";
     const overview = await getChatOverview(session.user.id);
     stage = "stream-setup";

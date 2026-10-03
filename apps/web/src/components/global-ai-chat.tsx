@@ -551,7 +551,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
         .then(({ value, data }) => {
           setStatus(value);
           const entries: ModelEntry[] = (
-            ["openai", "google", "anthropic", "opencode", "mistral"] as Provider[]
+            ["openai", "google", "anthropic", "opencode", "mistral", "gateway"] as Provider[]
           )
             .filter((candidate) => value[candidate])
             .flatMap((candidate) => {

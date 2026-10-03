@@ -24,7 +24,14 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type Status = Record<ChatProvider, boolean>;
-const providers: ChatProvider[] = ["openai", "google", "anthropic", "opencode", "mistral"];
+const providers: ChatProvider[] = [
+  "openai",
+  "google",
+  "anthropic",
+  "opencode",
+  "mistral",
+  "gateway",
+];
 
 export function ModelKeysSettings() {
   const [status, setStatus] = useState<Status | null>(null);
@@ -180,6 +187,12 @@ export function ModelKeysSettings() {
                       {connected ? "Replace key" : "Save key"}
                     </Button>
                   </div>
+                  {provider === "gateway" && (
+                    <p className="text-xs text-pretty text-muted-foreground">
+                      Create an AI Gateway key in your Vercel dashboard. New teams get $5 of free
+                      credits each month, and one key reaches OpenAI, Google, Anthropic and more.
+                    </p>
+                  )}
                   {provider === "opencode" && (
                     <p className="text-xs text-pretty text-muted-foreground">
                       Use an OpenCode Zen API key with Zen billing, not a local OpenCode login.
