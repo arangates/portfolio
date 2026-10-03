@@ -12,7 +12,12 @@ import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { buttonVariants } from "@portfolio/ui/components/button";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+  type UIMessage,
+} from "ai";
+import type { AttachmentAdapter } from "@assistant-ui/react";
 import { ArrowUpRightIcon, KeyRoundIcon } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -47,6 +52,48 @@ type ChatContextValue = {
   dismissError: () => void;
 };
 const ChatContext = createContext<ChatContextValue | null>(null);
+export const MAX_ATTACHMENT_BYTES = 1_500_000;
+
+function readAsDataURL(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+const attachmentAdapter: AttachmentAdapter = {
+  accept: "image/png,image/jpeg,image/webp,image/gif,application/pdf",
+  async add({ file }) {
+    if (file.size > MAX_ATTACHMENT_BYTES) throw new Error("Files must be 1.5 MB or smaller.");
+    return {
+      id: crypto.randomUUID(),
+      type: file.type.startsWith("image/") ? "image" : "file",
+      name: file.name,
+      file,
+      contentType: file.type,
+      content: [],
+      status: { type: "requires-action", reason: "composer-send" },
+    };
+  },
+  async send(attachment) {
+    return {
+      ...attachment,
+      status: { type: "complete" },
+      content: [
+        {
+          type: "file",
+          mimeType: attachment.contentType ?? "",
+          filename: attachment.name,
+          data: await readAsDataURL(attachment.file),
+        },
+      ],
+    };
+  },
+  async remove() {},
+};
+
 export function useSelvamChat() {
   const context = useContext(ChatContext);
   if (!context) throw new Error("Selvam chat provider is missing");
@@ -197,12 +244,13 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   const chat = useChat({
     id: activeThreadId ?? `selvam-pending:${userId}`,
     transport,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
     onFinish: () => {
       window.setTimeout(() => void refreshThreads().catch(() => {}), 250);
     },
   });
   const { messages, setMessages, sendMessage, stop, clearError, error, status: chatStatus } = chat;
-  const runtime = useAISDKRuntime(chat);
+  const runtime = useAISDKRuntime(chat, { adapters: { attachments: attachmentAdapter } });
 
   useEffect(() => {
     if (!pendingHistory || pendingHistory.id !== activeThreadId) return;

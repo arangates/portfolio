@@ -1,27 +1,27 @@
 "use client";
 
 import { Button } from "@portfolio/ui/components/button";
-import { cn } from "@portfolio/ui/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@portfolio/ui/components/dropdown-menu";
-import { AuiIf, ComposerPrimitive } from "@assistant-ui/react";
+import { AttachmentPrimitive, AuiIf, ComposerPrimitive } from "@assistant-ui/react";
 import {
   ArrowUpIcon,
   BrainCircuitIcon,
   MicIcon,
-  SparklesIcon,
   MenuIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
+  PaperclipIcon,
   PlusIcon,
   CopyIcon,
+  XIcon,
   SquareIcon,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export type ChatSuggestionGroup = {
   label: string;
@@ -115,27 +115,58 @@ export function ChatComposer({
   commands?: ChatCommand[];
 }) {
   return (
-    <ComposerPrimitive.Root className="relative flex w-full flex-col gap-2 rounded-[28px] border bg-background p-3 shadow-sm transition-shadow focus-within:border-ring/60 focus-within:shadow-md">
+    <ComposerPrimitive.Root className="relative flex w-full flex-col gap-0.5 rounded-2xl border bg-card/70 px-2 py-1 shadow-sm transition-[border-color,box-shadow] focus-within:border-ring/60 focus-within:shadow-md">
       <ComposerPrimitive.Input
         aria-label="Message Selvam"
-        placeholder="Ask about your finances..."
+        placeholder="Send a message..."
         rows={1}
-        className="min-h-11 w-full resize-none bg-transparent px-3 py-2 text-base outline-none placeholder:text-muted-foreground"
+        className="min-h-8 w-full resize-none bg-transparent px-2 py-1 text-base outline-none placeholder:text-muted-foreground"
       />
-      <div className="flex items-center justify-between gap-2 px-1">
+      <AuiIf condition={(state) => state.composer.attachments.length > 0}>
+        <div className="flex flex-wrap gap-1.5 px-1 pt-1">
+          <ComposerPrimitive.Attachments>
+            {() => (
+              <AttachmentPrimitive.Root className="flex max-w-48 items-center gap-1.5 rounded-lg border bg-muted/40 py-1 pr-1 pl-2 text-xs">
+                <PaperclipIcon
+                  className="size-3 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span className="truncate">
+                  <AttachmentPrimitive.Name />
+                </span>
+                <AttachmentPrimitive.Remove
+                  aria-label="Remove attachment"
+                  className="grid size-5 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                >
+                  <XIcon className="size-3" />
+                </AttachmentPrimitive.Remove>
+              </AttachmentPrimitive.Root>
+            )}
+          </ComposerPrimitive.Attachments>
+        </div>
+      </AuiIf>
+      <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1">
+          <ComposerPrimitive.AddAttachment
+            aria-label="Attach files"
+            title="Attach images or PDFs"
+            className="grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <PaperclipIcon className="size-4" />
+          </ComposerPrimitive.AddAttachment>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="h-10 gap-2 rounded-full px-3"
+                  size="icon-sm"
+                  className="size-10 shrink-0 rounded-full"
                   aria-label="Quick prompts"
+                  title="Quick prompts"
                 />
               }
             >
-              <SparklesIcon data-icon="inline-start" /> Prompts
+              <PlusIcon />
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="start"
@@ -159,7 +190,10 @@ export function ChatComposer({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          {modelSelector}
+          <div className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
+            <BrainCircuitIcon className="size-4 shrink-0" aria-hidden="true" />
+            {modelSelector}
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <ComposerPrimitive.Dictate
@@ -191,7 +225,7 @@ export function ChatComposer({
 }
 
 const suggestionChipClass =
-  "rounded-xl border bg-card px-3 py-2 text-sm text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-foreground";
+  "h-8 rounded-lg px-3 text-xs font-normal text-muted-foreground transition-colors duration-150 hover:text-foreground";
 
 export function ChatSuggestions({
   groups,
@@ -200,41 +234,19 @@ export function ChatSuggestions({
   groups: ChatSuggestionGroup[];
   onSelect: (prompt: string) => void;
 }) {
-  const [expandedLabel, setExpandedLabel] = useState<string | null>(null);
-  const expandedGroup = groups.find((group) => group.label === expandedLabel);
-
   return (
-    <div className="flex w-full flex-col gap-2 px-4">
-      <div className="w-full overflow-x-auto scrollbar-none">
-        <div className="mx-auto flex w-max items-center gap-2">
-          {groups.map((group) => (
-            <Button
-              key={group.label}
-              variant="ghost"
-              className={cn(suggestionChipClass, group.label === expandedLabel && "bg-muted")}
-              onClick={() => setExpandedLabel(group.label === expandedLabel ? null : group.label)}
-            >
-              {group.icon}
-              {group.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-      {expandedGroup && (
-        <div className="fade-in slide-in-from-top-1 animate-in w-full overflow-x-auto scrollbar-none duration-200">
-          <div className="mx-auto flex w-max items-center gap-2">
-            {expandedGroup.options.map((option) => (
-              <Button
-                key={option.label}
-                variant="ghost"
-                className={suggestionChipClass}
-                onClick={() => onSelect(option.prompt)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-        </div>
+    <div className="flex w-full flex-wrap items-center justify-center gap-2">
+      {groups.flatMap((group) =>
+        group.options.map((option) => (
+          <Button
+            key={`${group.label}-${option.label}`}
+            variant="outline"
+            className={suggestionChipClass}
+            onClick={() => onSelect(option.prompt)}
+          >
+            {option.label}
+          </Button>
+        )),
       )}
     </div>
   );

@@ -3,6 +3,12 @@
 import { useFinancialPrivacy } from "@/components/dashboard-experience";
 import { MarkdownText, DirectiveText } from "@/components/assistant-ui";
 import {
+  FileChip,
+  ReasoningBlock,
+  SourceChip,
+  ToolCard,
+} from "@/components/assistant-ui/chat-parts";
+import {
   ChatSuggestions,
   ChatWorkspaceControls,
   type ChatSuggestionGroup,
@@ -64,24 +70,20 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
     icon: <BrainCircuitIcon className="size-4" />,
     options: [
       {
-        label: "What's my current portfolio value?",
+        label: "Portfolio value",
         prompt: "What is my current portfolio value?",
       },
-      { label: "How much is liquid?", prompt: "How much of my portfolio is liquid?" },
-      { label: "Show asset allocation", prompt: "Show my asset allocation breakdown" },
+      { label: "Liquid assets", prompt: "How much of my portfolio is liquid?" },
+      { label: "Asset allocation", prompt: "Show my asset allocation breakdown" },
     ],
   },
   {
     label: "FIRE Plan",
     icon: <ShieldCheckIcon className="size-4" />,
     options: [
-      {
-        label: "Compare with assets",
-        prompt: "How does my FIRE plan compare with current assets?",
-      },
       { label: "Am I on track?", prompt: "Am I on track for financial independence?" },
       {
-        label: "What's my FIRE number?",
+        label: "My FIRE number",
         prompt: "What is my FIRE number based on current spending?",
       },
     ],
@@ -89,20 +91,12 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
   {
     label: "Investments",
     icon: <ArrowUpIcon className="size-4" />,
-    options: [
-      { label: "Verified returns", prompt: "What were my verified investment returns?" },
-      { label: "Mutual fund performance", prompt: "Show my mutual fund performance" },
-      { label: "Equity analysis", prompt: "Analyze my equity portfolio performance" },
-    ],
+    options: [{ label: "Verified returns", prompt: "What were my verified investment returns?" }],
   },
   {
     label: "Spending",
     icon: <ArrowDownIcon className="size-4" />,
-    options: [
-      { label: "Where did it go?", prompt: "Where did household spending go?" },
-      { label: "Monthly trends", prompt: "Show my monthly spending trends" },
-      { label: "Budget analysis", prompt: "Analyze my household budget" },
-    ],
+    options: [{ label: "Monthly spending", prompt: "Show my monthly spending trends" }],
   },
 ];
 
@@ -155,58 +149,27 @@ const ThreadHistorySkeleton: FC = () => (
 // ============================================================================
 
 const ThreadWelcome: FC = () => {
+  const chat = useSelvamChat();
+
   return (
-    <div className="mx-auto mb-6 flex w-full max-w-4xl flex-col items-center justify-center px-5 py-10 text-center">
-      <h2 className="fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-2xl font-medium tracking-tight duration-200 sm:text-3xl">
+    <div className="mx-auto flex w-full max-w-[38rem] flex-col items-center px-4 py-6 text-center sm:px-6">
+      <h2 className="text-balance text-xl font-medium tracking-tight sm:text-2xl">
         How can I help you today?
       </h2>
-      <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
-        <ShieldCheckIcon className="size-4" /> Read-only access &middot; figures from your records
+      <div className="mt-6 w-full">
+        <SelvamComposer />
+      </div>
+      <div className="mt-3 w-full">
+        <ChatSuggestions
+          groups={SUGGESTION_GROUPS}
+          onSelect={(prompt) => {
+            if (!chat.threadLoading) chat.sendPrompt(prompt);
+          }}
+        />
       </div>
     </div>
   );
 };
-
-// ============================================================================
-// Financial Tool Status - Custom for Selvam
-// ============================================================================
-
-const sectionLabels: Record<string, string> = {
-  fire: "FIRE plan and retirement scenarios",
-  household: "household budget and expenses",
-  personal_cash_flow: "personal cash flow records",
-  joint_cash_flow: "joint household cash flow",
-  fixed_deposits: "fixed deposit records",
-  salary: "salary and payslip data",
-  verified_returns: "verified investment returns",
-  global_equity: "global equity holdings",
-};
-
-function FinancialToolStatus({
-  toolName,
-  args,
-  status,
-}: {
-  toolName: string;
-  args: Record<string, unknown>;
-  status: { type: string };
-}) {
-  const running = status.type === "running" || status.type === "requires-action";
-  const section = typeof args?.section === "string" ? args.section : "";
-  const label = sectionLabels[section] || "your latest Selvam records";
-  return (
-    <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-      {running ? (
-        <div className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-      ) : (
-        <CheckIcon className="size-3.5 text-emerald-500" />
-      )}
-      <span>
-        {running ? "Checking" : "Checked"} {toolName === "getFinancialSection" ? label : toolName}
-      </span>
-    </div>
-  );
-}
 
 // ============================================================================
 // Thread Scroll to Bottom
@@ -293,39 +256,18 @@ const AssistantMessage: FC = () => (
             case "group-chainOfThought":
               return <div data-slot="aui_chain-of-thought">{children}</div>;
             case "group-tool":
-              return (
-                <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                  {children}
-                </div>
-              );
             case "group-reasoning":
-              return (
-                <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                  <summary className="cursor-pointer select-none font-medium text-foreground">
-                    Reasoning summary
-                  </summary>
-                  <p className="mt-2 whitespace-pre-wrap leading-relaxed">{children}</p>
-                </details>
-              );
+              return <>{children}</>;
             case "text":
               return <MarkdownText />;
             case "reasoning":
-              return (
-                <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                  <summary className="cursor-pointer select-none font-medium text-foreground">
-                    Reasoning summary
-                  </summary>
-                  <p className="mt-2 whitespace-pre-wrap leading-relaxed">{part.text}</p>
-                </details>
-              );
+              return <ReasoningBlock text={part.text} running={part.status.type === "running"} />;
             case "tool-call":
-              return (
-                <FinancialToolStatus
-                  toolName={part.toolName}
-                  args={part.args as Record<string, unknown>}
-                  status={part.status}
-                />
-              );
+              return <ToolCard part={part} />;
+            case "source":
+              return <SourceChip id={part.id} url={part.url} title={part.title} />;
+            case "file":
+              return <FileChip name={part.filename} mimeType={part.mimeType} data={part.data} />;
             case "indicator":
               return <AssistantWorkingIndicator />;
             case "data":
@@ -421,7 +363,19 @@ const UserMessage: FC = () => {
             )}
           </MessagePrimitive.Quote>
           <MessagePrimitive.Parts
-            components={{ Text: ({ text }) => <DirectiveText>{text}</DirectiveText> }}
+            components={{
+              Text: ({ text }) => <DirectiveText>{text}</DirectiveText>,
+              File: ({ filename, mimeType, data }) => (
+                <div className="my-1">
+                  <FileChip name={filename} mimeType={mimeType} data={data} />
+                </div>
+              ),
+              Image: ({ image, filename }) => (
+                <div className="my-1">
+                  <FileChip name={filename} mimeType="image/*" data={image} />
+                </div>
+              ),
+            }}
           />
         </div>
       </div>
@@ -506,7 +460,6 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({ className, ...rest
 // ============================================================================
 
 const Thread: FC = () => {
-  const chat = useSelvamChat();
   const isEmpty = useAuiState(isNewChatView);
 
   return (
@@ -523,7 +476,7 @@ const Thread: FC = () => {
         turnAnchor="top"
         data-slot="aui_thread-viewport"
         className={cn(
-          "relative flex min-w-0 flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-6 sm:pt-8",
+          "relative flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-scroll scroll-smooth px-4 py-6 sm:px-6",
           isEmpty && "justify-center",
         )}
       >
@@ -548,31 +501,21 @@ const Thread: FC = () => {
             </p>
           </AuiIf>
         </div>
-        <AuiIf condition={isNewChatView}>
-          <div className="mx-auto w-full max-w-4xl pb-6">
-            <AuiIf condition={(s) => s.composer.isEmpty}>
-              <ChatSuggestions
-                groups={SUGGESTION_GROUPS}
-                onSelect={(prompt) => {
-                  if (!chat.threadLoading) chat.sendPrompt(prompt);
-                }}
-              />
-            </AuiIf>
-          </div>
-        </AuiIf>
       </ThreadPrimitive.Viewport>
-      <div className="relative z-10 shrink-0 border-t bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-3">
-          <ThreadScrollToBottom />
-          <AuiIf condition={(s) => s.thread.isRunning}>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground" role="status">
-              <div className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              Reading your current records and preparing an answer...
-            </div>
-          </AuiIf>
-          <SelvamComposer />
+      <AuiIf condition={(s) => !isNewChatView(s)}>
+        <div className="relative z-10 shrink-0 border-t bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-3">
+            <ThreadScrollToBottom />
+            <AuiIf condition={(s) => s.thread.isRunning}>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground" role="status">
+                <div className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Reading your current records and preparing an answer...
+              </div>
+            </AuiIf>
+            <SelvamComposer />
+          </div>
         </div>
-      </div>
+      </AuiIf>
     </ThreadPrimitive.Root>
   );
 };
