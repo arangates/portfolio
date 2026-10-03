@@ -8,7 +8,7 @@ import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
 import { z } from "zod";
 
-const providers = ["openai", "google", "anthropic", "mistral", "opencode"] as const;
+const providers = ["openai", "google", "anthropic", "mistral", "opencode", "gateway"] as const;
 const providerSchema = z.enum(providers);
 
 async function safeProviderKey(userId: string, provider: AIProvider) {
@@ -25,7 +25,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const provider = searchParams.get("provider");
 
-    if (!provider || !["openai", "google", "anthropic", "mistral", "opencode"].includes(provider)) {
+    if (
+      !provider ||
+      !["openai", "google", "anthropic", "mistral", "opencode", "gateway"].includes(provider)
+    ) {
       return Response.json({ error: "Invalid provider" }, { status: 400 });
     }
 
@@ -36,7 +39,7 @@ export async function GET(request: Request) {
 
     const key = await safeProviderKey(
       session.user.id,
-      provider as "openai" | "google" | "anthropic" | "mistral" | "opencode",
+      provider as "openai" | "google" | "anthropic" | "mistral" | "opencode" | "gateway",
     );
     if (!key) {
       return Response.json({ error: "Add API key for this provider first" }, { status: 400 });
@@ -60,7 +63,14 @@ export async function GET(request: Request) {
 
   const allModels: Record<string, Array<{ id: string; label: string; provider: string }>> = {};
 
-  for (const provider of ["openai", "google", "anthropic", "mistral", "opencode"] as const) {
+  for (const provider of [
+    "openai",
+    "google",
+    "anthropic",
+    "mistral",
+    "opencode",
+    "gateway",
+  ] as const) {
     const key = await safeProviderKey(session.user.id, provider);
     if (key) {
       try {
@@ -121,6 +131,8 @@ async function fetchModelsFromProvider(
     case "opencode":
       // OpenCode Zen uses OpenAI-compatible API
       return fetchOpenCodeModels(apiKey);
+    case "gateway":
+      return fetchGatewayModels(apiKey);
     default:
       return [];
   }
@@ -230,6 +242,17 @@ async function fetchOpenCodeModels(apiKey: string): Promise<Array<{ id: string; 
   return models;
 }
 
+async function fetchGatewayModels(apiKey: string): Promise<Array<{ id: string; label: string }>> {
+  const response = await fetch("https://ai-gateway.vercel.sh/v1/models", {
+    headers: { Authorization: `Bearer ${apiKey}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch AI Gateway models");
+  const data = await response.json();
+  return (data.data as Array<{ id: string; name?: string; type?: string }>)
+    .filter((m) => !m.type || m.type === "language")
+    .map((m) => ({ id: m.id, label: m.name ? `${m.name} · ${m.id.split("/")[0]}` : m.id }));
+}
+
 function getFallbackModels(provider: string): Array<{ id: string; label: string }> {
   const fallback: Record<string, Array<{ id: string; label: string }>> = {
     openai: [
@@ -254,6 +277,10 @@ function getFallbackModels(provider: string): Array<{ id: string; label: string 
       { id: "mistral-small", label: "Mistral Small" },
     ],
     opencode: [{ id: "gpt-5.6-sol", label: "GPT-5.6 Sol · OpenCode Zen" }],
+    gateway: [
+      { id: "openai/gpt-4.1-mini", label: "GPT-4.1 mini · openai" },
+      { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash · google" },
+    ],
   };
 
   return fallback[provider] || [];

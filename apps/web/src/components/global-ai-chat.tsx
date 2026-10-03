@@ -11,9 +11,22 @@ import {
 import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { buttonVariants } from "@portfolio/ui/components/button";
-import { DefaultChatTransport, type UIMessage } from "ai";
-import { KeyRoundIcon } from "lucide-react";
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+  type UIMessage,
+} from "ai";
+import type { AttachmentAdapter } from "@assistant-ui/react";
+import { ArrowUpRightIcon, CheckIcon, ChevronDownIcon, KeyRoundIcon } from "lucide-react";
+import { Button, buttonVariants } from "@portfolio/ui/components/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@portfolio/ui/components/dropdown-menu";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -47,13 +60,114 @@ type ChatContextValue = {
   dismissError: () => void;
 };
 const ChatContext = createContext<ChatContextValue | null>(null);
+export const MAX_ATTACHMENT_BYTES = 1_500_000;
+
+function readAsDataURL(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+const attachmentAdapter: AttachmentAdapter = {
+  accept: "image/png,image/jpeg,image/webp,image/gif,application/pdf",
+  async add({ file }) {
+    if (file.size > MAX_ATTACHMENT_BYTES) throw new Error("Files must be 1.5 MB or smaller.");
+    return {
+      id: crypto.randomUUID(),
+      type: file.type.startsWith("image/") ? "image" : "file",
+      name: file.name,
+      file,
+      contentType: file.type,
+      content: [],
+      status: { type: "requires-action", reason: "composer-send" },
+    };
+  },
+  async send(attachment) {
+    return {
+      ...attachment,
+      status: { type: "complete" },
+      content: [
+        {
+          type: "file",
+          mimeType: attachment.contentType ?? "",
+          filename: attachment.name,
+          data: await readAsDataURL(attachment.file),
+        },
+      ],
+    };
+  },
+  async remove() {},
+};
+
 export function useSelvamChat() {
   const context = useContext(ChatContext);
   if (!context) throw new Error("Selvam chat provider is missing");
   return context;
 }
 
-export function SelvamComposer({ standalone = false }: { standalone?: boolean }) {
+function ModelPicker({
+  models,
+  provider,
+  model,
+  onSelect,
+}: {
+  models: ModelEntry[];
+  provider: Provider;
+  model: string;
+  onSelect: (entry: ModelEntry) => void;
+}) {
+  const current = models.find((entry) => entry.provider === provider && entry.id === model);
+  const label = current?.label ?? model;
+  if (models.length < 2) {
+    return (
+      <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">{label}</span>
+    );
+  }
+  const groups = models.reduce<Record<string, ModelEntry[]>>((acc, entry) => {
+    (acc[entry.provider] ??= []).push(entry);
+    return acc;
+  }, {});
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="max-w-56 gap-1 rounded-full px-2 font-medium text-foreground/80"
+            aria-label="Choose model"
+          />
+        }
+      >
+        <span className="truncate">{label}</span>
+        <ChevronDownIcon data-icon="inline-end" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="top" className="w-64">
+        {Object.entries(groups).map(([group, entries]) => (
+          <DropdownMenuGroup key={group}>
+            <DropdownMenuLabel className="capitalize">{group}</DropdownMenuLabel>
+            {entries.map((entry) => (
+              <DropdownMenuItem
+                key={`${entry.provider}:${entry.id}`}
+                onClick={() => onSelect(entry)}
+              >
+                <span className="truncate">{entry.label}</span>
+                {entry.provider === provider && entry.id === model ? (
+                  <CheckIcon className="ml-auto" />
+                ) : null}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function SelvamComposer() {
   const chat = useSelvamChat();
 
   if (chat.statusLoading || !chat.status) {
@@ -66,33 +180,38 @@ export function SelvamComposer({ standalone = false }: { standalone?: boolean })
     return (
       <Link
         href="/dashboard/settings?tab=model-keys"
-        className={buttonVariants({ variant: "outline", className: "w-full" })}
+        className={buttonVariants({
+          variant: "outline",
+          className: "h-auto min-h-14 w-full justify-start gap-3 rounded-2xl px-4 py-3 text-left",
+        })}
       >
-        <KeyRoundIcon /> Add an API key to start chatting
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted">
+          <KeyRoundIcon />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium">Connect an AI provider</span>
+          <span className="block text-xs font-normal text-muted-foreground">
+            Add an API key to send messages
+          </span>
+        </span>
+        <ArrowUpRightIcon className="size-4 shrink-0 text-muted-foreground" />
       </Link>
     );
   }
 
   return (
     <ChatComposer
-      standalone={standalone}
       modelSelector={
-        <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">
-          {chat.models.find(
-            (candidate) => candidate.provider === chat.provider && candidate.id === chat.model,
-          )?.label ?? chat.model}
-        </span>
+        <ModelPicker
+          models={chat.models}
+          provider={chat.provider}
+          model={chat.model}
+          onSelect={(entry) => {
+            chat.setProvider(entry.provider);
+            chat.setModel(entry.id);
+          }}
+        />
       }
-      mentions={[
-        { id: "portfolio", label: "Portfolio overview", type: "financial section" },
-        { id: "fire", label: "FIRE plan", type: "financial section" },
-        { id: "cash-flow", label: "Cash flow", type: "financial section" },
-        { id: "returns", label: "Verified returns", type: "financial section" },
-        { id: "salary", label: "Salary & payslips", type: "financial section" },
-        { id: "fixed-deposits", label: "Fixed deposits", type: "financial section" },
-        { id: "global-equity", label: "Global equity holdings", type: "financial section" },
-        { id: "household", label: "Household budget", type: "financial section" },
-      ]}
       commands={[
         {
           id: "summarize",
@@ -196,12 +315,13 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   const chat = useChat({
     id: activeThreadId ?? `selvam-pending:${userId}`,
     transport,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
     onFinish: () => {
       window.setTimeout(() => void refreshThreads().catch(() => {}), 250);
     },
   });
   const { messages, setMessages, sendMessage, stop, clearError, error, status: chatStatus } = chat;
-  const runtime = useAISDKRuntime(chat);
+  const runtime = useAISDKRuntime(chat, { adapters: { attachments: attachmentAdapter } });
 
   useEffect(() => {
     if (!pendingHistory || pendingHistory.id !== activeThreadId) return;
@@ -430,34 +550,31 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
         })
         .then(({ value, data }) => {
           setStatus(value);
-          const firstProvider = (
-            [
-              providerRef.current,
-              "openai",
-              "google",
-              "anthropic",
-              "opencode",
-              "mistral",
-            ] as Provider[]
-          ).find(
-            (candidate, index, providers) =>
-              value[candidate] && providers.indexOf(candidate) === index,
+          const entries: ModelEntry[] = (
+            ["openai", "google", "anthropic", "opencode", "mistral", "gateway"] as Provider[]
+          )
+            .filter((candidate) => value[candidate])
+            .flatMap((candidate) => {
+              const available = data.models[candidate] ?? [];
+              const saved = data.selected?.[candidate] ?? [];
+              const ids = saved.length ? saved : [available[0]?.id ?? defaultModel[candidate]];
+              return ids.map(
+                (id) =>
+                  available.find((entry) => entry.id === id) ?? {
+                    id,
+                    label: id,
+                    provider: candidate,
+                  },
+              );
+            });
+          setModels(entries);
+          const current = entries.find(
+            (entry) => entry.provider === providerRef.current && entry.id === modelRef.current,
           );
-          if (!firstProvider) {
-            setModels([]);
-            return;
-          }
-          const available = data.models[firstProvider] ?? [];
-          const saved = data.selected?.[firstProvider] ?? [];
-          const selectedId = saved[0] ?? available[0]?.id ?? defaultModel[firstProvider];
-          const selectedModel = available.find((candidate) => candidate.id === selectedId);
-          setProvider(firstProvider);
-          setModels(
-            selectedModel
-              ? [selectedModel]
-              : [{ id: selectedId, label: selectedId, provider: firstProvider }],
-          );
-          setModelState(selectedId);
+          const next = current ?? entries[0];
+          if (!next) return;
+          setProvider(next.provider);
+          setModelState(next.id);
         })
         .catch(() => setNotice("Could not load provider settings. Please retry."))
         .finally(() => setStatusLoading(false));

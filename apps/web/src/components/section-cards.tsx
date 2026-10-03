@@ -69,12 +69,14 @@ function MetricCardView({ item }: { item: MetricCard }) {
       href={item.href}
       key={item.label}
       aria-label={`View ${item.label} breakdown in analytics`}
-      className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      className="group block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
     >
       {card}
     </Link>
   ) : (
-    <div key={item.label}>{card}</div>
+    <div key={item.label} className="h-full">
+      {card}
+    </div>
   );
   return (
     <div className="relative h-full">
@@ -102,7 +104,9 @@ export function SectionCards({ items }: { items: MetricCard[] }) {
           <MetricCardView key={item.label} item={item} />
         ))}
       </MobileSectionCardsCarousel>
-      <div className={cn("hidden gap-3 px-4 sm:grid sm:grid-cols-2 lg:px-6", wideGrid)}>
+      <div
+        className={cn("hidden gap-3 px-4 sm:auto-rows-fr sm:grid sm:grid-cols-2 lg:px-6", wideGrid)}
+      >
         {items.map((item) => (
           <MetricCardView key={item.label} item={item} />
         ))}

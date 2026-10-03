@@ -5,7 +5,7 @@ description: Proactive AI-driven financial intelligence layer
 
 # Selvam Evaluate
 
-The **Selvam Evaluate** feature is an AI-driven, proactive financial intelligence layer designed specifically for an Indian tech professional operating in the Netherlands (dual-country finances: INR + EUR). 
+The **Selvam Evaluate** feature is an AI-driven, proactive financial intelligence layer designed specifically for an Indian tech professional operating in the Netherlands (dual-country finances: INR + EUR).
 
 Instead of waiting for the user to ask questions in the chat interface, Selvam Evaluate continuously scores the user's financial posture across 5 critical dimensions and surfaces actionable, cross-domain alerts.
 
@@ -38,7 +38,7 @@ The evaluation engine assigns a score from 0-100 for each of the following dimen
 
 Two tables in `packages/db/src/schema/evaluation.ts` support this feature:
 
-- **`financialEvaluation`**: Stores the complete history of evaluations, including the scores for all 5 dimensions, the overall score, the exact prompt/rubric trigger context, and the full structured JSON response from the model. 
+- **`financialEvaluation`**: Stores the complete history of evaluations, including the scores for all 5 dimensions, the overall score, the exact prompt/rubric trigger context, and the full structured JSON response from the model.
   - Uses `contextHash` (SHA-256) to prevent redundant API calls when the financial data hasn't materially changed.
 - **`evaluationAlert`**: Stores individual alerts generated during evaluations.
   - Supports severity levels (`info`, `warning`, `critical`).
@@ -47,7 +47,7 @@ Two tables in `packages/db/src/schema/evaluation.ts` support this feature:
 
 ### 2. The Engine (`@portfolio/api/evaluation-engine`)
 
-The `buildEvaluationContext` function concurrently fetches data from over 10 different financial query modules (e.g., `getFinancialTwin`, `getFirePlan`, `getCapitalDeploymentEngine`, `getPortfolioOverview`). 
+The `buildEvaluationContext` function concurrently fetches data from over 10 different financial query modules (e.g., `getFinancialTwin`, `getFirePlan`, `getCapitalDeploymentEngine`, `getPortfolioOverview`).
 
 - It formats the financial data into a highly concise, token-efficient markdown context.
 - It computes a SHA-256 `contextHash` of key financial metrics (net worth, liquid value, equity PnL, missing evidence, etc.).
@@ -56,6 +56,7 @@ The `buildEvaluationContext` function concurrently fetches data from over 10 dif
 ### 3. Vercel AI SDK & Jev Model (`typesafe-ai/jev`)
 
 Evaluations run via Vercel's AI SDK (`generateObject`) routed through the Vercel AI Gateway:
+
 - **Model**: `gateway("typesafe-ai/jev")`
 - **Cost**: The 32K context window and Jev model access are currently free when routed through Vercel's OIDC authentication, bypassing manual API key management entirely.
 - **Structured Output**: The output is strictly validated against a `zod` schema (`evaluationSchema`), ensuring that scores and alerts are typed and predictable.
@@ -63,9 +64,9 @@ Evaluations run via Vercel's AI SDK (`generateObject`) routed through the Vercel
 ### 4. API Routes & Cron Jobs
 
 - **Manual Trigger**: `POST /api/evaluate` (called by the user on the dashboard).
-- **Daily Cron**: `GET /api/cron/evaluate` (runs daily at 9:30 AM via `vercel.json` crons). 
+- **Daily Cron**: `GET /api/cron/evaluate` (runs daily at 9:30 AM via `vercel.json` crons).
   - Authenticated via the `CRON_SECRET` bearer token.
-  - Loops sequentially through all users. 
+  - Loops sequentially through all users.
   - Safely skips users whose `contextHash` hasn't changed since their last evaluation.
 - **Alert Management**: `GET/PATCH /api/evaluate/alerts` (for fetching and acknowledging alerts).
 
@@ -78,6 +79,7 @@ Evaluations run via Vercel's AI SDK (`generateObject`) routed through the Vercel
 ### 6. Chat System Integration (`Ask Selvam`)
 
 The evaluation results and active alerts are automatically included in the AI Chat context when the `evaluation` section is requested, allowing the chatbot to answer questions like:
-- *"Why did my liquidity score drop this month?"*
-- *"Help me fix the critical alert on my tax efficiency."*
-- *"Based on my latest financial evaluation, what's my biggest risk?"*
+
+- _"Why did my liquidity score drop this month?"_
+- _"Help me fix the critical alert on my tax efficiency."_
+- _"Based on my latest financial evaluation, what's my biggest risk?"_

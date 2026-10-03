@@ -9,7 +9,7 @@ The **Scenario Engine** (`@portfolio/api/scenario-engine`) allows users to simul
 
 ### Zero-Cost Architecture
 
-Simulating financial scenarios typically requires either complex database branching (cloning the database to mutate records) or expensive LLM reasoning. 
+Simulating financial scenarios typically requires either complex database branching (cloning the database to mutate records) or expensive LLM reasoning.
 
 The Selvam Scenario Engine avoids both. It is a **pure-math, in-memory projection engine**. It reads the baseline data from `getFirePlan` and `getFinancialTwin`, applies hypothetical adjustments mathematically during the API request, and calculates the delta in years to FIRE without ever touching the database or triggering a third-party API.
 
@@ -26,6 +26,7 @@ The engine supports multiple adjustment primitives that can be stacked together 
 ### Preset Scenarios
 
 The engine ships with several built-in presets accessible via the `GET /api/scenarios` endpoint:
+
 - **20% Market Crash**
 - **6-Month Sabbatical**
 - **50% Salary Raise**
@@ -33,4 +34,4 @@ The engine ships with several built-in presets accessible via the `GET /api/scen
 
 ### Output format
 
-The endpoint returns both the baseline metrics and the projected metrics, allowing the UI to render a clean diff. It also generates a human-readable `impact` string (e.g., *"Your FIRE date is delayed by 2.4 years"*).
+The endpoint returns both the baseline metrics and the projected metrics, allowing the UI to render a clean diff. It also generates a human-readable `impact` string (e.g., _"Your FIRE date is delayed by 2.4 years"_).

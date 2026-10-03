@@ -23,29 +23,34 @@ Because personal financial data is highly sensitive, the application uses a Brin
 When a user asks a question, the assistant is injected with the exact state of the user's finances.
 
 ### Global Context
+
 Every chat request automatically includes a **Portfolio Overview** built via `getChatOverview(userId)`:
+
 - Total Net Worth and Liquid Value (in the user's base currency)
 - Asset allocations and breakdowns
 - Missing/unconverted currencies
 
 ### Section-Specific Context (Tool Calling)
+
 The LLM can autonomously query 8 live financial modules via the `getFinancialSection` tool:
 
-| Section | Data Retrieved | Dashboard Link |
-|---------|---------------|----------------|
-| `fire` | FIRE targets, investable assets, gap, success probability, scenarios | `/dashboard/fire` |
-| `household` | Budget, gross expenses, refunds, net monthly/annual figures | `/dashboard/household` |
-| `personal_cash_flow` | Cash flow metrics, 24-month history, categories, accounts | `/dashboard/cash-flow/personal` |
-| `joint_cash_flow` | Joint household cash flow data | `/dashboard/cash-flow/household` |
-| `fixed_deposits` | Active fixed deposit records | `/dashboard/fixed-deposits` |
-| `salary` | Payslips, gross/net pay, wage tax, validation | `/dashboard/salary` |
-| `verified_returns` | XIRR, Modified Dietz returns, evidence quality | `/dashboard/returns` |
-| `global_equity` | EUR holdings, market value, quantities | `/dashboard/eur` |
+| Section              | Data Retrieved                                                       | Dashboard Link                   |
+| -------------------- | -------------------------------------------------------------------- | -------------------------------- |
+| `fire`               | FIRE targets, investable assets, gap, success probability, scenarios | `/dashboard/fire`                |
+| `household`          | Budget, gross expenses, refunds, net monthly/annual figures          | `/dashboard/household`           |
+| `personal_cash_flow` | Cash flow metrics, 24-month history, categories, accounts            | `/dashboard/cash-flow/personal`  |
+| `joint_cash_flow`    | Joint household cash flow data                                       | `/dashboard/cash-flow/household` |
+| `fixed_deposits`     | Active fixed deposit records                                         | `/dashboard/fixed-deposits`      |
+| `salary`             | Payslips, gross/net pay, wage tax, validation                        | `/dashboard/salary`              |
+| `verified_returns`   | XIRR, Modified Dietz returns, evidence quality                       | `/dashboard/returns`             |
+| `global_equity`      | EUR holdings, market value, quantities                               | `/dashboard/eur`                 |
 
 Tool calling is capped at 3 steps per request to prevent runaway queries.
 
 ### Conversation Memory & Summarization
+
 For long-running conversations (30+ messages), the system automatically:
+
 1. Generates a compressed summary of older messages using the LLM
 2. Stores the summary in the `summary` column of `ai_chat_thread`
 3. Injects the summary as prior context, sending only the last 15-20 messages as full context
@@ -58,15 +63,15 @@ After the first user-assistant exchange, the LLM generates a concise 4-6 word ti
 
 ## Slash Commands
 
-| Command | Action |
-|---------|--------|
-| `/summarize` | Summarize the conversation using current records |
-| `/fire-check` | Quick FIRE progress snapshot with gap analysis |
-| `/budget-review` | Review current month's household budget |
-| `/compare` | Compare cash flow between two periods |
-| `/salary` | Show latest salary payslip breakdown |
-| `/returns` | Show verified investment returns |
-| `/help` | List available commands and financial sections |
+| Command          | Action                                           |
+| ---------------- | ------------------------------------------------ |
+| `/summarize`     | Summarize the conversation using current records |
+| `/fire-check`    | Quick FIRE progress snapshot with gap analysis   |
+| `/budget-review` | Review current month's household budget          |
+| `/compare`       | Compare cash flow between two periods            |
+| `/salary`        | Show latest salary payslip breakdown             |
+| `/returns`       | Show verified investment returns                 |
+| `/help`          | List available commands and financial sections   |
 
 ## `@` Mentions
 
@@ -80,10 +85,10 @@ Conversation search uses PostgreSQL's built-in `tsvector`/`tsquery` full-text se
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `⌘/Ctrl + Shift + N` | New conversation |
-| `Escape` | Close mobile history panel |
+| Shortcut             | Action                     |
+| -------------------- | -------------------------- |
+| `⌘/Ctrl + Shift + N` | New conversation           |
+| `Escape`             | Close mobile history panel |
 
 ## Export
 
@@ -111,13 +116,13 @@ The chat uses Vercel AI SDK v7 with `streamText()` and `DefaultChatTransport`. K
 
 ## Supported Providers & Models
 
-| Provider | Default Model | Notes |
-|----------|--------------|-------|
-| OpenAI | `gpt-4.1-mini` | Full model list discovered dynamically |
-| Google Gemini | `gemini-3.6-flash` | Thinking/reasoning enabled (`thinkingLevel: minimal`) |
-| Anthropic | `claude-sonnet-4-6` | |
-| Mistral AI | `mistral-large-2` | |
-| OpenCode Zen | `gpt-5.6-sol` | Via OpenAI-compatible endpoint |
+| Provider      | Default Model       | Notes                                                 |
+| ------------- | ------------------- | ----------------------------------------------------- |
+| OpenAI        | `gpt-4.1-mini`      | Full model list discovered dynamically                |
+| Google Gemini | `gemini-3.6-flash`  | Thinking/reasoning enabled (`thinkingLevel: minimal`) |
+| Anthropic     | `claude-sonnet-4-6` |                                                       |
+| Mistral AI    | `mistral-large-2`   |                                                       |
+| OpenCode Zen  | `gpt-5.6-sol`       | Via OpenAI-compatible endpoint                        |
 
 ## Rich Rendering
 

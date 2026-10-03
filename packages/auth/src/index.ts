@@ -21,7 +21,7 @@ export function createAuth() {
 
       schema: schema,
     }),
-    trustedOrigins: [env.CORS_ORIGIN],
+    trustedOrigins: [env.CORS_ORIGIN, "https://*.vercel.app"],
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 12,

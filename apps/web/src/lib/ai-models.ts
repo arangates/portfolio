@@ -1,4 +1,4 @@
-export type ChatProvider = "openai" | "google" | "anthropic" | "mistral" | "opencode";
+export type ChatProvider = "openai" | "google" | "anthropic" | "mistral" | "opencode" | "gateway";
 
 // Default models for each provider (fallback when API fetch fails)
 const defaultModels: Record<
@@ -24,6 +24,10 @@ const defaultModels: Record<
     { id: "mistral-large", label: "Mistral Large", provider: "mistral" },
   ],
   opencode: [{ id: "gpt-5.6-sol", label: "GPT-5.6 Sol · OpenCode Zen", provider: "opencode" }],
+  gateway: [
+    { id: "openai/gpt-4.1-mini", label: "GPT-4.1 mini · Vercel", provider: "gateway" },
+    { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash · Vercel", provider: "gateway" },
+  ],
 } as const;
 
 // Type for individual model entries
@@ -36,6 +40,7 @@ const allModels: readonly ModelEntry[] = [
   ...defaultModels.anthropic,
   ...defaultModels.mistral,
   ...defaultModels.opencode,
+  ...defaultModels.gateway,
 ];
 
 export const chatModels = allModels;
@@ -49,6 +54,7 @@ export const defaultModel: Record<ChatProvider, ChatModel> = {
   google: "gemini-3.6-flash",
   anthropic: "claude-sonnet-4-6",
   opencode: "gpt-5.6-sol",
+  gateway: "openai/gpt-4.1-mini",
   mistral: "mistral-large-2",
 };
 
@@ -58,6 +64,7 @@ export const providerLabels: Record<ChatProvider, string> = {
   google: "Google Gemini",
   anthropic: "Anthropic",
   opencode: "OpenCode Zen",
+  gateway: "Vercel AI Gateway",
   mistral: "Mistral AI",
 };
 
@@ -107,5 +114,6 @@ export async function getAllModels(): Promise<
     anthropic: defaultModels.anthropic,
     mistral: defaultModels.mistral,
     opencode: defaultModels.opencode,
+    gateway: defaultModels.gateway,
   };
 }

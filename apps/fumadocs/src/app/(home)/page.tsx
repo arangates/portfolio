@@ -50,7 +50,7 @@ const architecture = [
 
 export default function HomePage() {
   return (
-    <main className="pb-10 text-fd-foreground md:pb-20">
+    <main id="main-content" tabIndex={-1} className="pb-10 text-fd-foreground md:pb-20">
       <section className="relative mx-auto mt-4 min-h-[720px] w-[calc(100%-1rem)] max-w-[1440px] overflow-hidden rounded-3xl border bg-fd-card shadow-2xl shadow-emerald-950/5 md:w-[calc(100%-2rem)] dark:shadow-black/30">
         <div className="landing-grid pointer-events-none absolute inset-0 opacity-70" />
         <div className="aurora pointer-events-none absolute -inset-20 opacity-80 dark:opacity-60" />
@@ -68,7 +68,7 @@ export default function HomePage() {
               Keep every chapter.
             </span>
           </h1>
-          <p className="mt-7 max-w-2xl text-balance text-base leading-7 text-fd-muted-foreground sm:text-lg">
+          <p className="mt-7 max-w-2xl text-pretty text-base leading-7 text-fd-muted-foreground sm:text-lg">
             A private, multi-currency portfolio that brings cash, deposits, listed investments,
             commodities and real estate into one durable historical record.
           </p>
@@ -103,7 +103,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative z-10 mx-auto mt-14 w-[94%] max-w-6xl translate-y-4 rounded-2xl border bg-neutral-950/95 p-2 shadow-2xl shadow-black/40 ring-1 ring-white/10 md:translate-y-12">
+        <div className="relative z-10 mx-auto mt-14 w-[94%] max-w-6xl translate-y-4 rounded-[20px] border bg-neutral-950/95 p-2 shadow-2xl shadow-black/40 ring-1 ring-white/10 md:translate-y-12">
           <DashboardPreview />
         </div>
       </section>
@@ -119,7 +119,7 @@ export default function HomePage() {
           {assetGroups.map((item) => (
             <article
               key={item.title}
-              className="group rounded-2xl border bg-fd-card p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="group rounded-2xl border bg-fd-card p-6 shadow-sm transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-1 hover:shadow-xl"
             >
               <div className="mb-14 flex items-center justify-between">
                 <span className="flex size-11 items-center justify-center rounded-xl border bg-fd-secondary shadow-sm">

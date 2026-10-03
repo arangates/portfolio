@@ -71,7 +71,7 @@ export async function saveChatThread(
   messages: StoredChatMessage[],
   provider: string,
   model: string,
-  options?: { title?: string; summary?: string },
+  options?: { title?: string; summary?: string | null },
 ) {
   const title =
     options?.title ||

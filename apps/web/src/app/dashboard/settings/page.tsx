@@ -97,7 +97,7 @@ export default async function SettingsPage({
               <PreferenceForm preference={preference} />
               <ExchangeRateSyncCard status={exchangeRateStatus} />
               <ExchangeRateForm baseCurrency={preference.baseCurrency} />
-              <Card className="xl:col-span-2">
+              <Card className="2xl:col-span-2">
                 <CardHeader>
                   <CardTitle>Stored exchange rates</CardTitle>
                   <CardDescription>
@@ -139,7 +139,7 @@ export default async function SettingsPage({
               <GoogleDriveArchiveCard summary={driveSummary} />
               <DataControls />
               <SecurityForm />
-              <div className="xl:col-span-2">
+              <div className="2xl:col-span-2">
                 <DeleteAccountCard />
               </div>
             </>

@@ -3,6 +3,12 @@
 import { useFinancialPrivacy } from "@/components/dashboard-experience";
 import { MarkdownText, DirectiveText } from "@/components/assistant-ui";
 import {
+  FileChip,
+  ReasoningBlock,
+  SourceChip,
+  ToolCard,
+} from "@/components/assistant-ui/chat-parts";
+import {
   ChatSuggestions,
   ChatWorkspaceControls,
   type ChatSuggestionGroup,
@@ -12,6 +18,7 @@ import {
   ActionBarPrimitive,
   AuiIf,
   BranchPickerPrimitive,
+  ComposerPrimitive,
   ErrorPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
@@ -22,6 +29,13 @@ import {
 import { Button } from "@portfolio/ui/components/button";
 import { Skeleton } from "@portfolio/ui/components/skeleton";
 import { buttonVariants } from "@portfolio/ui/components/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@portfolio/ui/components/dropdown-menu";
 import { cn } from "@portfolio/ui/lib/utils";
 import {
   ArrowDownIcon,
@@ -56,24 +70,20 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
     icon: <BrainCircuitIcon className="size-4" />,
     options: [
       {
-        label: "What's my current portfolio value?",
+        label: "Portfolio value",
         prompt: "What is my current portfolio value?",
       },
-      { label: "How much is liquid?", prompt: "How much of my portfolio is liquid?" },
-      { label: "Show asset allocation", prompt: "Show my asset allocation breakdown" },
+      { label: "Liquid assets", prompt: "How much of my portfolio is liquid?" },
+      { label: "Asset allocation", prompt: "Show my asset allocation breakdown" },
     ],
   },
   {
     label: "FIRE Plan",
     icon: <ShieldCheckIcon className="size-4" />,
     options: [
-      {
-        label: "Compare with assets",
-        prompt: "How does my FIRE plan compare with current assets?",
-      },
       { label: "Am I on track?", prompt: "Am I on track for financial independence?" },
       {
-        label: "What's my FIRE number?",
+        label: "My FIRE number",
         prompt: "What is my FIRE number based on current spending?",
       },
     ],
@@ -81,20 +91,12 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
   {
     label: "Investments",
     icon: <ArrowUpIcon className="size-4" />,
-    options: [
-      { label: "Verified returns", prompt: "What were my verified investment returns?" },
-      { label: "Mutual fund performance", prompt: "Show my mutual fund performance" },
-      { label: "Equity analysis", prompt: "Analyze my equity portfolio performance" },
-    ],
+    options: [{ label: "Verified returns", prompt: "What were my verified investment returns?" }],
   },
   {
     label: "Spending",
     icon: <ArrowDownIcon className="size-4" />,
-    options: [
-      { label: "Where did it go?", prompt: "Where did household spending go?" },
-      { label: "Monthly trends", prompt: "Show my monthly spending trends" },
-      { label: "Budget analysis", prompt: "Analyze my household budget" },
-    ],
+    options: [{ label: "Monthly spending", prompt: "Show my monthly spending trends" }],
   },
 ];
 
@@ -147,58 +149,27 @@ const ThreadHistorySkeleton: FC = () => (
 // ============================================================================
 
 const ThreadWelcome: FC = () => {
+  const chat = useSelvamChat();
+
   return (
-    <div className="mx-auto mb-6 flex w-full max-w-4xl flex-col items-center justify-center px-5 py-10 text-center">
-      <h2 className="fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-2xl font-medium tracking-tight duration-200 sm:text-3xl">
+    <div className="mx-auto flex w-full max-w-[38rem] flex-col items-center px-4 py-6 text-center sm:px-6">
+      <h2 className="text-balance text-xl font-medium tracking-tight sm:text-2xl">
         How can I help you today?
       </h2>
-      <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
-        <ShieldCheckIcon className="size-4" /> Read-only access &middot; figures from your records
+      <div className="mt-6 w-full">
+        <SelvamComposer />
+      </div>
+      <div className="mt-3 w-full">
+        <ChatSuggestions
+          groups={SUGGESTION_GROUPS}
+          onSelect={(prompt) => {
+            if (!chat.threadLoading) chat.sendPrompt(prompt);
+          }}
+        />
       </div>
     </div>
   );
 };
-
-// ============================================================================
-// Financial Tool Status - Custom for Selvam
-// ============================================================================
-
-const sectionLabels: Record<string, string> = {
-  fire: "FIRE plan and retirement scenarios",
-  household: "household budget and expenses",
-  personal_cash_flow: "personal cash flow records",
-  joint_cash_flow: "joint household cash flow",
-  fixed_deposits: "fixed deposit records",
-  salary: "salary and payslip data",
-  verified_returns: "verified investment returns",
-  global_equity: "global equity holdings",
-};
-
-function FinancialToolStatus({
-  toolName,
-  args,
-  status,
-}: {
-  toolName: string;
-  args: Record<string, unknown>;
-  status: { type: string };
-}) {
-  const running = status.type === "running" || status.type === "requires-action";
-  const section = typeof args?.section === "string" ? args.section : "";
-  const label = sectionLabels[section] || "your latest Selvam records";
-  return (
-    <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-      {running ? (
-        <div className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-      ) : (
-        <CheckIcon className="size-3.5 text-emerald-500" />
-      )}
-      <span>
-        {running ? "Checking" : "Checked"} {toolName === "getFinancialSection" ? label : toolName}
-      </span>
-    </div>
-  );
-}
 
 // ============================================================================
 // Thread Scroll to Bottom
@@ -206,7 +177,7 @@ function FinancialToolStatus({
 
 const ThreadScrollToBottom: FC = () => {
   return (
-    <ThreadPrimitive.ScrollToBottom className="mb-2 ml-auto block rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground disabled:hidden">
+    <ThreadPrimitive.ScrollToBottom className="absolute -top-12 right-1 z-10 grid min-h-10 place-items-center rounded-full border bg-card px-3 py-2 text-xs text-muted-foreground disabled:hidden">
       Scroll to latest
     </ThreadPrimitive.ScrollToBottom>
   );
@@ -231,16 +202,29 @@ const MessageError: FC = () => {
 // ============================================================================
 
 const AssistantWorkingIndicator: FC = () => {
-  const isEmpty = useAuiState((s) => s.message.content.length === 0);
+  const state = useAuiState((s) => {
+    const parts = s.message.content as readonly {
+      type: string;
+      result?: unknown;
+      approval?: { approved?: boolean; resolution?: string };
+    }[];
+    if (parts.length === 0) return "empty";
+    const last = parts.at(-1);
+    return last?.type === "tool-call" && last.approval && last.approval.approved === undefined
+      ? "waiting"
+      : "working";
+  });
 
-  if (isEmpty) {
+  if (state === "waiting") return null;
+  if (state === "empty") {
     return (
       <span
         data-slot="aui_assistant-message-indicator"
-        className="text-muted-foreground inline-flex items-center gap-2 align-middle"
+        role="status"
+        className="text-muted-foreground inline-flex items-center gap-2 align-middle text-sm"
       >
-        <div className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        <span className="text-sm">Reading your current records...</span>
+        <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        Reading your current records…
       </span>
     );
   }
@@ -285,39 +269,18 @@ const AssistantMessage: FC = () => (
             case "group-chainOfThought":
               return <div data-slot="aui_chain-of-thought">{children}</div>;
             case "group-tool":
-              return (
-                <div className="my-2 flex items-center gap-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                  {children}
-                </div>
-              );
             case "group-reasoning":
-              return (
-                <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                  <summary className="cursor-pointer select-none font-medium text-foreground">
-                    Reasoning summary
-                  </summary>
-                  <p className="mt-2 whitespace-pre-wrap leading-relaxed">{children}</p>
-                </details>
-              );
+              return <>{children}</>;
             case "text":
               return <MarkdownText />;
             case "reasoning":
-              return (
-                <details className="my-2 rounded-lg border bg-muted/25 px-3 py-2 text-xs text-muted-foreground">
-                  <summary className="cursor-pointer select-none font-medium text-foreground">
-                    Reasoning summary
-                  </summary>
-                  <p className="mt-2 whitespace-pre-wrap leading-relaxed">{part.text}</p>
-                </details>
-              );
+              return <ReasoningBlock text={part.text} running={part.status.type === "running"} />;
             case "tool-call":
-              return (
-                <FinancialToolStatus
-                  toolName={part.toolName}
-                  args={part.args as Record<string, unknown>}
-                  status={part.status}
-                />
-              );
+              return <ToolCard part={part} />;
+            case "source":
+              return <SourceChip id={part.id} url={part.url} title={part.title} />;
+            case "file":
+              return <FileChip name={part.filename} mimeType={part.mimeType} data={part.data} />;
             case "indicator":
               return <AssistantWorkingIndicator />;
             case "data":
@@ -395,6 +358,8 @@ const AssistantActionBar: FC = () => {
 // ============================================================================
 
 const UserMessage: FC = () => {
+  const chat = useSelvamChat();
+
   return (
     <MessagePrimitive.Root
       data-slot="aui_user-message-root"
@@ -411,18 +376,69 @@ const UserMessage: FC = () => {
             )}
           </MessagePrimitive.Quote>
           <MessagePrimitive.Parts
-            components={{ Text: ({ text }) => <DirectiveText>{text}</DirectiveText> }}
+            components={{
+              Text: ({ text }) => <DirectiveText>{text}</DirectiveText>,
+              File: ({ filename, mimeType, data }) => (
+                <div className="my-1">
+                  <FileChip name={filename} mimeType={mimeType} data={data} />
+                </div>
+              ),
+              Image: ({ image, filename }) => (
+                <div className="my-1">
+                  <FileChip name={filename} mimeType="image/*" data={image} />
+                </div>
+              ),
+            }}
           />
         </div>
       </div>
 
-      <BranchPicker
-        data-slot="aui_user-branch-picker"
-        className="col-span-full col-start-1 -mr-1 justify-end"
-      />
+      <div className="col-span-full col-start-1 flex min-h-10 items-center justify-end gap-1 px-1">
+        <BranchPicker data-slot="aui_user-branch-picker" />
+        {chat.status?.[chat.provider] && (
+          <ActionBarPrimitive.Root className="flex items-center">
+            <ActionBarPrimitive.Edit asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="size-10"
+                aria-label="Edit message"
+                title="Edit message"
+              >
+                <PencilIcon />
+              </Button>
+            </ActionBarPrimitive.Edit>
+          </ActionBarPrimitive.Root>
+        )}
+      </div>
     </MessagePrimitive.Root>
   );
 };
+
+const UserEditComposer: FC = () => (
+  <MessagePrimitive.Root
+    data-slot="aui_user-message-edit"
+    className="mx-auto w-full max-w-4xl px-2"
+  >
+    <ComposerPrimitive.Root className="flex flex-col gap-2 rounded-2xl border bg-background p-3 shadow-sm focus-within:border-ring/60">
+      <ComposerPrimitive.Input
+        aria-label="Edit your message"
+        rows={3}
+        className="min-h-20 w-full resize-y bg-transparent px-2 py-1 text-base leading-relaxed outline-none"
+      />
+      <div className="flex justify-end gap-2">
+        <ComposerPrimitive.Cancel asChild>
+          <Button variant="ghost" size="sm">
+            Cancel
+          </Button>
+        </ComposerPrimitive.Cancel>
+        <ComposerPrimitive.Send asChild>
+          <Button size="sm">Update and retry</Button>
+        </ComposerPrimitive.Send>
+      </div>
+    </ComposerPrimitive.Root>
+  </MessagePrimitive.Root>
+);
 
 // ============================================================================
 // Branch Picker Component
@@ -457,12 +473,11 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({ className, ...rest
 // ============================================================================
 
 const Thread: FC = () => {
-  const chat = useSelvamChat();
   const isEmpty = useAuiState(isNewChatView);
 
   return (
     <ThreadPrimitive.Root
-      className="bg-background @container flex h-full min-w-0 w-full flex-1 flex-col transition-opacity duration-200"
+      className="bg-background @container flex min-h-0 min-w-0 w-full flex-1 flex-col transition-opacity duration-200"
       style={{
         ["--thread-max-width" as string]: "44rem",
         ["--composer-bg" as string]: "color-mix(in oklab, var(--color-muted) 30%, transparent)",
@@ -474,7 +489,7 @@ const Thread: FC = () => {
         turnAnchor="top"
         data-slot="aui_thread-viewport"
         className={cn(
-          "relative flex min-w-0 flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-20 sm:pt-24",
+          "relative flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-scroll scroll-smooth px-4 py-6 sm:px-6",
           isEmpty && "justify-center",
         )}
       >
@@ -488,46 +503,26 @@ const Thread: FC = () => {
         <div data-slot="aui_message-group" className="mb-14 flex flex-col gap-y-6 empty:hidden">
           <ThreadPrimitive.Messages>
             {({ message }) => {
-              if (message.composer.isEditing) return null; // Edit mode not implemented yet
+              if (message.composer.isEditing) return <UserEditComposer />;
               if (message.role === "user") return <UserMessage />;
               return <AssistantMessage />;
             }}
           </ThreadPrimitive.Messages>
-        </div>
-
-        <ThreadPrimitive.ViewportFooter
-          className={cn(
-            "mx-auto flex w-full max-w-4xl flex-col gap-4 overflow-visible pb-4 md:pb-6",
-            !isEmpty && "sticky bottom-0 mt-auto rounded-t-2xl",
-          )}
-        >
-          <ThreadScrollToBottom />
-          <AuiIf condition={(s) => s.thread.isRunning}>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground" role="status">
-              <div className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              Reading your current records and preparing an answer...
-            </div>
-          </AuiIf>
-          <SelvamComposer />
-          <AuiIf condition={isNewChatView}>
-            <div className="min-h-19">
-              <AuiIf condition={(s) => s.composer.isEmpty}>
-                <ChatSuggestions
-                  groups={SUGGESTION_GROUPS}
-                  onSelect={(prompt) => {
-                    if (!chat.threadLoading) chat.sendPrompt(prompt);
-                  }}
-                />
-              </AuiIf>
-            </div>
-          </AuiIf>
           <AuiIf condition={(s) => !s.thread.isEmpty && !s.thread.isRunning}>
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="px-2 text-center text-xs text-muted-foreground">
               AI can make mistakes. Verify decisions against the linked source records.
             </p>
           </AuiIf>
-        </ThreadPrimitive.ViewportFooter>
+        </div>
       </ThreadPrimitive.Viewport>
+      <AuiIf condition={(s) => !isNewChatView(s)}>
+        <div className="relative z-10 shrink-0 border-t bg-background px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-3">
+            <ThreadScrollToBottom />
+            <SelvamComposer />
+          </div>
+        </div>
+      </AuiIf>
     </ThreadPrimitive.Root>
   );
 };
@@ -641,10 +636,10 @@ export default function ChatPage() {
           aria-label="Conversation history"
           className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] flex-col border-r bg-background pt-[max(3rem,env(safe-area-inset-top))] shadow-xl md:static md:z-auto md:w-72 md:bg-muted/15 md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
         >
-          <div className="space-y-4 border-b p-4">
+          <div className="flex flex-col gap-3 border-b p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold tracking-tight">Drafts</h2>
+                <h2 className="text-base font-semibold">Conversations</h2>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {chat.threads.length} saved conversation{chat.threads.length === 1 ? "" : "s"}
                 </p>
@@ -652,6 +647,7 @@ export default function ChatPage() {
               <Button
                 size="icon-sm"
                 variant="ghost"
+                className="size-10"
                 onClick={() => {
                   void chat.newThread();
                   setMobileHistoryOpen(false);
@@ -668,20 +664,16 @@ export default function ChatPage() {
                 type="search"
                 value={historyQuery}
                 onChange={(event) => setHistoryQuery(event.target.value)}
-                placeholder="Type to search..."
+                placeholder="Search conversations"
                 aria-label="Search conversations"
-                className="h-10 w-full rounded-lg border bg-muted/20 pr-3 pl-9 text-sm outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
+                className="h-10 w-full rounded-lg border bg-muted/20 pr-3 pl-9 text-base outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 md:text-sm"
               />
             </div>
             <div className="flex items-center justify-between gap-2 text-xs">
               {chat.threads.length > 0 && (
                 <div className="flex items-center gap-1">
                   <label className="flex items-center gap-1.5 text-muted-foreground">
-                    <Checkbox
-                      className="size-6 rounded-full bg-background shadow-sm"
-                      checked={allThreadsSelected}
-                      onCheckedChange={toggleAllThreads}
-                    />
+                    <Checkbox checked={allThreadsSelected} onCheckedChange={toggleAllThreads} />
                     Select all
                   </label>
                 </div>
@@ -713,69 +705,92 @@ export default function ChatPage() {
             {visibleThreads.map((thread) => (
               <div
                 key={thread.id}
-                className={`group flex min-h-28 items-start gap-2 border-b px-4 py-4 transition-colors ${thread.id === chat.activeThreadId ? "bg-accent/70" : "hover:bg-muted/50"}`}
+                className={`group flex min-h-16 items-center gap-1 border-b px-2 py-2 transition-colors ${thread.id === chat.activeThreadId ? "bg-accent/70" : "hover:bg-muted/50"}`}
               >
-                <Checkbox
-                  className="size-6 rounded-full bg-background shadow-sm"
-                  checked={selectedThreadIds.has(thread.id)}
-                  onCheckedChange={() => toggleThreadSelection(thread.id)}
-                  aria-label={`Select ${thread.title}`}
-                />
+                <span className="grid size-10 shrink-0 place-items-center">
+                  <Checkbox
+                    checked={selectedThreadIds.has(thread.id)}
+                    onCheckedChange={() => toggleThreadSelection(thread.id)}
+                    aria-label={`Select ${thread.title}`}
+                  />
+                </span>
                 <button
                   type="button"
-                  className="min-w-0 flex-1 text-left"
+                  className="flex min-w-0 flex-1 items-start justify-between gap-2 py-2 text-left"
                   onClick={() => {
                     void chat.selectThread(thread.id);
                     setMobileHistoryOpen(false);
                   }}
                 >
-                  <span className="flex items-start justify-between gap-3">
-                    <span className="truncate text-sm font-medium">{thread.title}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {formatThreadDate(thread.updatedAt)}
-                    </span>
+                  <span
+                    title={thread.title}
+                    className="line-clamp-2 min-w-0 break-words text-sm leading-5 font-medium"
+                  >
+                    {thread.title}
                   </span>
-                  <span className="mt-2 block truncate text-sm text-muted-foreground">
-                    Continue this conversation in Selvam...
-                  </span>
-                  <span className="mt-1 block truncate text-xs text-muted-foreground/70">
-                    Financial research assistant
-                  </span>
+                  <time
+                    dateTime={thread.updatedAt}
+                    className="hidden shrink-0 text-xs tabular-nums text-muted-foreground sm:block"
+                  >
+                    {formatThreadDate(thread.updatedAt)}
+                  </time>
                 </button>
-                <button
-                  type="button"
-                  className="rounded-md p-1.5 text-muted-foreground opacity-60 transition-opacity hover:bg-background hover:text-foreground group-hover:opacity-100"
-                  aria-label={`Rename ${thread.title}`}
-                  onClick={() => {
-                    const title = window.prompt("Conversation title", thread.title)?.trim();
-                    if (title) void chat.renameThread(thread.id, title);
-                  }}
-                >
-                  <PencilIcon className="size-3.5" />
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md p-1.5 text-muted-foreground opacity-60 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-                  aria-label={`Delete ${thread.title}`}
-                  onClick={() => {
-                    if (window.confirm(`Delete "${thread.title}"? This cannot be undone.`))
-                      void chat.deleteThread(thread.id);
-                  }}
-                >
-                  <Trash2Icon className="size-3.5" />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="size-10 shrink-0"
+                        aria-label={`More actions for ${thread.title}`}
+                      />
+                    }
+                  >
+                    <MoreHorizontalIcon />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        const title = window.prompt("Conversation title", thread.title)?.trim();
+                        if (title) void chat.renameThread(thread.id, title);
+                      }}
+                    >
+                      <PencilIcon /> Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => {
+                        if (window.confirm(`Delete "${thread.title}"? This cannot be undone.`))
+                          void chat.deleteThread(thread.id);
+                      }}
+                    >
+                      <Trash2Icon /> Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
             {visibleThreads.length === 0 && (
-              <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-                {historyQuery
-                  ? "No conversations match your search."
-                  : "No saved conversations yet."}
-              </p>
+              <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {historyQuery ? "No conversations match this search." : "No conversations yet."}
+                </p>
+                {historyQuery ? (
+                  <Button variant="ghost" size="sm" onClick={() => setHistoryQuery("")}>
+                    Clear search
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => void chat.newThread()}>
+                    <PlusIcon data-icon="inline-start" /> Start a conversation
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </aside>
-        <div className="relative min-w-0 w-full flex-1 transition-[width,opacity] duration-200">
+        <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col transition-[width,opacity] duration-200">
           <ChatWorkspaceControls
             title={
               chat.threads.find((thread) => thread.id === chat.activeThreadId)?.title ?? "New chat"

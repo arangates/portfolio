@@ -12,18 +12,21 @@ Because the primary user profile is an Indian expat residing in the Netherlands,
 The Dutch tax system is modeled across its three distinct "Boxes".
 
 ### Box 1: Income from Work and Home
+
 - Integrates with the `salaryPayslip` schema to aggregate gross income.
 - **30% Ruling**: Specifically models the Dutch 30% facility. It calculates the tax-free allowance and applies standard progressive tax brackets only to the remaining 70% of the taxable wage.
 - Deducts standard labor tax credits (Arbeidskorting) and general tax credits (Algemene heffingskorting) based on the specific year's sliding scale algorithms.
 
 ### Box 2: Substantial Interest
+
 - Tracks dividends and capital gains from companies where the user holds >5% interest. (Usually a minor component for this specific user profile).
 
 ### Box 3: Savings and Investments
+
 - This is critical for expats. The engine models the Dutch wealth tax.
 - **Exemption**: Applies the tax-free threshold (heffingsvrij vermogen) for the user and their fiscal partner.
-- **Fictitious Yield**: Calculates the presumed return based on the asset mix (Bank Balances vs. Investments). 
-- *Note*: If the user has the 30% ruling and opts for "Partial Non-Resident Tax Status", the engine zeros out the Box 3 liability for foreign (Indian) assets.
+- **Fictitious Yield**: Calculates the presumed return based on the asset mix (Bank Balances vs. Investments).
+- _Note_: If the user has the 30% ruling and opts for "Partial Non-Resident Tax Status", the engine zeros out the Box 3 liability for foreign (Indian) assets.
 
 ## India Tax Engine (Income Tax Department)
 
@@ -38,6 +41,7 @@ The engine reconciles Indian tax deducted at source (TDS) and final liabilities.
 The tax engine doesn't just calculate hypothetical taxes; it performs **Arithmetic Reconciliation**.
 
 When the user uploads a final tax assessment (e.g., Aanslag Inkomstenbelasting), the engine:
+
 1. Parses the stated accepted income, withholding, credits, and final settlement.
 2. Runs the internal tax algorithms against the user's recorded data for that year.
 3. Compares the application's computed liability against the government's assessed liability.

@@ -260,7 +260,13 @@
     {
       "kind": "security-group",
       "label": "Authenticated account boundary",
-      "wraps": ["better_auth", "domain_services", "import_adapters", "drizzle_access", "analytics_engines"],
+      "wraps": [
+        "better_auth",
+        "domain_services",
+        "import_adapters",
+        "drizzle_access",
+        "analytics_engines"
+      ],
       "pad": 16
     },
     {
