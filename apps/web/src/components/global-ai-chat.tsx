@@ -11,14 +11,22 @@ import {
 import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import { buttonVariants } from "@portfolio/ui/components/button";
 import {
   DefaultChatTransport,
   lastAssistantMessageIsCompleteWithApprovalResponses,
   type UIMessage,
 } from "ai";
 import type { AttachmentAdapter } from "@assistant-ui/react";
-import { ArrowUpRightIcon, KeyRoundIcon } from "lucide-react";
+import { ArrowUpRightIcon, CheckIcon, ChevronDownIcon, KeyRoundIcon } from "lucide-react";
+import { Button, buttonVariants } from "@portfolio/ui/components/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@portfolio/ui/components/dropdown-menu";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -100,6 +108,65 @@ export function useSelvamChat() {
   return context;
 }
 
+function ModelPicker({
+  models,
+  provider,
+  model,
+  onSelect,
+}: {
+  models: ModelEntry[];
+  provider: Provider;
+  model: string;
+  onSelect: (entry: ModelEntry) => void;
+}) {
+  const current = models.find((entry) => entry.provider === provider && entry.id === model);
+  const label = current?.label ?? model;
+  if (models.length < 2) {
+    return (
+      <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">{label}</span>
+    );
+  }
+  const groups = models.reduce<Record<string, ModelEntry[]>>((acc, entry) => {
+    (acc[entry.provider] ??= []).push(entry);
+    return acc;
+  }, {});
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="max-w-56 gap-1 rounded-full px-2 font-medium text-foreground/80"
+            aria-label="Choose model"
+          />
+        }
+      >
+        <span className="truncate">{label}</span>
+        <ChevronDownIcon data-icon="inline-end" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="top" className="w-64">
+        {Object.entries(groups).map(([group, entries]) => (
+          <DropdownMenuGroup key={group}>
+            <DropdownMenuLabel className="capitalize">{group}</DropdownMenuLabel>
+            {entries.map((entry) => (
+              <DropdownMenuItem
+                key={`${entry.provider}:${entry.id}`}
+                onClick={() => onSelect(entry)}
+              >
+                <span className="truncate">{entry.label}</span>
+                {entry.provider === provider && entry.id === model ? (
+                  <CheckIcon className="ml-auto" />
+                ) : null}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function SelvamComposer() {
   const chat = useSelvamChat();
 
@@ -135,11 +202,15 @@ export function SelvamComposer() {
   return (
     <ChatComposer
       modelSelector={
-        <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">
-          {chat.models.find(
-            (candidate) => candidate.provider === chat.provider && candidate.id === chat.model,
-          )?.label ?? chat.model}
-        </span>
+        <ModelPicker
+          models={chat.models}
+          provider={chat.provider}
+          model={chat.model}
+          onSelect={(entry) => {
+            chat.setProvider(entry.provider);
+            chat.setModel(entry.id);
+          }}
+        />
       }
       commands={[
         {
@@ -479,34 +550,31 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
         })
         .then(({ value, data }) => {
           setStatus(value);
-          const firstProvider = (
-            [
-              providerRef.current,
-              "openai",
-              "google",
-              "anthropic",
-              "opencode",
-              "mistral",
-            ] as Provider[]
-          ).find(
-            (candidate, index, providers) =>
-              value[candidate] && providers.indexOf(candidate) === index,
+          const entries: ModelEntry[] = (
+            ["openai", "google", "anthropic", "opencode", "mistral"] as Provider[]
+          )
+            .filter((candidate) => value[candidate])
+            .flatMap((candidate) => {
+              const available = data.models[candidate] ?? [];
+              const saved = data.selected?.[candidate] ?? [];
+              const ids = saved.length ? saved : [available[0]?.id ?? defaultModel[candidate]];
+              return ids.map(
+                (id) =>
+                  available.find((entry) => entry.id === id) ?? {
+                    id,
+                    label: id,
+                    provider: candidate,
+                  },
+              );
+            });
+          setModels(entries);
+          const current = entries.find(
+            (entry) => entry.provider === providerRef.current && entry.id === modelRef.current,
           );
-          if (!firstProvider) {
-            setModels([]);
-            return;
-          }
-          const available = data.models[firstProvider] ?? [];
-          const saved = data.selected?.[firstProvider] ?? [];
-          const selectedId = saved[0] ?? available[0]?.id ?? defaultModel[firstProvider];
-          const selectedModel = available.find((candidate) => candidate.id === selectedId);
-          setProvider(firstProvider);
-          setModels(
-            selectedModel
-              ? [selectedModel]
-              : [{ id: selectedId, label: selectedId, provider: firstProvider }],
-          );
-          setModelState(selectedId);
+          const next = current ?? entries[0];
+          if (!next) return;
+          setProvider(next.provider);
+          setModelState(next.id);
         })
         .catch(() => setNotice("Could not load provider settings. Please retry."))
         .finally(() => setStatusLoading(false));
