@@ -1,17 +1,27 @@
 "use client";
 
 import { providerLabels, type ChatProvider, type ModelEntry } from "@/lib/ai-models";
+import { Badge } from "@portfolio/ui/components/badge";
 import { Button } from "@portfolio/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@portfolio/ui/components/card";
+import { Card } from "@portfolio/ui/components/card";
 import { Input } from "@portfolio/ui/components/input";
-import { CheckCircle2Icon, KeyRoundIcon, Trash2Icon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@portfolio/ui/components/select";
+import { Spinner } from "@portfolio/ui/components/spinner";
+import {
+  CheckCircle2Icon,
+  ChevronDownIcon,
+  KeyRoundIcon,
+  LockKeyholeIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type Status = Record<ChatProvider, boolean>;
 const providers: ChatProvider[] = ["openai", "google", "anthropic", "opencode", "mistral"];
@@ -20,12 +30,11 @@ export function ModelKeysSettings() {
   const [status, setStatus] = useState<Status | null>(null);
   const [keys, setKeys] = useState<Partial<Record<ChatProvider, string>>>({});
   const [busy, setBusy] = useState<ChatProvider | null>(null);
-  const [notice, setNotice] = useState("");
   const [models, setModels] = useState<Record<ChatProvider, ModelEntry[]>>(
     {} as Record<ChatProvider, ModelEntry[]>,
   );
   const [selected, setSelected] = useState<Partial<Record<ChatProvider, string[]>>>({});
-  const [modelsBusy, setModelsBusy] = useState<ChatProvider | null>(null);
+  const [open, setOpen] = useState<ChatProvider | null>(null);
 
   async function loadModels() {
     const response = await fetch("/api/ai/models", { cache: "no-store" });
@@ -42,15 +51,16 @@ export function ModelKeysSettings() {
     void fetch("/api/ai/keys", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("Could not load saved keys.");
-        setStatus((await response.json()) as Status);
+        const loaded = (await response.json()) as Status;
+        setStatus(loaded);
+        setOpen(providers.find((provider) => !loaded[provider]) ?? null);
         await loadModels();
       })
-      .catch(() => setNotice("Could not load saved keys. Refresh to retry."));
+      .catch(() => toast.error("Could not load saved keys. Refresh to retry."));
   }, []);
 
   async function changeKey(provider: ChatProvider, remove = false) {
     setBusy(provider);
-    setNotice("");
     try {
       const response = await fetch(remove ? `/api/ai/keys?provider=${provider}` : "/api/ai/keys", {
         method: remove ? "DELETE" : "PUT",
@@ -65,139 +75,161 @@ export function ModelKeysSettings() {
       if (!response.ok) throw new Error(body.error ?? "Could not update key.");
       setStatus((current) => (current ? { ...current, [provider]: !remove } : current));
       setKeys((current) => ({ ...current, [provider]: "" }));
-      setNotice(`${providerLabels[provider]} key ${remove ? "removed" : "saved"}.`);
+      toast.success(`${providerLabels[provider]} key ${remove ? "removed" : "saved"}`);
       window.dispatchEvent(new Event("selvam-ai-config-changed"));
       if (!remove) await loadModels();
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Could not update key.");
+      toast.error(error instanceof Error ? error.message : "Could not update key.");
     } finally {
       setBusy(null);
     }
   }
 
-  async function saveModels(provider: ChatProvider) {
-    setModelsBusy(provider);
-    setNotice("");
+  async function saveModel(provider: ChatProvider, modelId: string) {
+    const previous = selected[provider];
+    setSelected((current) => ({ ...current, [provider]: [modelId] }));
     try {
       const response = await fetch("/api/ai/models", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider, selectedModels: selected[provider] ?? [] }),
+        body: JSON.stringify({ provider, selectedModels: [modelId] }),
       });
       const body = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(body.error ?? "Could not save model choices.");
-      setNotice(`${providerLabels[provider]} model choices saved.`);
+      if (!response.ok) throw new Error(body.error ?? "Could not save model choice.");
+      toast.success(`Default ${providerLabels[provider]} model updated`);
       window.dispatchEvent(new Event("selvam-ai-config-changed"));
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Could not save model choices.");
-    } finally {
-      setModelsBusy(null);
+      setSelected((current) => ({ ...current, [provider]: previous }));
+      toast.error(error instanceof Error ? error.message : "Could not save model choice.");
     }
   }
 
   return (
-    <div className="grid min-w-0 gap-4 xl:grid-cols-2">
-      <div className="xl:col-span-2">
-        <p className="text-sm text-muted-foreground">
-          Keys are encrypted for your account and sent only from Selvam’s server to the selected
-          provider. Provider API billing is separate from chat subscriptions.
+    <div className="max-w-3xl space-y-4">
+      <div className="flex items-start gap-3 rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
+        <LockKeyholeIcon className="mt-0.5 size-4 shrink-0" />
+        <p className="text-pretty">
+          Keys are encrypted for your account and sent only from Selvam’s server to the provider you
+          choose. Provider API billing is separate from chat subscriptions.
         </p>
-        {notice && (
-          <p role="status" className="mt-2 text-sm">
-            {notice}
-          </p>
-        )}
       </div>
-      {providers.map((provider) => (
-        <Card key={provider} className="min-w-0 transition-shadow duration-200 hover:shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <KeyRoundIcon className="size-4" />
-              {providerLabels[provider]}
-              {status?.[provider] && (
-                <CheckCircle2Icon className="ml-auto size-4 text-emerald-500" />
-              )}
-            </CardTitle>
-            <CardDescription>
-              {status?.[provider] ? "Key saved. Paste a new key to replace it." : "No key saved."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Input
-              aria-label={`${providerLabels[provider]} API key`}
-              type="password"
-              autoComplete="off"
-              placeholder="Paste API key"
-              value={keys[provider] ?? ""}
-              onChange={(event) =>
-                setKeys((current) => ({ ...current, [provider]: event.target.value }))
-              }
-            />
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                disabled={busy !== null || (keys[provider]?.trim().length ?? 0) < 8}
-                onClick={() => void changeKey(provider)}
-              >
-                Save key
-              </Button>
-              {status?.[provider] && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={busy !== null}
-                  onClick={() => void changeKey(provider, true)}
+      <Card className="divide-y overflow-hidden">
+        {providers.map((provider) => {
+          const connected = status?.[provider] ?? false;
+          const expanded = open === provider;
+          const providerModels = models[provider] ?? [];
+          const currentModel = selected[provider]?.[0] ?? providerModels[0]?.id;
+          const pending = busy === provider;
+          const panelId = `${provider}-panel`;
+          return (
+            <section key={provider}>
+              <h3>
+                <button
+                  type="button"
+                  aria-expanded={expanded}
+                  aria-controls={panelId}
+                  onClick={() => setOpen(expanded ? null : provider)}
+                  className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors outline-none hover:bg-muted/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-inset sm:px-5"
                 >
-                  <Trash2Icon /> Remove
-                </Button>
-              )}
-            </div>
-            {status?.[provider] && models[provider]?.length > 0 && (
-              <div className="border-t pt-3">
-                <p className="mb-2 text-sm font-medium">Default model in chat</p>
-                <div className="space-y-2">
-                  {models[provider].map((model) => {
-                    const choices = selected[provider]?.length
-                      ? selected[provider]
-                      : [models[provider][0]?.id];
-                    const checked = choices.includes(model.id);
-                    return (
-                      <label key={model.id} className="flex items-center gap-2 text-sm">
-                        <input
-                          type="radio"
-                          name={`${provider}-default-model`}
-                          checked={checked}
-                          onChange={() =>
-                            setSelected((current) => ({ ...current, [provider]: [model.id] }))
-                          }
-                        />
-                        <span className="min-w-0 truncate">{model.label}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-3"
-                  disabled={
-                    modelsBusy !== null || !(selected[provider]?.length ?? models[provider].length)
-                  }
-                  onClick={() => void saveModels(provider)}
+                  <KeyRoundIcon className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                    {providerLabels[provider]}
+                  </span>
+                  {status === null ? null : connected ? (
+                    <Badge variant="secondary" className="gap-1">
+                      <CheckCircle2Icon className="size-3 text-emerald-500" />
+                      Connected
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="font-normal text-muted-foreground">
+                      Not connected
+                    </Badge>
+                  )}
+                  <ChevronDownIcon
+                    className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none ${expanded ? "rotate-180" : ""}`}
+                  />
+                </button>
+              </h3>
+              <div id={panelId} hidden={!expanded} className="space-y-4 px-4 pt-1 pb-5 sm:px-5">
+                <form
+                  className="space-y-2"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void changeKey(provider);
+                  }}
                 >
-                  Save model choices
-                </Button>
+                  <label htmlFor={`${provider}-key`} className="text-sm font-medium">
+                    {connected ? "Replace API key" : "API key"}
+                  </label>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input
+                      id={`${provider}-key`}
+                      type="password"
+                      autoComplete="off"
+                      placeholder={connected ? "Paste a new key" : "Paste your key"}
+                      value={keys[provider] ?? ""}
+                      onChange={(event) =>
+                        setKeys((current) => ({ ...current, [provider]: event.target.value }))
+                      }
+                    />
+                    <Button
+                      type="submit"
+                      disabled={busy !== null || (keys[provider]?.trim().length ?? 0) < 8}
+                    >
+                      {pending && <Spinner data-icon="inline-start" />}
+                      {connected ? "Replace key" : "Save key"}
+                    </Button>
+                  </div>
+                  {provider === "opencode" && (
+                    <p className="text-xs text-pretty text-muted-foreground">
+                      Use an OpenCode Zen API key with Zen billing, not a local OpenCode login.
+                      Selvam currently offers its GPT-5.6 Sol endpoint.
+                    </p>
+                  )}
+                </form>
+                {connected && providerModels.length > 0 && currentModel && (
+                  <div className="space-y-2">
+                    <label htmlFor={`${provider}-model`} className="text-sm font-medium">
+                      Default model in chat
+                    </label>
+                    <Select
+                      value={currentModel}
+                      items={providerModels.map((model) => ({
+                        value: model.id,
+                        label: model.label,
+                      }))}
+                      onValueChange={(value) => value !== null && void saveModel(provider, value)}
+                    >
+                      <SelectTrigger id={`${provider}-model`} className="w-full sm:max-w-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {providerModels.map((model) => (
+                          <SelectItem key={model.id} value={model.id}>
+                            {model.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {connected && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    disabled={busy !== null}
+                    onClick={() => void changeKey(provider, true)}
+                  >
+                    <Trash2Icon data-icon="inline-start" />
+                    Remove key
+                  </Button>
+                )}
               </div>
-            )}
-            {provider === "opencode" && (
-              <p className="text-xs text-muted-foreground">
-                Use an OpenCode Zen API key with Zen billing, not a local OpenCode login. Selvam
-                currently offers its GPT-5.6 Sol endpoint.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+            </section>
+          );
+        })}
+      </Card>
     </div>
   );
 }

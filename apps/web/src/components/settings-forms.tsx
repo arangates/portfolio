@@ -466,9 +466,9 @@ export function DeleteAccountCard() {
     }
   }
   return (
-    <Card>
+    <Card className="border-destructive/40">
       <CardHeader>
-        <CardTitle>Delete account</CardTitle>
+        <CardTitle className="text-destructive">Danger zone: delete account</CardTitle>
         <CardDescription>
           Permanently delete your account and every associated record.
         </CardDescription>

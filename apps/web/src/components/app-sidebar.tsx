@@ -38,7 +38,7 @@ export function AppSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="gap-0 py-1">
         {dashboardNavigation.map((group) => {
           const items = group.items.filter(
             (item) =>
