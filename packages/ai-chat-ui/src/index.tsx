@@ -119,8 +119,8 @@ export function ChatComposer({
       <ComposerPrimitive.Input
         aria-label="Message Selvam"
         placeholder="Send a message..."
-        rows={1}
-        className="min-h-8 w-full resize-none bg-transparent px-2 py-1 text-base outline-none placeholder:text-muted-foreground"
+        rows={2}
+        className="min-h-14 w-full resize-none bg-transparent px-3 py-2 text-base leading-relaxed outline-none placeholder:text-muted-foreground"
       />
       <AuiIf condition={(state) => state.composer.attachments.length > 0}>
         <div className="flex flex-wrap gap-1.5 px-1 pt-1">

@@ -16,7 +16,7 @@ export function SnapshotChanges({ changes }: { changes: ReturnType<typeof compar
       className="mx-4 rounded-xl border bg-card p-4 lg:mx-6"
       aria-labelledby="snapshot-changes-title"
     >
-      <h2 id="snapshot-changes-title" className="font-semibold">
+      <h2 id="snapshot-changes-title" className="text-xl font-semibold tracking-tight">
         Changes since previous snapshot
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">

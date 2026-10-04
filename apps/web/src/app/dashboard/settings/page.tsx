@@ -1,4 +1,5 @@
 import { AmountModeToggle } from "@/components/amount-preferences";
+import { AppearanceSettings } from "@/components/appearance-settings";
 import { PageHeader } from "@/components/page-header";
 import { SettingsTabs } from "@/components/settings-tabs";
 import { ModelKeysSettings } from "@/components/model-keys-settings";
@@ -77,6 +78,7 @@ export default async function SettingsPage({
           modelKeys={<ModelKeysSettings />}
           account={
             <div className="space-y-4">
+              <AppearanceSettings />
               <AccountForm name={session.user.name} email={session.user.email} />
               <NotificationSettingsCard initialSettings={notifications} />
             </div>

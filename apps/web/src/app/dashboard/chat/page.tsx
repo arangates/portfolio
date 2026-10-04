@@ -55,6 +55,7 @@ import {
   SearchIcon,
   ShieldCheckIcon,
   Trash2Icon,
+  ListChecksIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, type FC } from "react";
@@ -153,14 +154,20 @@ const ThreadWelcome: FC = () => {
   const chat = useSelvamChat();
 
   return (
-    <div className="mx-auto flex w-full max-w-[38rem] flex-col items-center px-4 py-6 text-center sm:px-6">
-      <h2 className="text-balance text-xl font-medium tracking-tight sm:text-2xl">
+    <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-6 text-center sm:px-6">
+      <p className="mb-2 text-xs font-medium tracking-[0.14em] text-primary uppercase">
+        Selvam · Your financial assistant
+      </p>
+      <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-[1.75rem]">
         How can I help you today?
       </h2>
-      <div className="mt-6 w-full">
+      <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+        Ask about your portfolio, cash flow, or financial independence plan.
+      </p>
+      <div className="mt-5 w-full">
         <SelvamComposer />
       </div>
-      <div className="mt-3 w-full">
+      <div className="mt-4 w-full">
         <ChatSuggestions
           groups={SUGGESTION_GROUPS}
           onSelect={(prompt) => {
@@ -222,9 +229,8 @@ const AssistantWorkingIndicator: FC = () => {
       <span
         data-slot="aui_assistant-message-indicator"
         role="status"
-        className="text-muted-foreground inline-flex items-center gap-2 align-middle text-sm"
+        className="chat-loading-shimmer inline-flex items-center align-middle text-sm font-medium"
       >
-        <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
         Reading your current records…
       </span>
     );
@@ -539,6 +545,7 @@ export default function ChatPage() {
   const [historyOpen, setHistoryOpen] = useState(true);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
   const [historyQuery, setHistoryQuery] = useState("");
+  const [selectionMode, setSelectionMode] = useState(false);
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set());
   const allThreadsSelected =
     chat.threads.length > 0 && selectedThreadIds.size === chat.threads.length;
@@ -636,9 +643,9 @@ export default function ChatPage() {
         )}
         <aside
           aria-label="Conversation history"
-          className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] flex-col border-r bg-background pt-[max(3rem,env(safe-area-inset-top))] shadow-xl md:static md:z-auto md:w-72 md:bg-muted/15 md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
+          className={`${mobileHistoryOpen ? "flex" : "hidden"} fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] flex-col border-r bg-background pt-[max(3rem,env(safe-area-inset-top))] shadow-xl md:static md:z-auto md:w-[17rem] md:bg-muted/15 md:pt-0 md:shadow-none ${historyOpen ? "md:flex" : "md:hidden"}`}
         >
-          <div className="flex flex-col gap-3 border-b p-4">
+          <div className="flex flex-col gap-3 border-b border-border/60 p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="text-base font-semibold">Conversations</h2>
@@ -671,22 +678,47 @@ export default function ChatPage() {
                 className="h-10 w-full rounded-lg border bg-muted/20 pr-3 pl-9 text-base outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 md:text-sm"
               />
             </div>
-            <div className="flex items-center justify-between gap-2 text-xs">
-              {chat.threads.length > 0 && (
-                <div className="flex items-center gap-1">
-                  <label className="flex items-center gap-1.5 text-muted-foreground">
-                    <Checkbox checked={allThreadsSelected} onCheckedChange={toggleAllThreads} />
-                    Select all
-                  </label>
-                </div>
-              )}
-            </div>
-            {selectedThreadIds.size > 0 && (
-              <div className="flex items-center gap-1 border-t pt-3">
+            {chat.threads.length > 0 && (
+              <div className="flex min-h-8 items-center justify-between gap-2 text-xs">
+                {selectionMode ? (
+                  <>
+                    <label className="flex items-center gap-1.5 text-muted-foreground">
+                      <Checkbox checked={allThreadsSelected} onCheckedChange={toggleAllThreads} />
+                      Select all
+                    </label>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 px-2 text-xs"
+                      onClick={() => {
+                        setSelectionMode(false);
+                        setSelectedThreadIds(new Set());
+                      }}
+                    >
+                      Done
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-muted-foreground">Recent</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
+                      onClick={() => setSelectionMode(true)}
+                    >
+                      <ListChecksIcon className="size-3.5" /> Manage
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+            {selectionMode && selectedThreadIds.size > 0 && (
+              <div className="flex items-center gap-1 border-t pt-2">
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                  className="h-8 px-2 text-xs text-destructive hover:text-destructive"
                   disabled={!selectedThreadIds.size}
                   onClick={deleteSelectedThreads}
                 >
@@ -695,7 +727,7 @@ export default function ChatPage() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+                  className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
                   onClick={deleteAllThreads}
                 >
                   Delete all
@@ -707,19 +739,25 @@ export default function ChatPage() {
             {visibleThreads.map((thread) => (
               <div
                 key={thread.id}
-                className={`group flex min-h-16 items-center gap-1 border-b px-2 py-2 transition-colors ${thread.id === chat.activeThreadId ? "bg-accent/70" : "hover:bg-muted/50"}`}
+                className={`group flex min-h-[4.25rem] items-center gap-1 border-b border-border/60 px-2 py-2 transition-colors duration-150 ${thread.id === chat.activeThreadId ? "bg-accent/70" : "hover:bg-muted/50"}`}
               >
-                <span className="grid size-10 shrink-0 place-items-center">
-                  <Checkbox
-                    checked={selectedThreadIds.has(thread.id)}
-                    onCheckedChange={() => toggleThreadSelection(thread.id)}
-                    aria-label={`Select ${thread.title}`}
-                  />
-                </span>
+                {selectionMode && (
+                  <span className="grid size-10 shrink-0 place-items-center">
+                    <Checkbox
+                      checked={selectedThreadIds.has(thread.id)}
+                      onCheckedChange={() => toggleThreadSelection(thread.id)}
+                      aria-label={`Select ${thread.title}`}
+                    />
+                  </span>
+                )}
                 <button
                   type="button"
-                  className="flex min-w-0 flex-1 items-start justify-between gap-2 py-2 text-left"
+                  className="flex min-w-0 flex-1 items-start justify-between gap-2 rounded-md px-2 py-2 text-left focus-visible:outline-2 focus-visible:outline-ring"
                   onClick={() => {
+                    if (selectionMode) {
+                      toggleThreadSelection(thread.id);
+                      return;
+                    }
                     void chat.selectThread(thread.id);
                     setMobileHistoryOpen(false);
                   }}

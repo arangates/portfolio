@@ -3,6 +3,7 @@
 import { AnalyticsChartCard } from "@/components/analytics-chart-card";
 import { useAmountFormat } from "@/components/amount-preferences";
 import { formatPercent } from "@/lib/format";
+import { Tabs, TabsList, TabsTrigger } from "@portfolio/ui/components/tabs";
 import {
   EChartsBarChart,
   type ChartConfig,
@@ -107,18 +108,34 @@ export function MonthlyCashFlowCard({
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-3 pt-1">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            Time bin
-            <select
-              value={timeBin}
-              onChange={(event) => setTimeBin(event.target.value as "month" | "quarter" | "year")}
-              className="h-8 rounded-md border bg-background px-2 text-foreground"
-            >
-              <option value="month">Month</option>
-              <option value="quarter">Quarter</option>
-              <option value="year">Year</option>
-            </select>
-          </label>
+          <Tabs
+            value={timeBin}
+            onValueChange={(value) => {
+              if (value === "month" || value === "quarter" || value === "year") setTimeBin(value);
+            }}
+            aria-label="Cash flow time bin"
+          >
+            <TabsList className="h-9 gap-0 overflow-hidden rounded-lg border bg-background p-0">
+              <TabsTrigger
+                value="month"
+                className="h-full rounded-none border-r px-3 text-xs data-active:bg-muted data-active:text-foreground dark:data-active:border-r-input"
+              >
+                Month
+              </TabsTrigger>
+              <TabsTrigger
+                value="quarter"
+                className="h-full rounded-none border-r px-3 text-xs data-active:bg-muted data-active:text-foreground dark:data-active:border-r-input"
+              >
+                Quarter
+              </TabsTrigger>
+              <TabsTrigger
+                value="year"
+                className="h-full rounded-none px-3 text-xs data-active:bg-muted data-active:text-foreground"
+              >
+                Year
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <div className="flex flex-col items-end gap-1.5">
             {LEGEND.map(({ key, label, swatch }) => (
               <span

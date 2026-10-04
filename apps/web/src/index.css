@@ -1,5 +1,33 @@
 @import "@portfolio/ui/globals.css";
 
+.chat-loading-shimmer {
+  color: transparent;
+  background-image: linear-gradient(
+    100deg,
+    var(--color-muted-foreground) 30%,
+    var(--color-foreground) 50%,
+    var(--color-muted-foreground) 70%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: chat-text-shimmer 2s linear infinite;
+}
+
+@keyframes chat-text-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-loading-shimmer {
+    color: var(--color-muted-foreground);
+    background-image: none;
+    animation: none;
+  }
+}
+
 .app-loading-icon {
   background-image: url("/favicon/web-app-manifest-192x192.png");
 }
