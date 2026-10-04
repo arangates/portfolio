@@ -1,5 +1,12 @@
 @import "@portfolio/ui/globals.css";
 
+.app-loading-icon {
+  background-image: url("/favicon/web-app-manifest-192x192.png");
+}
+.dark .app-loading-icon {
+  background-image: url("/favicon/web-app-manifest-192x192-dark.png");
+}
+
 .app-header {
   padding-top: env(safe-area-inset-top);
   padding-left: env(safe-area-inset-left);

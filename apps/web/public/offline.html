@@ -77,7 +77,13 @@
   </head>
   <body>
     <main>
-      <img src="/favicon/web-app-manifest-192x192.png" alt="Selvam" />
+      <picture>
+        <source
+          srcset="/favicon/web-app-manifest-192x192-dark.png"
+          media="(prefers-color-scheme: dark)"
+        />
+        <img src="/favicon/web-app-manifest-192x192.png" alt="Selvam" />
+      </picture>
       <h1>You’re offline</h1>
       <p>
         Reconnect to view your portfolio. Your financial records and uploaded documents are not

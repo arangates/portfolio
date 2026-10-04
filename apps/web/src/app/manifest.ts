@@ -31,24 +31,26 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#ffffff",
+    background_color: "#f5f8f5",
+    theme_color: "#f5f8f5",
     icons: [
       {
         src: "/favicon/maskable-512.png",
         sizes: "512x512",
         type: "image/png",
-        purpose: "maskable",
+        purpose: "any maskable",
       },
       {
         src: "/favicon/web-app-manifest-192x192.png",
         sizes: "192x192",
         type: "image/png",
+        purpose: "any",
       },
       {
         src: "/favicon/web-app-manifest-512x512.png",
         sizes: "512x512",
         type: "image/png",
+        purpose: "any",
       },
     ],
   };

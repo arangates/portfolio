@@ -3,6 +3,7 @@ const CACHE = "selvam-static-__BUILD_VERSION__";
 const PUBLIC_FILES = [
   "/offline.html",
   "/favicon/web-app-manifest-192x192.png",
+  "/favicon/web-app-manifest-192x192-dark.png",
   "/favicon/web-app-manifest-512x512.png",
   "/favicon/maskable-512.png",
 ];

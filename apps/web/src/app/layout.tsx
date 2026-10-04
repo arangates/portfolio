@@ -19,7 +19,36 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   applicationName: "Selvam",
   appleWebApp: { capable: true, title: "Selvam", statusBarStyle: "default" },
-  icons: { apple: "/favicon/apple-touch-icon.png" },
+  icons: {
+    icon: [
+      {
+        url: "/favicon/favicon-96x96.png",
+        sizes: "96x96",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon/favicon-96x96-dark.png",
+        sizes: "96x96",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    apple: [
+      {
+        url: "/favicon/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        url: "/favicon/apple-touch-icon-dark.png",
+        sizes: "180x180",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+  },
   title: "Selvam",
   description: "A private multi-currency portfolio and wealth tracker",
 };
@@ -29,7 +58,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f8f5" },
     { media: "(prefers-color-scheme: dark)", color: "#171717" },
   ],
 };

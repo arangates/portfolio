@@ -63,7 +63,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
     // The actual selected app theme can differ from the operating system theme.
     const metas = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
     metas.forEach((meta) => {
-      meta.content = resolvedTheme === "dark" ? "#171717" : "#ffffff";
+      meta.content = resolvedTheme === "dark" ? "#171717" : "#f5f8f5";
     });
   }, [resolvedTheme]);
 

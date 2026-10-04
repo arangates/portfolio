@@ -104,6 +104,7 @@ test("install caches only the explicit public shell and never forces an update",
     [
       "/offline.html",
       "/favicon/web-app-manifest-192x192.png",
+      "/favicon/web-app-manifest-192x192-dark.png",
       "/favicon/web-app-manifest-512x512.png",
       "/favicon/maskable-512.png",
     ].sort(),
