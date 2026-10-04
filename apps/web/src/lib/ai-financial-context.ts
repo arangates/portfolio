@@ -5,7 +5,12 @@ import {
   getCurrentFixedDeposits,
   getGlobalEquityPortfolio,
 } from "@portfolio/api/portfolio-queries";
-import { buildMortgageModel, comparePayments } from "@portfolio/api/mortgage-calculations";
+import {
+  buildMortgageModel,
+  comparePayments,
+  ING_MORTGAGE_OVERVIEW,
+  type MortgageSettingsState,
+} from "@portfolio/api/mortgage-calculations";
 import {
   getMortgageBankPayments,
   getMortgageRecord,
@@ -171,19 +176,20 @@ export async function getChatSection(userId: string, section: ChatSection) {
     }
     case "mortgage": {
       const record = await getMortgageRecord(userId);
-      if (!record) {
-        return {
-          source: "/dashboard/mortgage",
-          retrievedAt: new Date().toISOString(),
-          configured: false,
-          note: "No mortgage overview has been imported or saved yet.",
-        };
-      }
+      // The dashboard shows these prefilled terms even before the user saves or
+      // imports an overview. Keep chat aligned with that visible state, while
+      // identifying the values as defaults rather than persisted records.
+      const settings: MortgageSettingsState = record?.settings ?? {
+        terms: ING_MORTGAGE_OVERVIEW,
+        rateBasis: "implied",
+        extras: [],
+        appreciation: 0,
+      };
       const [bank, snapshots] = await Promise.all([
-        getMortgageBankPayments(userId, record.settings.terms.monthlyPayment),
-        getMortgageSnapshots(userId, record.loanId),
+        getMortgageBankPayments(userId, settings.terms.monthlyPayment),
+        record ? getMortgageSnapshots(userId, record.loanId) : Promise.resolve([]),
       ]);
-      const model = buildMortgageModel(record.settings);
+      const model = buildMortgageModel(settings);
       const reconciliation = comparePayments(
         model.history,
         bank.payments,
@@ -193,25 +199,31 @@ export async function getChatSection(userId: string, section: ChatSection) {
       return {
         source: "/dashboard/mortgage",
         retrievedAt: new Date().toISOString(),
-        configured: true,
+        configured: Boolean(record),
+        dataStatus: record ? "saved" : "dashboard_defaults_unsaved",
+        ...(!record
+          ? {
+              note: "No mortgage record has been imported or saved yet. These are the prefilled ING defaults currently shown on the mortgage dashboard; treat them as unsaved defaults, not verified lender data.",
+            }
+          : {}),
         currency: "EUR",
         loan: {
-          lender: record.lender,
-          loanNumber: record.loanNumber,
-          repaymentType: record.repaymentType,
-          nhg: record.nhg,
-          energyLabel: record.energyLabel,
-          sustainabilityDiscount: record.sustainabilityDiscount,
-          bouwdepotOriginal: record.bouwdepotOriginal,
-          bouwdepotRemaining: record.bouwdepotRemaining,
-          dataSource: record.source,
-          validationStatus: record.validationStatus,
-          validationIssues: record.validationIssues,
+          lender: record?.lender ?? "ING",
+          loanNumber: record?.loanNumber ?? "R 106-784564",
+          repaymentType: record?.repaymentType ?? "annuity",
+          nhg: record?.nhg ?? true,
+          energyLabel: record?.energyLabel ?? "A",
+          sustainabilityDiscount: record?.sustainabilityDiscount ?? true,
+          bouwdepotOriginal: record?.bouwdepotOriginal ?? null,
+          bouwdepotRemaining: record?.bouwdepotRemaining ?? null,
+          dataSource: record?.source ?? "dashboard_defaults",
+          validationStatus: record?.validationStatus ?? "unsaved_default",
+          validationIssues: record?.validationIssues ?? [],
         },
-        terms: record.settings.terms,
-        rateBasis: record.settings.rateBasis,
-        appreciation: record.settings.appreciation,
-        extraRepayments: record.settings.extras,
+        terms: settings.terms,
+        rateBasis: settings.rateBasis,
+        appreciation: settings.appreciation,
+        extraRepayments: settings.extras,
         summary: model.summary,
         insights: model.insights.map(({ title, text }) => ({ title, text })),
         rateSensitivity: model.sensitivity,
