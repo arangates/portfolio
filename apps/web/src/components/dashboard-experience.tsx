@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { Button } from "@portfolio/ui/components/button";
 
 const PrivacyContext = createContext({ hidden: false, toggle: () => {} });
@@ -42,7 +43,7 @@ export function PrivacyToggle() {
       aria-label={hidden ? "Show financial details" : "Hide financial details"}
       title={hidden ? "Show financial details" : "Hide financial details"}
     >
-      {hidden ? <EyeOffIcon /> : <EyeIcon />}
+      <IconSwap first={<EyeIcon />} second={<EyeOffIcon />} swapped={hidden} />
     </Button>
   );
 }

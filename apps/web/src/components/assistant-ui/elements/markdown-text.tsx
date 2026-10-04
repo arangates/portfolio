@@ -13,6 +13,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { type ComponentProps, memo, useRef, useCallback, useState } from "react";
 import { CopyIcon, CheckIcon } from "lucide-react";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { cn } from "@portfolio/ui/lib/utils";
 
 // Simple code block component with copy functionality
@@ -46,7 +47,12 @@ function CodeBlock({
           aria-label="Copy code"
           className="text-muted-foreground hover:text-foreground rounded-control grid size-6 place-items-center transition-colors"
         >
-          {isCopied ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}
+          <IconSwap
+            className="size-3.5"
+            first={<CopyIcon className="size-3.5" />}
+            second={<CheckIcon className="size-3.5" />}
+            swapped={isCopied}
+          />
         </button>
       </div>
       <pre
@@ -105,7 +111,12 @@ function MarkdownTable({ className, children, ...props }: ComponentProps<"table"
           aria-label="Copy table as markdown"
           className="text-muted-foreground hover:text-foreground rounded-control grid size-6 place-items-center transition-colors"
         >
-          {isCopied ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}
+          <IconSwap
+            className="size-3.5"
+            first={<CopyIcon className="size-3.5" />}
+            second={<CheckIcon className="size-3.5" />}
+            swapped={isCopied}
+          />
         </button>
       </div>
       <div className="overflow-x-auto">

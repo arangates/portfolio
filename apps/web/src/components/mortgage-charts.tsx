@@ -219,7 +219,35 @@ export function MortgageYearlyChart({ model }: { model: MortgageModel }) {
         config={yearlyConfig}
         xDataKey="year"
         className={CHART_CLASS}
-        chartOptions={GRID}
+        chartOptions={{
+          ...GRID,
+          grid: { ...GRID.grid, right: 64 },
+          yAxis: [
+            {
+              type: "value",
+              min: 0,
+              name: "Annual payment",
+              nameLocation: "middle",
+              nameGap: 42,
+              axisLabel: { formatter: money.axis },
+              axisLine: { show: false },
+              axisTick: { show: false },
+              splitLine: { show: true, lineStyle: { type: [3, 3], width: 1 } },
+            },
+            {
+              type: "value",
+              min: 0,
+              name: "Balance",
+              nameLocation: "middle",
+              nameGap: 48,
+              position: "right",
+              axisLabel: { formatter: money.axis },
+              axisLine: { show: false },
+              axisTick: { show: false },
+              splitLine: { show: false },
+            },
+          ],
+        }}
       >
         <EChartsComposedChart.Grid />
         <EChartsComposedChart.XAxis dataKey="year" hideDots />
@@ -228,7 +256,11 @@ export function MortgageYearlyChart({ model }: { model: MortgageModel }) {
         <EChartsComposedChart.Legend align="left" verticalAlign="top" isClickable />
         <EChartsComposedChart.Bar dataKey="interest" barProps={{ stack: "year" }} />
         <EChartsComposedChart.Bar dataKey="principal" barProps={{ stack: "year" }} />
-        <EChartsComposedChart.Line dataKey="closing" strokeVariant="dashed" />
+        <EChartsComposedChart.Line
+          dataKey="closing"
+          strokeVariant="dashed"
+          lineProps={{ yAxisIndex: 1 }}
+        />
       </EChartsComposedChart>
     </AnalyticsChartCard>
   );

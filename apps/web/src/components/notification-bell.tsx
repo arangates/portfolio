@@ -1,6 +1,7 @@
 "use client";
 
 import { BellIcon, CheckIcon, InboxIcon, XIcon } from "lucide-react";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useState } from "react";
@@ -136,7 +137,12 @@ export function NotificationBell() {
                 <span
                   className={`mt-1 flex size-7 shrink-0 items-center justify-center rounded-full ${item.readAt ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary"}`}
                 >
-                  {item.readAt ? <CheckIcon className="size-4" /> : <BellIcon className="size-4" />}
+                  <IconSwap
+                    className="size-4"
+                    first={<BellIcon className="size-4" />}
+                    second={<CheckIcon className="size-4" />}
+                    swapped={Boolean(item.readAt)}
+                  />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-start justify-between gap-2">

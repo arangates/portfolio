@@ -28,6 +28,7 @@ import {
 } from "@assistant-ui/react";
 import { Button } from "@portfolio/ui/components/button";
 import { Skeleton } from "@portfolio/ui/components/skeleton";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { buttonVariants } from "@portfolio/ui/components/button";
 import {
   DropdownMenu,
@@ -303,6 +304,7 @@ const AssistantMessage: FC = () => (
 );
 
 const AssistantActionBar: FC = () => {
+  const isCopied = useAuiState((s) => s.message.isCopied);
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
@@ -311,12 +313,12 @@ const AssistantActionBar: FC = () => {
     >
       <ActionBarPrimitive.Copy asChild>
         <Button variant="ghost" size="icon-sm" aria-label="Copy">
-          <AuiIf condition={(s) => s.message.isCopied}>
-            <CheckIcon className="size-3.5" />
-          </AuiIf>
-          <AuiIf condition={(s) => !s.message.isCopied}>
-            <CopyIcon className="size-3.5" />
-          </AuiIf>
+          <IconSwap
+            className="size-3.5"
+            first={<CopyIcon className="size-3.5" />}
+            second={<CheckIcon className="size-3.5" />}
+            swapped={isCopied}
+          />
         </Button>
       </ActionBarPrimitive.Copy>
       <ActionBarPrimitive.Reload asChild>

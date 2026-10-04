@@ -38,6 +38,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@portfolio/ui/components/field";
 import { Input } from "@portfolio/ui/components/input";
 import { Spinner } from "@portfolio/ui/components/spinner";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import {
   CheckCircle2Icon,
   DownloadIcon,
@@ -116,7 +117,12 @@ export function PreferenceForm({
         </CardContent>
         <CardFooter className="justify-end">
           <Button type="submit" disabled={pending}>
-            {pending ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
+            <IconSwap
+              first={<SaveIcon />}
+              second={<Spinner />}
+              swapped={pending}
+              dataIcon="inline-start"
+            />
             Save preferences
           </Button>
         </CardFooter>
@@ -176,7 +182,12 @@ export function ExchangeRateForm({ baseCurrency }: { baseCurrency: string }) {
         </CardContent>
         <CardFooter className="justify-end">
           <Button type="submit" disabled={pending}>
-            {pending ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
+            <IconSwap
+              first={<SaveIcon />}
+              second={<Spinner />}
+              swapped={pending}
+              dataIcon="inline-start"
+            />
             Add rate
           </Button>
         </CardFooter>
@@ -224,7 +235,12 @@ export function AccountForm({ name, email }: { name: string; email: string }) {
         </CardContent>
         <CardFooter className="justify-end">
           <Button type="submit" disabled={pending}>
-            {pending ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
+            <IconSwap
+              first={<SaveIcon />}
+              second={<Spinner />}
+              swapped={pending}
+              dataIcon="inline-start"
+            />
             Save profile
           </Button>
         </CardFooter>
@@ -438,7 +454,12 @@ export function SecurityForm() {
         </CardContent>
         <CardFooter className="justify-end">
           <Button type="submit" disabled={pending}>
-            {pending ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
+            <IconSwap
+              first={<SaveIcon />}
+              second={<Spinner />}
+              swapped={pending}
+              dataIcon="inline-start"
+            />
             Change password
           </Button>
         </CardFooter>

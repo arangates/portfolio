@@ -26,6 +26,7 @@ import { Input } from "@portfolio/ui/components/input";
 import { Spinner } from "@portfolio/ui/components/spinner";
 import { Textarea } from "@portfolio/ui/components/textarea";
 import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -439,7 +440,12 @@ export function PortfolioRecordDialog({
           <Button variant={editing ? "ghost" : "default"} size={compact ? "icon-sm" : "sm"} />
         }
       >
-        {editing ? <PencilIcon /> : <PlusIcon data-icon="inline-start" />}
+        <IconSwap
+          first={<PlusIcon />}
+          second={<PencilIcon />}
+          swapped={editing}
+          dataIcon={editing ? undefined : "inline-start"}
+        />
         {compact ? (
           <span className="sr-only">Edit {copy[kind].title}</span>
         ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@portfolio/ui/components/button";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -24,7 +25,7 @@ export function ModeToggle() {
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
       title={`Switch to ${isDark ? "light" : "dark"} mode`}
     >
-      {mounted ? isDark ? <Sun /> : <Moon /> : <Moon />}
+      <IconSwap first={<Moon />} second={<Sun />} swapped={isDark} />
     </Button>
   );
 }

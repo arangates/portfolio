@@ -20,6 +20,7 @@ import { Input } from "@portfolio/ui/components/input";
 import { Spinner } from "@portfolio/ui/components/spinner";
 import { Textarea } from "@portfolio/ui/components/textarea";
 import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -481,7 +482,12 @@ export function HouseholdRecordDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant={editing ? "outline" : "default"} size="sm" />}>
-        {editing ? <PencilIcon data-icon="inline-start" /> : <PlusIcon data-icon="inline-start" />}
+        <IconSwap
+          first={<PlusIcon />}
+          second={<PencilIcon />}
+          swapped={editing}
+          dataIcon="inline-start"
+        />
         {label ?? `${editing ? "Edit" : "Add"} ${titles[kind]}`}
       </DialogTrigger>
       <DialogContent data-financial-dialog className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">

@@ -2,6 +2,7 @@
 
 import { Button } from "@portfolio/ui/components/button";
 import { Spinner } from "@portfolio/ui/components/spinner";
+import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -44,7 +45,12 @@ export function GoogleSignInButton({
       disabled={isPending}
       onClick={signInWithGoogle}
     >
-      {isPending ? <Spinner data-icon="inline-start" /> : <GoogleIcon />}
+      <IconSwap
+        first={<GoogleIcon />}
+        second={<Spinner />}
+        swapped={isPending}
+        dataIcon="inline-start"
+      />
       {isPending ? "Opening Google…" : label}
     </Button>
   );
