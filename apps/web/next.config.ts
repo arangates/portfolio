@@ -3,6 +3,7 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === "development";
+const isVercelBuild = process.env.VERCEL === "1";
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
@@ -21,8 +22,12 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   reactCompiler: true,
   poweredByHeader: false,
-  output: "standalone",
-  outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
+  ...(isVercelBuild
+    ? {}
+    : {
+        output: "standalone" as const,
+        outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
+      }),
   async headers() {
     return [
       {
