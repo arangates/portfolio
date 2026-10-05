@@ -18,6 +18,7 @@ function CurrentLocation() {
     .find((item) => pathname === item.url || pathname.startsWith(`${item.url}/`));
 
   if (!page) return null;
+  const pageTitle = page.title;
 
   return (
     <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-2 text-sm lg:flex">
@@ -31,7 +32,7 @@ function CurrentLocation() {
       <span className="shrink-0 text-muted-foreground">{page.group}</span>
       <ChevronRightIcon aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground/60" />
       <span aria-current="page" className="truncate font-medium text-foreground">
-        {"shortTitle" in page ? (page.shortTitle ?? page.title) : page.title}
+        {"shortTitle" in page ? (page.shortTitle ?? pageTitle) : pageTitle}
       </span>
     </nav>
   );
