@@ -13,8 +13,6 @@ node_modules
 tmp
 temp
 coverage
-apps/fumadocs/**
-!apps/fumadocs/package.json
 .agents
 .claude
 .cursor

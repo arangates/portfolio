@@ -48,7 +48,7 @@ For the current Vercel domain, `BETTER_AUTH_URL` and `CORS_ORIGIN` are `https://
 
 ## Docker failover sharing Neon
 
-The default `compose.yaml` runs only the app container. It expects the `.env` file to contain the Neon connection string for the database this app instance should use.
+The default `compose.yaml` starts three services: the application, Fumadocs, and Drizzle Studio. It expects the `.env` file to contain the Neon connection string for the database these services should use.
 
 ```bash
 cp .env.docker.example .env
@@ -62,10 +62,12 @@ Build and start the Docker app:
 docker compose up --build -d
 ```
 
-The container waits for no local database: Neon must be reachable over the network. On each start, the container applies pending tracked migrations and then starts Next.js. To inspect startup output or stop the app:
+The application is available on port `3001`, Fumadocs on port `4000`, and Drizzle Studio on port `4983`. Set `APP_PORT`, `DOCS_PORT`, or `DRIZZLE_STUDIO_PORT` in `.env` to change the host ports. Drizzle Studio connects to the configured `DATABASE_URL` (or `DATABASE_URL_DIRECT`) and has no built-in authentication, so Compose binds it to `127.0.0.1` on the Docker host. For remote administration, use an SSH tunnel such as `ssh -L 4983:127.0.0.1:4983 user@your-host`, then open [http://localhost:4983](http://localhost:4983) on your computer.
+
+The app container applies pending tracked migrations at startup and then starts Next.js. To inspect output or stop the stack:
 
 ```bash
-docker compose logs -f app
+docker compose logs -f app docs drizzle-studio
 docker compose down
 ```
 
@@ -79,7 +81,7 @@ To run both the app and a separate Postgres container, configure `POSTGRES_PASSW
 docker compose -f compose.yaml -f compose.local.yaml up --build -d
 ```
 
-This mode ignores Neon `DATABASE_URL` values and points both application queries and migrations at the Compose Postgres service. The database persists in the named `postgres_data` volume across restarts and image rebuilds. It starts empty, is independent of Vercel and Neon, and does not synchronize changes between databases. Back it up before moving hosts. `docker compose down` retains the volume; `docker compose -f compose.yaml -f compose.local.yaml down -v` deletes it and all its data.
+This mode ignores Neon `DATABASE_URL` values and points application queries, Drizzle Studio, and migrations at the Compose Postgres service. The database persists in the named `postgres_data` volume across restarts and image rebuilds. It starts empty, is independent of Vercel and Neon, and does not synchronize changes between databases. Back it up before moving hosts. `docker compose down` retains the volume; `docker compose -f compose.yaml -f compose.local.yaml down -v` deletes it and all its data.
 
 Moving existing production data into self-hosted Postgres requires a deliberate database backup and restore. Changing which URL the app uses does not copy data between databases.
 

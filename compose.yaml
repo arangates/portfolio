@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runtime
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -23,3 +24,31 @@ services:
       NEXT_PUBLIC_ENABLE_LABS: ${NEXT_PUBLIC_ENABLE_LABS:-}
     ports:
       - "${APP_PORT:-3001}:3001"
+
+  docs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: fumadocs-runtime
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 4000
+    ports:
+      - "${DOCS_PORT:-4000}:4000"
+
+  drizzle-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    restart: unless-stopped
+    working_dir: /repo/packages/db
+    command:
+      ["./node_modules/.bin/drizzle-kit", "studio", "--host", "0.0.0.0", "--port", "4983"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-}
+      DATABASE_URL_DIRECT: ${DATABASE_URL_DIRECT:-}
+    ports:
+      - "127.0.0.1:${DRIZZLE_STUDIO_PORT:-4983}:4983"

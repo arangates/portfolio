@@ -35,6 +35,7 @@ type PwaState = {
   dismiss: () => void;
   clearPrompt: () => void;
   waiting: ServiceWorker | null;
+  registration: ServiceWorkerRegistration | null;
   offline: boolean;
   workerError: boolean;
 };
@@ -45,6 +46,7 @@ const PwaContext = createContext<PwaState>({
   dismiss: () => {},
   clearPrompt: () => {},
   waiting: null,
+  registration: null,
   offline: false,
   workerError: false,
 });
@@ -56,6 +58,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
   const [offline, setOffline] = useState(false);
   const [workerError, setWorkerError] = useState(false);
+  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
@@ -128,6 +131,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
       .then((result) => {
         if (disposed) return;
         registration = result;
+        setRegistration(result);
         check();
         found();
         registration.addEventListener("updatefound", found);
@@ -151,6 +155,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
         installed,
         dismissed,
         waiting,
+        registration,
         offline,
         workerError,
         clearPrompt: () => setInstall(null),
@@ -240,7 +245,7 @@ export function InstallApp({ alwaysShow = false }: { alwaysShow?: boolean }) {
 }
 
 export function AppStatus() {
-  const { waiting, offline, workerError } = useContext(PwaContext);
+  const { waiting, registration, offline, workerError } = useContext(PwaContext);
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
@@ -322,13 +327,28 @@ export function AppStatus() {
       setChecking(false);
     }
   }
-  function update() {
-    if (!waiting || !canReload()) return;
+  async function update() {
+    if (!canReload()) return;
     if (finishTimer.current) clearTimeout(finishTimer.current);
-    updating.current = true;
-    setChecking(true);
     setMessage(null);
-    waiting.postMessage({ type: "APPLY_UPDATE" });
+    setChecking(true);
+    try {
+      // A tab may have been open while a deployment went live. Force the browser
+      // to check now instead of relying only on its background update schedule.
+      await registration?.update();
+    } catch {
+      setChecking(false);
+      setMessage("Unable to check for an update. Check your connection and try again.");
+      return;
+    }
+    const worker = waiting ?? registration?.waiting ?? null;
+    if (!worker) {
+      setChecking(false);
+      setMessage("Selvam is up to date.");
+      return;
+    }
+    updating.current = true;
+    worker.postMessage({ type: "APPLY_UPDATE" });
     finishTimer.current = setTimeout(() => {
       updating.current = false;
       setChecking(false);
@@ -336,15 +356,20 @@ export function AppStatus() {
     }, 15000);
   }
   return (
-    <div role="status" className="flex items-center gap-1 text-muted-foreground">
+    <div className="flex items-center gap-1 text-muted-foreground">
       {offline ? <WifiOffIcon aria-label="Offline" /> : null}
+      {message ? (
+        <span role="status" className="max-w-48 truncate text-xs" aria-live="polite">
+          {message}
+        </span>
+      ) : null}
       {waiting ? (
         <Button
           size="sm"
           variant="outline"
           disabled={offline || checking || pending}
           onClick={update}
-          title="Apply the available app update"
+          title={message ?? "Apply the available app update"}
         >
           Update
         </Button>

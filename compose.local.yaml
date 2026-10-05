@@ -23,5 +23,13 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-selvam}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-selvam}
       DATABASE_URL_DIRECT: postgres://${POSTGRES_USER:-selvam}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-selvam}
 
+  drizzle-studio:
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-selvam}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-selvam}
+      DATABASE_URL_DIRECT: postgres://${POSTGRES_USER:-selvam}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-selvam}
+
 volumes:
   postgres_data:

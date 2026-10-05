@@ -20,3 +20,5 @@ pnpm --filter fumadocs build
 ```
 
 The local documentation server uses <http://localhost:4000>.
+
+The Docker Compose setup also serves this site at <http://localhost:4000> alongside the main app.

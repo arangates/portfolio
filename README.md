@@ -45,7 +45,7 @@ Set `DATABASE_URL` to the Neon pooled URL. For Docker failover, use the same pro
 docker compose up --build -d
 ```
 
-Open <http://localhost:3001>. The app applies pending migrations at startup. In shared-Neon mode, the database remains available independently of Vercel and no database copy is needed when moving the app host. Optional integrations can be configured in `.env`; see the environment variable list below. For a new host or domain, update the canonical origin and `APP_PORT`, then recreate the app with `docker compose up -d`.
+This serves the application at <http://localhost:3001>, Fumadocs at <http://localhost:4000>, and Drizzle Studio at <http://localhost:4983>. Drizzle Studio is bound to the Docker host's loopback interface because it has no built-in authentication; use an SSH tunnel to reach it on a remote server. It connects to the same database URL as the app. The app applies pending migrations at startup. In shared-Neon mode, the database remains available independently of Vercel and no database copy is needed when moving the app host. Optional integrations can be configured in `.env`; see the environment variable list below. To change the application or docs port, set `APP_PORT` or `DOCS_PORT`. For a new host or domain, update the canonical origin and recreate the app with `docker compose up -d`.
 
 To run the app and a separate local Postgres database entirely in Docker, use the local override instead. This starts an empty database that is separate from Neon and Vercel:
 

@@ -10,9 +10,10 @@ COPY apps/web ./apps/web
 COPY apps/fumadocs/package.json ./apps/fumadocs/package.json
 COPY packages ./packages
 RUN pnpm install --frozen-lockfile
+COPY apps/fumadocs ./apps/fumadocs
 ENV SKIP_ENV_VALIDATION=1
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm --filter web build
+RUN pnpm --filter web build && pnpm --filter fumadocs build
 
 FROM base AS runtime
 ENV NODE_ENV=production
@@ -30,3 +31,14 @@ RUN chmod +x ./start.sh && chown -R node:node /repo
 USER node
 EXPOSE 3001
 CMD ["./start.sh"]
+
+FROM base AS fumadocs-runtime
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+WORKDIR /repo
+COPY --from=build /repo/apps/fumadocs/.next/standalone ./
+COPY --from=build /repo/apps/fumadocs/.next/static ./apps/fumadocs/.next/static
+COPY --from=build /repo/apps/fumadocs/public ./apps/fumadocs/public
+USER node
+EXPOSE 4000
+CMD ["node", "apps/fumadocs/server.js"]
