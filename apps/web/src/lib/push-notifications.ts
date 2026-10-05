@@ -3,6 +3,7 @@ import "server-only";
 import { getFinancialCalendar } from "@portfolio/api/calendar-queries";
 import {
   db,
+  auditEvent,
   notificationPreference,
   portfolioPreference,
   pushDelivery,
@@ -137,6 +138,19 @@ export async function saveNotificationPreference(
       target: notificationPreference.userId,
       set: { ...input, updatedAt: new Date() },
     });
+  await db.insert(auditEvent).values({
+    userId,
+    action: "updated",
+    entityType: "notification_preference",
+    metadata: {
+      channels: [
+        input.inAppEnabled ? "in-app" : null,
+        input.pushEnabled ? "push" : null,
+        input.emailEnabled ? "email" : null,
+      ].filter(Boolean),
+      emailCategories: input.emailCategories.length,
+    },
+  });
 }
 
 async function sendEmail(to: string, subject: string, textBody: string, idempotencyKey?: string) {

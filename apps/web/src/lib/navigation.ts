@@ -11,6 +11,7 @@ import {
   Globe2Icon,
   HandCoinsIcon,
   HouseIcon,
+  HistoryIcon,
   LandmarkIcon,
   LayoutDashboardIcon,
   ReceiptTextIcon,
@@ -56,6 +57,12 @@ export const dashboardNavigation = [
         url: "/dashboard/calendar",
         icon: CalendarDaysIcon,
         keywords: "events bills maturity renewal salary tax goals calendar",
+      },
+      {
+        title: "Activity",
+        url: "/dashboard/activity",
+        icon: HistoryIcon,
+        keywords: "activity history changes audit log imports updates records",
       },
       {
         title: "Fixed deposits",
