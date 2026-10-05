@@ -7,11 +7,13 @@ import {
   portfolioPreference,
   pushDelivery,
   pushSubscription,
+  user,
 } from "@portfolio/db";
 import { env } from "@portfolio/env/server";
 import { and, eq, or } from "drizzle-orm";
 
 import { createReminderNotification } from "@/lib/in-app-notifications";
+import { notificationCategories } from "@/lib/notification-categories";
 import * as webPush from "web-push";
 
 type BrowserSubscription = {
@@ -26,6 +28,9 @@ export type NotificationSettings = {
   inAppEnabled: boolean;
   pushEnabled: boolean;
   emailEnabled: boolean;
+  emailCategories: string[];
+  email: string;
+  emailConfigured: boolean;
   reminderHour: number;
   daysAhead: number;
   subscriptionCount: number;
@@ -59,6 +64,15 @@ export async function getNotificationSettings(userId: string): Promise<Notificat
     inAppEnabled: preference?.inAppEnabled ?? true,
     pushEnabled: preference?.pushEnabled ?? true,
     emailEnabled: preference?.emailEnabled ?? false,
+    emailCategories: preference?.emailCategories ?? [...notificationCategories],
+    email:
+      (
+        await db.query.user.findFirst({
+          where: (u, { eq }) => eq(u.id, userId),
+          columns: { email: true },
+        })
+      )?.email ?? "",
+    emailConfigured: Boolean(env.RESEND_API_KEY && env.EMAIL_FROM),
     reminderHour: preference?.reminderHour ?? 8,
     daysAhead: preference?.daysAhead ?? 3,
     subscriptionCount: subscriptions.length,
@@ -111,6 +125,7 @@ export async function saveNotificationPreference(
     inAppEnabled: boolean;
     pushEnabled: boolean;
     emailEnabled: boolean;
+    emailCategories: string[];
     reminderHour: number;
     daysAhead: number;
   },
@@ -122,6 +137,35 @@ export async function saveNotificationPreference(
       target: notificationPreference.userId,
       set: { ...input, updatedAt: new Date() },
     });
+}
+
+async function sendEmail(to: string, subject: string, textBody: string, idempotencyKey?: string) {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM)
+    throw new Error("Email delivery is not configured. Set RESEND_API_KEY and EMAIL_FROM.");
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+    },
+    body: JSON.stringify({ from: env.EMAIL_FROM, to: [to], subject, text: textBody }),
+  });
+  if (!response.ok) throw new Error(`Email provider rejected delivery (${response.status})`);
+}
+
+export async function sendTestEmail(userId: string) {
+  const account = await db.query.user.findFirst({
+    where: (u, { eq }) => eq(u.id, userId),
+    columns: { email: true },
+  });
+  if (!account?.email) throw new Error("Your account does not have an email address");
+  await sendEmail(
+    account.email,
+    "Selvam email notifications are ready",
+    "You’ll receive selected financial reminders and updates from your Selvam modules.",
+  );
+  return { sent: 1 };
 }
 
 function dateInTimeZone(now: Date, timeZone: string) {
@@ -141,7 +185,7 @@ function addDays(day: string, count: number) {
   return date.toISOString().slice(0, 10);
 }
 
-async function plannedEvents(userId: string, today: string, daysAhead: number) {
+async function upcomingEvents(userId: string, today: string, daysAhead: number) {
   const finalDay = addDays(today, daysAhead);
   const months = new Set([today.slice(0, 7), finalDay.slice(0, 7)]);
   const calendars = await Promise.all(
@@ -149,16 +193,13 @@ async function plannedEvents(userId: string, today: string, daysAhead: number) {
   );
   return calendars
     .flatMap((calendar) => calendar.events)
-    .filter(
-      (event) =>
-        event.planned && event.precision === "day" && event.date >= today && event.date <= finalDay,
-    )
+    .filter((event) => event.precision === "day" && event.date >= today && event.date <= finalDay)
     .toSorted((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title));
 }
 
 function reminderPayload(
   today: string,
-  events: Awaited<ReturnType<typeof plannedEvents>>,
+  events: Awaited<ReturnType<typeof upcomingEvents>>,
   daysAhead: number,
 ) {
   const dueToday = events.filter((event) => event.date === today);
@@ -247,14 +288,19 @@ export async function sendScheduledReminders(now = new Date()) {
       userId: notificationPreference.userId,
       reminderHour: notificationPreference.reminderHour,
       daysAhead: notificationPreference.daysAhead,
+      emailEnabled: notificationPreference.emailEnabled,
+      emailCategories: notificationPreference.emailCategories,
+      email: user.email,
       timeZone: portfolioPreference.timeZone,
     })
     .from(notificationPreference)
+    .innerJoin(user, eq(user.id, notificationPreference.userId))
     .leftJoin(portfolioPreference, eq(portfolioPreference.userId, notificationPreference.userId))
     .where(
       or(
         eq(notificationPreference.pushEnabled, true),
         eq(notificationPreference.inAppEnabled, true),
+        eq(notificationPreference.emailEnabled, true),
       ),
     );
 
@@ -270,7 +316,7 @@ export async function sendScheduledReminders(now = new Date()) {
         .from(pushSubscription)
         .where(eq(pushSubscription.userId, preference.userId));
       const today = dateInTimeZone(now, timeZone);
-      const events = await plannedEvents(preference.userId, today, preference.daysAhead);
+      const events = await upcomingEvents(preference.userId, today, preference.daysAhead);
       if (events.length === 0) continue;
       const payload = reminderPayload(today, events, preference.daysAhead);
       const parsedPayload = JSON.parse(payload) as { title: string; body: string; url: string };
@@ -280,6 +326,23 @@ export async function sendScheduledReminders(now = new Date()) {
         body: parsedPayload.body,
         url: parsedPayload.url,
       });
+      if (preference.emailEnabled && env.RESEND_API_KEY && env.EMAIL_FROM) {
+        const selectedEvents = events.filter((event) =>
+          preference.emailCategories.includes(event.category),
+        );
+        if (selectedEvents.length) {
+          const lines = selectedEvents.map(
+            (event) => `${event.date}: ${event.title} (${event.category})`,
+          );
+          await sendEmail(
+            preference.email,
+            parsedPayload.title,
+            `${parsedPayload.title}\n\n${lines.join("\n")}\n\nOpen your financial calendar: ${new URL(parsedPayload.url, env.BETTER_AUTH_URL).toString()}`,
+            `reminders-${preference.userId}-${today}`,
+          );
+          sent += 1;
+        }
+      }
       if (subscriptions.length === 0 || !pushConfigured()) continue;
       const results = await Promise.allSettled(
         subscriptions.map((subscription) =>

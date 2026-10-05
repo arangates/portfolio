@@ -15,6 +15,8 @@ export const env = createEnv({
     VAPID_PUBLIC_KEY: z.string().min(1).optional(),
     VAPID_PRIVATE_KEY: z.string().min(1).optional(),
     VAPID_SUBJECT: z.string().min(1).optional(),
+    RESEND_API_KEY: z.string().min(1).optional(),
+    EMAIL_FROM: z.string().min(3).optional(),
     CRON_SECRET: z.string().min(16).optional(),
     NEXT_PUBLIC_ENABLE_LABS: z.string().optional(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),

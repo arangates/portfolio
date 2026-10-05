@@ -8,7 +8,9 @@ import {
   saveNotificationPreference,
   savePushSubscription,
   sendTestNotification,
+  sendTestEmail,
 } from "@/lib/push-notifications";
+import { notificationCategories } from "@/lib/notification-categories";
 
 const endpoint = z.string().url().max(4_096);
 const requestSchema = z.discriminatedUnion("action", [
@@ -26,10 +28,12 @@ const requestSchema = z.discriminatedUnion("action", [
     inAppEnabled: z.boolean(),
     pushEnabled: z.boolean(),
     emailEnabled: z.boolean(),
+    emailCategories: z.array(z.enum(notificationCategories)).max(notificationCategories.length),
     reminderHour: z.number().int().min(0).max(23),
     daysAhead: z.number().int().min(1).max(14),
   }),
   z.object({ action: z.literal("test") }),
+  z.object({ action: z.literal("test-email") }),
 ]);
 
 async function currentUser() {
@@ -53,6 +57,8 @@ export async function POST(request: Request) {
       await removePushSubscription(user.id, input.endpoint);
     } else if (input.action === "preferences") {
       await saveNotificationPreference(user.id, input);
+    } else if (input.action === "test-email") {
+      return Response.json(await sendTestEmail(user.id));
     } else {
       return Response.json(await sendTestNotification(user.id));
     }

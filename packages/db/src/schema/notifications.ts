@@ -2,8 +2,8 @@ import {
   boolean,
   index,
   integer,
-  pgTable,
   text,
+  pgTable,
   timestamp,
   uniqueIndex,
   uuid,
@@ -42,6 +42,22 @@ export const notificationPreference = pgTable("notification_preference", {
   inAppEnabled: boolean("in_app_enabled").default(true).notNull(),
   pushEnabled: boolean("push_enabled").default(true).notNull(),
   emailEnabled: boolean("email_enabled").default(false).notNull(),
+  emailCategories: text("email_categories")
+    .array()
+    .default([
+      "Bills",
+      "Contracts",
+      "Deposits",
+      "Investments",
+      "Salary",
+      "Tax",
+      "Planning",
+      "Purchases",
+      "Imports",
+      "Valuations",
+      "Bank transactions",
+    ])
+    .notNull(),
   reminderHour: integer("reminder_hour").default(8).notNull(),
   daysAhead: integer("days_ahead").default(3).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

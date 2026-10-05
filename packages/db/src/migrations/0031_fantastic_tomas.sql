@@ -1,0 +1,1 @@
+ALTER TABLE "notification_preference" ADD COLUMN "email_categories" text[] DEFAULT '{"Bills","Contracts","Deposits","Investments","Salary","Tax","Planning","Purchases","Imports","Valuations","Bank transactions"}' NOT NULL;

@@ -5,6 +5,7 @@ import { BellIcon, BellOffIcon, SendIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import type { NotificationSettings } from "@/lib/push-notifications";
+import { notificationCategories } from "@/lib/notification-categories";
 import { useOperationBusy } from "@/hooks/use-operation-busy";
 import { Button } from "@portfolio/ui/components/button";
 import {
@@ -116,6 +117,7 @@ export function NotificationSettingsCard({
       inAppEnabled: updated.inAppEnabled,
       pushEnabled: updated.pushEnabled,
       emailEnabled: updated.emailEnabled,
+      emailCategories: updated.emailCategories,
       reminderHour: updated.reminderHour,
       daysAhead: updated.daysAhead,
     });
@@ -151,7 +153,9 @@ export function NotificationSettingsCard({
             [
               "email-notifications",
               "Email",
-              "Email delivery will use your account email when configured.",
+              settings.email
+                ? `Send selected alerts to ${settings.email}.`
+                : "Your account has no email address.",
               settings.emailEnabled,
             ],
           ].map(([id, title, description, checked]) => (
@@ -159,7 +163,11 @@ export function NotificationSettingsCard({
               <Checkbox
                 id={id as string}
                 checked={checked as boolean}
-                disabled={pending || (id === "push-notifications" && !settings.configured)}
+                disabled={
+                  pending ||
+                  (id === "push-notifications" && !settings.configured) ||
+                  (id === "email-notifications" && (!settings.emailConfigured || !settings.email))
+                }
                 onCheckedChange={(value) =>
                   void run(() =>
                     savePreference({
@@ -186,6 +194,41 @@ export function NotificationSettingsCard({
               : "This browser does not support web push. On iPhone or iPad, install Selvam to the Home Screen first."}
           </p>
         ) : null}
+        {!settings.emailConfigured ? (
+          <p className="text-sm text-muted-foreground">
+            Configure RESEND_API_KEY and EMAIL_FROM on the server to enable email delivery.
+          </p>
+        ) : null}
+        <div className="space-y-2 rounded-lg border p-3">
+          <p className="text-sm font-medium">Email categories</p>
+          <p className="text-xs text-muted-foreground">
+            Choose which module events can appear in scheduled email reminders.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {notificationCategories.map((category) => (
+              <label key={category} className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={settings.emailCategories.includes(category)}
+                  disabled={pending || !settings.emailEnabled}
+                  onCheckedChange={(checked) =>
+                    void run(() =>
+                      savePreference({
+                        emailCategories: checked
+                          ? [...new Set([...settings.emailCategories, category])]
+                          : settings.emailCategories.filter((item) => item !== category),
+                      }),
+                    )
+                  }
+                />
+                {category}
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Modules covered: household bills and contracts, fixed deposits, portfolio, salary,
+            taxes, FIRE planning, purchases, imports, valuations and bank activity.
+          </p>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
@@ -193,6 +236,21 @@ export function NotificationSettingsCard({
             disabled={pending || unavailable}
           >
             <BellIcon /> Enable on this device
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              void run(async () => {
+                await post({ action: "test-email" });
+                toast.success("Test email sent");
+              })
+            }
+            disabled={
+              pending || !settings.emailEnabled || !settings.emailConfigured || !settings.email
+            }
+          >
+            <SendIcon /> Send test email
           </Button>
           <Button
             type="button"
