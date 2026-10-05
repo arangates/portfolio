@@ -26,6 +26,7 @@
     "@portfolio/env": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9",
     "zod": "catalog:"
   },
   "devDependencies": {

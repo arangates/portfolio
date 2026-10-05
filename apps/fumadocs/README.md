@@ -8,7 +8,7 @@ The content intentionally covers only durable decisions:
 - application architecture and package responsibilities;
 - historical snapshots, import deduplication and ownership enforcement;
 - security and sensitive-data handling;
-- Vercel and Neon production operations.
+- Vercel, Docker and Neon production operations, including the shared-database failover setup.
 
 Documentation pages live in `content/docs` and are ordered by `content/docs/meta.json`.
 

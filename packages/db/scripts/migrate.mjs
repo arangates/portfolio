@@ -1,8 +1,9 @@
 import { fileURLToPath } from "node:url";
 
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 import dotenv from "dotenv";
-import { readMigrationFiles } from "drizzle-orm/migrator";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 
 const envPath = fileURLToPath(new URL("../../../apps/web/.env", import.meta.url));
 const migrationsFolder = fileURLToPath(new URL("../src/migrations", import.meta.url));
@@ -14,8 +15,7 @@ if (!connectionString) {
 }
 
 const connection = new URL(connectionString);
-const sql = neon(connectionString);
-const migrations = readMigrationFiles({ migrationsFolder });
+const client = postgres(connectionString, { max: 1 });
 
 console.log(
   JSON.stringify({
@@ -23,36 +23,10 @@ console.log(
     target: { host: connection.hostname, database: connection.pathname.slice(1) },
   }),
 );
-await sql.transaction([
-  sql`create schema if not exists drizzle`,
-  sql`
-    create table if not exists drizzle.__drizzle_migrations (
-      id serial primary key,
-      hash text not null,
-      created_at bigint
-    )
-  `,
-]);
 
-const [latest] = await sql`
-  select created_at as "createdAt"
-  from drizzle.__drizzle_migrations
-  order by created_at desc
-  limit 1
-`;
-const latestTimestamp = Number(latest?.createdAt ?? 0);
-const pending = migrations.filter((migration) => migration.folderMillis > latestTimestamp);
-
-for (const migration of pending) {
-  const statements = migration.sql
-    .map((statement) => statement.trim())
-    .filter(Boolean)
-    .map((statement) => sql.query(statement, []));
-  statements.push(sql`
-    insert into drizzle.__drizzle_migrations (hash, created_at)
-    values (${migration.hash}, ${migration.folderMillis})
-  `);
-  await sql.transaction(statements);
+try {
+  await migrate(drizzle(client), { migrationsFolder });
+  console.log(JSON.stringify({ migrated: true }));
+} finally {
+  await client.end();
 }
-
-console.log(JSON.stringify({ migrated: true, applied: pending.length }));

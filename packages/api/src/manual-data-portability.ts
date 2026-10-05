@@ -344,7 +344,7 @@ async function loadDataset(userId: string, spec: ManualSpec) {
   const result = await db.execute<Record<string, unknown>>(
     sql`select ${selectList(spec)} from ${spec.table} where ${columns.userId} = ${userId}${manualFilter}${order}`,
   );
-  return result.rows;
+  return Array.from(result);
 }
 
 export async function createManualDataExport(userId: string, format: "csv" | "xlsx") {
@@ -552,7 +552,7 @@ async function findOwnedId(
   const result = await db.execute<{ id: string }>(
     sql`select ${columns.id} as id from ${spec.table} where ${sql.join(conditions, sql` and `)} limit 1`,
   );
-  return result.rows[0]?.id ?? null;
+  return result[0]?.id ?? null;
 }
 
 function assignmentList(spec: ManualSpec, values: Record<string, unknown>) {
@@ -593,7 +593,7 @@ async function insertRow(userId: string, spec: ManualSpec, values: Record<string
   const result = await db.execute<{ id: string }>(
     sql`insert into ${spec.table} (${names}) values (${parameters}) on conflict do nothing returning ${columns.id} as id`,
   );
-  return result.rows[0]?.id ?? null;
+  return result[0]?.id ?? null;
 }
 
 async function upsertProfile(userId: string, spec: ManualSpec, values: Record<string, unknown>) {

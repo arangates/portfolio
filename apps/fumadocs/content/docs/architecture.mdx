@@ -9,8 +9,8 @@ description: The technology choices and the reasons behind them.
 | --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Web application | Next.js 16 App Router and React 19                              | Server Components keep financial queries on the server while authenticated route handlers provide explicit mutation and import boundaries. |
 | Interface       | Tailwind CSS, shadcn/ui New York styling and EvilCharts/ECharts | A consistent dashboard-01 visual system with responsive, interactive financial visualizations.                                             |
-| Database        | Neon Postgres                                                   | Durable relational storage, managed backups and connection pooling suitable for Vercel's serverless runtime.                               |
-| Data access     | Drizzle ORM with tracked SQL migrations                         | Typed queries plus reviewable schema changes and database-enforced ownership relationships.                                                |
+| Database        | PostgreSQL; Neon is the recommended managed service             | The same schema can back Vercel and Docker. Neon keeps one managed production database available when switching app hosts; Docker Postgres is an optional independent mode. |
+| Data access     | Drizzle ORM, postgres.js and tracked SQL migrations             | A standard PostgreSQL client supports Neon and self-hosted Postgres, with reviewable migrations and database-enforced ownership relationships. |
 | Authentication  | Better Auth                                                     | Google OAuth, email/password authentication, rolling database sessions, secure production cookies and database-backed rate limiting.       |
 | Source archive  | User-owned Google Drive                                         | Optional exact-file retention without placing sensitive documents or storage cost in the application database.                             |
 | Repository      | pnpm workspaces and Turborepo                                   | Keeps the web app, API logic, authentication, database, environment validation, UI and documentation in independently checkable packages.  |
@@ -30,7 +30,7 @@ packages/ui     Shared shadcn/ui components and tokens
 
 The portfolio query and mutation modules import `server-only`, preventing accidental use in client bundles. Browser components submit to authenticated route handlers, and those handlers derive the owner from the server session rather than accepting a user ID from the request.
 
-The application can be published as source code. Personal workbooks, broker exports, environment files and portfolio values are intentionally excluded from the repository.
+The application can be published as source code. Personal workbooks, broker exports, environment files and portfolio values are intentionally excluded from the repository. For a production failover, keep Neon as the shared source of truth for both Vercel and Docker; a Docker-hosted Postgres database is a separate data store and requires an explicit backup and restore to move existing data.
 
 ## Deliberate trade-offs
 
@@ -48,5 +48,5 @@ The application can be published as source code. Personal workbooks, broker expo
 - The expected annual path and Monte Carlo range are deliberately separate. Reproducible seeded simulations make results testable while still communicating sequence-of-returns and inflation risk.
 - Analytics are aggregated from account-scoped Postgres queries and rendered with ECharts in the browser. DuckDB-Wasm is intentionally deferred: current datasets are small enough that another browser database, worker and duplicated data transfer would add more complexity than speed. It becomes relevant only for large, local, ad-hoc statement analysis.
 - MFAPI scheme and NAV rows are public reference data and are cached once across accounts. The mapping from a user-owned instrument to a scheme, together with every sync audit, remains account-scoped and database constrained. Exact ISIN matching is required; a fund name alone can never silently create a link.
-- Deployment migrations are separate from the web runtime. The application receives only a pooled connection string; a direct database credential is reserved for trusted migration execution.
+- Vercel migrations are applied from a trusted release environment before deploying code that requires the schema. Docker applies pending migrations at container startup; supply a direct URL there only when the container is trusted to migrate the database.
 - Source-file persistence is a secondary side effect after a successful import. Drive failures are recorded and disclosed but cannot roll back normalized financial records; owner-scoped metadata is sufficient to retry and retrieve the original later.

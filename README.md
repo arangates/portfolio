@@ -1,6 +1,6 @@
 # Selvam
 
-A private, multi-currency portfolio SaaS built with Next.js 16, Better Auth, Drizzle, Neon Postgres, shadcn/ui and Turborepo.
+A private, multi-currency portfolio application built with Next.js 16, Better Auth, Drizzle, PostgreSQL, shadcn/ui and Turborepo. Neon is the recommended managed database; the app also supports standard PostgreSQL for a self-contained Docker installation.
 
 ## What it provides
 
@@ -18,7 +18,7 @@ No personal spreadsheet, broker export, credentials or portfolio values are stor
 
 ## Local setup
 
-Requirements: Node.js 20+, pnpm 11+, and a Neon Postgres database.
+Requirements: Node.js 20+, pnpm 11+, and a Postgres database. Neon is recommended for managed development and production branches; Docker Postgres is available for offline or fully self-hosted work.
 
 ```bash
 pnpm install
@@ -29,7 +29,32 @@ pnpm dev:web
 
 Open <http://localhost:3001>.
 
-Use a pooled Neon connection for `DATABASE_URL` and a direct connection for `DATABASE_URL_DIRECT`. Migrations automatically prefer the direct URL.
+Use a dedicated Neon development branch for local work, not the production branch. Set `DATABASE_URL` to that branch's pooled connection URL and `DATABASE_URL_DIRECT` to its direct URL. Migrations automatically prefer the direct URL. Since this application contains personal financial data, use synthetic or schema-only development data rather than copying production records.
+
+## Run with Docker
+
+The default Compose setup runs the app container against Neon, so Vercel and Docker can use the same database. It requires Docker Engine with the Compose plugin and a Neon Postgres database.
+
+```bash
+cp .env.docker.example .env
+```
+
+Set `DATABASE_URL` to the Neon pooled URL. For Docker failover, use the same production URL as Vercel; for local Docker development, use the separate development branch. Optionally set `DATABASE_URL_DIRECT` to that same branch's direct URL for startup migrations. Set `BETTER_AUTH_SECRET` to a value from `openssl rand -base64 32`. For a public host, set `BETTER_AUTH_URL` and `CORS_ORIGIN` to its canonical HTTPS origin. Use the same auth secret across Vercel and Docker; users may need to sign in again if failover changes the public host because browser cookies are origin-scoped.
+
+```bash
+docker compose up --build -d
+```
+
+Open <http://localhost:3001>. The app applies pending migrations at startup. In shared-Neon mode, the database remains available independently of Vercel and no database copy is needed when moving the app host. Optional integrations can be configured in `.env`; see the environment variable list below. For a new host or domain, update the canonical origin and `APP_PORT`, then recreate the app with `docker compose up -d`.
+
+To run the app and a separate local Postgres database entirely in Docker, use the local override instead. This starts an empty database that is separate from Neon and Vercel:
+
+```bash
+# Set POSTGRES_PASSWORD in .env to a URL-safe value from: openssl rand -hex 24
+docker compose -f compose.yaml -f compose.local.yaml up --build -d
+```
+
+That local database persists in the `postgres_data` volume. It does not sync data with Neon or Vercel. Back it up before moving hosts; `docker compose -f compose.yaml -f compose.local.yaml down -v` deletes that volume and its data. Moving existing production data to this database requires a separate backup and restore.
 
 ## Environment variables
 
@@ -40,6 +65,10 @@ Use a pooled Neon connection for `DATABASE_URL` and a direct connection for `DAT
 | `BETTER_AUTH_SECRET`  | Random secret of at least 32 characters |
 | `BETTER_AUTH_URL`     | Canonical application URL               |
 | `CORS_ORIGIN`         | Trusted browser origin                  |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional Google OAuth sign-in |
+| `TWELVE_DATA_API_KEY`  | Optional indicative intraday FX quote   |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Optional browser push notifications |
+| `CRON_SECRET`          | Optional secret for cron endpoints      |
 
 Generate an authentication secret with `openssl rand -base64 32`. Never commit a real `.env` file.
 
@@ -79,7 +108,7 @@ pnpm build
 5. Run `pnpm db:migrate` from the repository root against the target Neon branch before the first deployment containing a new migration.
 6. Deploy. Subsequent pushes to the production branch create production deployments; other branches create previews.
 
-For preview deployments, use a separate Neon branch and corresponding Vercel environment variables. Do not point untrusted preview code at production data.
+For preview deployments, use a separate Neon development branch and corresponding Vercel environment variables. Do not point untrusted preview code at production data.
 
 ## Repository structure
 

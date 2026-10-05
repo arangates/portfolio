@@ -44,6 +44,7 @@
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
+    "postgres": "^3.4.9",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",

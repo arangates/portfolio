@@ -51,5 +51,6 @@ export async function getSourceDocumentHistory(userId: string, page: number) {
     order by coalesce(i.created_at, a.created_at) desc, coalesce(i.id, a.source_id) desc
     limit 51 offset ${(page - 1) * 50}
   `);
-  return { documents: result.rows.slice(0, 50), hasNext: result.rows.length > 50 };
+  const rows = Array.from(result);
+  return { documents: rows.slice(0, 50), hasNext: rows.length > 50 };
 }

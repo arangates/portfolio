@@ -25,7 +25,7 @@ The emphasized path is the normal financial import flow:
 2. A Next.js route handler verifies the Better Auth server session.
 3. The handler passes the session-derived `userId` and file bytes to `@portfolio/api`.
 4. A provider-specific adapter parses the file into normalized records.
-5. Drizzle writes owner-scoped rows, snapshots and import evidence to Neon Postgres.
+5. Drizzle writes owner-scoped rows, snapshots and import evidence to PostgreSQL.
 
 Reads take the reverse server-side route. Analytics and FIRE calculations operate on account-scoped database records, disclose missing FX conversions and return derived series for tables and ECharts visualizations.
 
@@ -34,11 +34,11 @@ Reads take the reverse server-side route. Analytics and FIRE calculations operat
 | Boundary                     | Responsibility                                                                                                                       |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | External providers and files | Google supplies identity; broker and payroll exports remain user-controlled until explicitly selected.                               |
-| Vercel application           | Next.js owns request routing, protected layouts and authenticated API endpoints.                                                     |
+| Application runtime          | Next.js owns request routing, protected layouts and authenticated API endpoints. It can run on Vercel or in Docker.                    |
 | Authenticated account        | Better Auth establishes the session. Clients do not submit or choose the financial-data owner.                                       |
-| Managed data                 | Neon is the source of truth. Financial tables carry `user_id`, and composite foreign keys keep related history under the same owner. |
+| Database                     | Neon is the recommended managed source of truth shared by Vercel and Docker. A local Docker Postgres mode is independent.             |
 
-The deployed web runtime receives the pooled `DATABASE_URL` and application secrets. Direct database credentials stay outside the application and are reserved for trusted migrations.
+The web runtime receives a `DATABASE_URL` and application secrets. The recommended production setup points both Vercel and the Docker failover app at the same Neon production branch. Local development uses a separate Neon development branch. In fully self-contained Docker mode, `compose.local.yaml` instead points the app and migration command at its local Postgres service. The direct URL is optional and should be used only by trusted migration execution.
 
 ## Historical integrity
 
@@ -46,6 +46,6 @@ Imports are additive and auditable rather than destructive. SHA-256 file and row
 
 ## Repository evidence
 
-The diagram is generated from a typed Archify specification pinned to repository revision `43238d2e90ee30632724c0a213a3995748539ca2`. Each component exposes its supporting source references inside the interactive viewer. The evidence covers the web routes, Better Auth configuration, server-only API services, import parsers, Drizzle schema, Neon client and FIRE/analytics engines.
+The diagram is generated from a typed Archify specification pinned to repository revision `43238d2e90ee30632724c0a213a3995748539ca2`. Each component exposes its supporting source references inside the interactive viewer. The evidence covers the web routes, Better Auth configuration, server-only API services, import parsers, Drizzle schema, PostgreSQL access and FIRE/analytics engines.
 
 For technology choices and trade-offs, see [Technical architecture](./architecture). For deployment secrets and database operations, see [Deployment and operations](./deployment).

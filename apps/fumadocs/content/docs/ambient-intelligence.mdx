@@ -32,4 +32,4 @@ Only the top 5 most relevant insights are displayed at any time.
 
 ### Architecture
 
-The engine uses Next.js server components to aggregate existing queries (`getPortfolioOverview`, `getFinancialTwin`, `getFirePlan`, `getCapitalDeploymentEngine`, `getSnapshotEvidence`, `getCurrentFixedDeposits`). Because these underlying queries utilize Next.js `unstable_cache` with tag-based invalidation, the Ambient Intelligence engine evaluates almost instantaneously without thrashing the Neon database.
+The engine uses Next.js server components to aggregate existing queries (`getPortfolioOverview`, `getFinancialTwin`, `getFirePlan`, `getCapitalDeploymentEngine`, `getSnapshotEvidence`, `getCurrentFixedDeposits`). Because these underlying queries utilize Next.js `unstable_cache` with tag-based invalidation, the Ambient Intelligence engine evaluates almost instantaneously without repeatedly querying Postgres.

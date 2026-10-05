@@ -5,6 +5,15 @@ description: Safely return a database to an empty, signup-ready state without re
 
 The repository includes a guarded reset command for removing test or disposable portfolio data. It erases every table in the Postgres `public` schema, including users, sessions, imports, ledgers, snapshots, assets, audit events, verification records and rate limits.
 
+This guarded helper currently targets Neon connection URLs. To reset the separate local Docker database instead, use the local Compose override and remove its volume; the app recreates the schema from tracked migrations when it starts again:
+
+```bash
+docker compose -f compose.yaml -f compose.local.yaml down -v
+docker compose -f compose.yaml -f compose.local.yaml up --build -d
+```
+
+Removing the volume permanently deletes all data in that local database. It does not affect Vercel or Neon.
+
 The command preserves the Drizzle migration table in the separate `drizzle` schema. Tables, indexes, constraints and applied migration records remain intact, so the application is immediately ready for a new signup.
 
 <Callout type="warning" title="This operation is destructive">

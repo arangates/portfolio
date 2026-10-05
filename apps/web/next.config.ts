@@ -1,4 +1,5 @@
 import "@portfolio/env/web";
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -20,6 +21,8 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   reactCompiler: true,
   poweredByHeader: false,
+  output: "standalone",
+  outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
   async headers() {
     return [
       {
