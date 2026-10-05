@@ -1,9 +1,16 @@
 ---
 title: Verified financial twin
 description: How Selvam connects verified household and investment evidence into decisions without double counting wealth.
+icon: WalletCards
 ---
 
 The Verified Financial Twin is Selvam's decision layer. It connects recent salary, recurring household cost, the capital-deployment policy, fixed-deposit liquidity, verified returns, accepted tax history and FIRE assumptions while preserving the confidence boundary of every source.
+
+<IconCardGrid columns={3}>
+  <IconCard icon="Banknote" title="Observed surplus" description="Derived from validated pay and recurring household costs." />
+  <IconCard icon="WalletCards" title="Available capital" description="Existing assets may be reallocated, but are not counted as new savings." />
+  <IconCard icon="BadgeCheck" title="Evidence quality" description="Recommendations retain whether their inputs are exact, reconciled, derived or limited." />
+</IconCardGrid>
 
 ## Core calculation
 
@@ -21,12 +28,14 @@ Current household cost is gross recurring expense minus recurring refunds. One-t
 
 Existing broker cash, an ultra-short-duration staging fund and fixed-deposit maturity proceeds are already owned assets. Moving them changes allocation and liquidity; it does not create income, increase net worth or reduce the current FIRE corpus gap.
 
-Only externally funded savings become new FIRE contributions. The twin therefore keeps these concepts separate:
+Only externally funded savings become new FIRE contributions. The twin keeps these concepts separate:
 
-- **Observed surplus:** capacity supported by imported pay and the current budget.
-- **Available capital:** existing wealth that can be reallocated.
-- **Scheduled liquidity:** an owned fixed deposit expected to become cash.
-- **Verified return:** performance supported by broker cash flows and reconciliation.
+<IconCardGrid columns={2}>
+  <IconCard icon="Banknote" title="Observed surplus" description="Capacity supported by imported pay and the current budget." />
+  <IconCard icon="WalletCards" title="Available capital" description="Existing wealth that can be reallocated." />
+  <IconCard icon="CalendarDays" title="Scheduled liquidity" description="An owned fixed deposit expected to become cash." />
+  <IconCard icon="BadgeCheck" title="Verified return" description="Performance supported by broker cash flows and reconciliation." />
+</IconCardGrid>
 
 ## FIRE sensitivity
 

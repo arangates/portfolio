@@ -1,7 +1,9 @@
 {
   "title": "Selvam",
   "pages": [
+    "---[book-open]Get Started---",
     "index",
+    "---[wallet-cards]Product---",
     "features",
     "financial-twin",
     "evaluation-engine",
@@ -14,9 +16,11 @@
     "tax-engine",
     "ai-assistant",
     "ai-chat-roadmap",
+    "---[blocks]Engineering---",
     "architecture",
     "system-architecture",
     "data-and-history",
+    "---[shield-check]Security & Operations---",
     "security",
     "authentication",
     "database-reset",

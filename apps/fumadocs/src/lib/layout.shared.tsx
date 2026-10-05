@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
-import { WalletCardsIcon } from "lucide-react";
+import { Code2Icon, WalletCardsIcon } from "lucide-react";
 
 import { appName } from "./shared";
 
@@ -19,10 +19,23 @@ export function baseOptions(): BaseLayoutProps {
       transparentMode: "top",
     },
     links: [
-      { text: "Features", url: "/docs/features", active: "nested-url" },
-      { text: "Architecture", url: "/docs/architecture", active: "nested-url" },
-      { text: "Security", url: "/docs/security", active: "nested-url" },
-      { type: "button", text: "Launch App", url: "https://myselvam.vercel.app/", secondary: false },
+      {
+        type: "button",
+        text: "Open Selvam",
+        url: "https://myselvam.vercel.app/",
+        secondary: false,
+      },
+      ...(!sourceUrl
+        ? [
+            {
+              type: "icon" as const,
+              text: "GitHub",
+              label: "GitHub",
+              url: "https://github.com/arangates/portfolio",
+              icon: <Code2Icon className="size-4" />,
+            },
+          ]
+        : []),
     ],
     ...(sourceUrl ? { githubUrl: sourceUrl } : {}),
   };

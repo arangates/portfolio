@@ -31,7 +31,9 @@ export default function Layout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        <RootProvider>{children}</RootProvider>
+        <RootProvider theme={{ defaultTheme: "dark", enableSystem: false }}>
+          {children}
+        </RootProvider>
       </body>
     </html>
   );

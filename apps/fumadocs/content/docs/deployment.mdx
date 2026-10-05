@@ -1,11 +1,21 @@
 ---
 title: Deployment and operations
 description: Run Selvam on Vercel or Docker with Neon as the shared production database, or use a self-contained Docker Postgres database.
+icon: Rocket
 ---
 
 Selvam can run on Vercel or as a Docker container. Both deployments use the same PostgreSQL schema and the same `DATABASE_URL` setting. For a simple Vercel-to-Docker failover, keep Neon as the production database and point both app deployments at the same Neon production branch. Docker can also run its own Postgres database when a fully self-contained installation is preferred.
 
 ## Choose a database layout
+
+<Tabs label="Deployment pattern" defaultValue="Shared Neon">
+  <Tab value="Shared Neon" icon="Globe2">
+    Use one Neon production branch for both Vercel and Docker. You can move the app host during failover without copying or synchronizing the database.
+  </Tab>
+  <Tab value="Self-contained Docker" icon="Server">
+    Run the app with its own Compose Postgres database when you want an independent installation. It starts empty and does not synchronize with Neon or Vercel.
+  </Tab>
+</Tabs>
 
 | Environment | App host | Database | Purpose |
 | --- | --- | --- | --- |
@@ -102,19 +112,29 @@ Vercel previews should use a non-production Neon branch and a separate authentic
 
 ## Schema changes and releases
 
-Schema changes are tracked in `packages/db/src/migrations`. Generate a migration from the repository root with:
+Schema changes are tracked in `packages/db/src/migrations`.
 
-```bash
-pnpm db:generate
-```
+<Steps>
+  <Step title="Generate the migration">
+    From the repository root, run:
 
-Review the SQL, test it against a development or preview branch, and then apply it to the target database before deploying code that depends on it:
+    ```bash
+    pnpm db:generate
+    ```
+  </Step>
+  <Step title="Review and apply it to a safe branch">
+    Review the generated SQL and apply it to a development or preview branch first:
 
-```bash
-pnpm db:migrate
-```
+    ```bash
+    pnpm db:migrate
+    ```
+  </Step>
+  <Step title="Update the target database before deployment">
+    Apply the reviewed migration to the target database before deploying application code that depends on it. The command is safe to repeat because it only runs unapplied tracked migrations.
+  </Step>
+</Steps>
 
-The Docker app runs this migration command at startup. Vercel deployments do not run migrations automatically; apply them from a trusted environment before the Vercel deployment. The operation is safe to repeat because only unapplied tracked migrations are run.
+The Docker app runs migrations at startup. Vercel deployments do not, so apply them from a trusted environment before deployment.
 
 ## Optional integrations
 

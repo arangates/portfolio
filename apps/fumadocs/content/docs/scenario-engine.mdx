@@ -1,11 +1,18 @@
 ---
 title: What-If Scenario Engine
 description: Instantly simulate the impact of major life events on your FIRE trajectory.
+icon: SlidersHorizontal
 ---
 
 ## Hypothetical Modeling
 
 The **Scenario Engine** (`@portfolio/api/scenario-engine`) allows users to simulate the financial impact of future life events (e.g., buying a house, taking a sabbatical, suffering a market crash) against their live FIRE projections.
+
+<IconCardGrid columns={3}>
+  <IconCard icon="Database" title="Read-only baseline" description="Starts from current FIRE and financial-twin results for the signed-in account." />
+  <IconCard icon="SlidersHorizontal" title="Stackable changes" description="Combine one-time costs, savings changes, market shocks or time away from work." />
+  <IconCard icon="ChartNoAxesCombined" title="Compare the impact" description="Returns baseline and adjusted metrics with a human-readable FIRE timeline change." />
+</IconCardGrid>
 
 ### Zero-Cost Architecture
 
@@ -13,15 +20,20 @@ Simulating financial scenarios typically requires either complex database branch
 
 The Selvam Scenario Engine avoids both. It is a **pure-math, in-memory projection engine**. It reads the baseline data from `getFirePlan` and `getFinancialTwin`, applies hypothetical adjustments mathematically during the API request, and calculates the delta in years to FIRE without ever touching the database or triggering a third-party API.
 
+<InfoPanel title="Scenarios do not change your records" icon="ShieldCheck" tone="tip">
+Adjustments exist only for the current projection request. They do not write to the portfolio, change saved assumptions or contact an external model provider.
+</InfoPanel>
+
 ### Supported Adjustments
 
 The engine supports multiple adjustment primitives that can be stacked together in a single scenario:
 
-- `lump_expense`: A one-time outflow that instantly reduces the current investable corpus (e.g., a downpayment).
-- `extra_savings`: A flat monthly increase to the available surplus.
-- `income_change`: A percentage-based adjustment to the monthly surplus (e.g., a 50% raise).
-- `market_crash`: A percentage-based drop in the total investable corpus.
-- `sabbatical`: Zeros out all monthly surplus for a defined duration (in months) and actively drains the corpus to cover baseline living expenses during that time.
+<IconCardGrid columns={2}>
+  <IconCard icon="Banknote" title="One-time expense" description="lump_expense reduces the current investable corpus, for example for a downpayment." />
+  <IconCard icon="Wallet" title="Extra monthly savings" description="extra_savings increases the available monthly surplus by a fixed amount." />
+  <IconCard icon="ChartNoAxesCombined" title="Income or market change" description="income_change adjusts surplus by a percentage; market_crash reduces the corpus by a percentage." />
+  <IconCard icon="CalendarDays" title="Sabbatical" description="sabbatical pauses savings for a defined period and draws living costs from the corpus." />
+</IconCardGrid>
 
 ### Preset Scenarios
 

@@ -1,11 +1,16 @@
 ---
 title: Cash Flow & Budgeting
 description: Engineering details for household budgeting and historic cash flow tracking
+icon: Wallet
 ---
 
-# Cash Flow & Budgeting Engine
-
 The Cash Flow and Budgeting Engine provides strict boundaries between deterministic forward-looking budgets and historical, reconciled cash flows.
+
+<IconCardGrid columns={3}>
+  <IconCard icon="SlidersHorizontal" title="Plan future costs" description="Compare a baseline, minimum-away and custom household budgets." />
+  <IconCard icon="Wallet" title="Track actual cash flow" description="Keep personal finances distinct from shared household activity." />
+  <IconCard icon="ChartNoAxesCombined" title="Read the true cost" description="Treat refunds as income offsets while retaining gross expenses." />
+</IconCardGrid>
 
 ## Household Budgeting (Forward-Looking)
 
@@ -42,6 +47,9 @@ Because expat couples often maintain a mix of joint and personal accounts, the e
 ### Savings Rate & Categorization
 
 The engine calculates a strict, 24-month trailing savings rate:
-Savings Rate = ((Income - Spending) / Income) \* 100
+
+<InfoPanel title="Savings-rate formula" icon="ChartNoAxesCombined" tone="info">
+`((Income − Spending) ÷ Income) × 100` over the trailing 24 months.
+</InfoPanel>
 
 Transactions are parsed and aggregated by category. To optimize performance, the aggregation runs entirely inside the database using Drizzle ORM `sql` aggregations (e.g., grouping by `date_trunc('month', date)` and summing), rather than loading thousands of raw transactions into the Node.js memory space.

@@ -5,7 +5,7 @@ import {
   DocsTitle,
   MarkdownCopyButton,
   ViewOptionsPopover,
-} from "fumadocs-ui/layouts/docs/page";
+} from "fumadocs-ui/layouts/notebook/page";
 import { createRelativeLink } from "fumadocs-ui/mdx";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -22,24 +22,22 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
   const markdownUrl = getPageMarkdownUrl(page).url;
 
   return (
-    <main id="main-content" tabIndex={-1} className="min-w-0">
-      <DocsPage toc={page.data.toc} full={page.data.full}>
-        <DocsTitle>{page.data.title}</DocsTitle>
-        <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
-        <div className="flex flex-row gap-2 items-center border-b pb-6">
-          <MarkdownCopyButton markdownUrl={markdownUrl} />
-          <ViewOptionsPopover markdownUrl={markdownUrl} />
-        </div>
-        <DocsBody>
-          <MDX
-            components={getMDXComponents({
-              // this allows you to link to other pages with relative file paths
-              a: createRelativeLink(source, page),
-            })}
-          />
-        </DocsBody>
-      </DocsPage>
-    </main>
+    <DocsPage id="main-content" tabIndex={-1} toc={page.data.toc} full={page.data.full}>
+      <DocsTitle>{page.data.title}</DocsTitle>
+      <DocsDescription className="mb-0">{page.data.description}</DocsDescription>
+      <div className="flex flex-row gap-2 items-center border-b pb-6">
+        <MarkdownCopyButton markdownUrl={markdownUrl} />
+        <ViewOptionsPopover markdownUrl={markdownUrl} />
+      </div>
+      <DocsBody>
+        <MDX
+          components={getMDXComponents({
+            // this allows you to link to other pages with relative file paths
+            a: createRelativeLink(source, page),
+          })}
+        />
+      </DocsBody>
+    </DocsPage>
   );
 }
 

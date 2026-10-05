@@ -2,6 +2,7 @@
 title: System architecture
 description: Runtime components, the primary import path, trust boundaries and repository evidence.
 full: true
+icon: Network
 ---
 
 Selvam is a server-backed financial application. The browser presents account-scoped data, while authentication, imports, calculations and database access remain inside the application boundary.
@@ -21,11 +22,23 @@ Selvam is a server-backed financial application. The browser presents account-sc
 
 The emphasized path is the normal financial import flow:
 
-1. A signed-in user selects an XLSX, CSV or PDF export in the browser.
-2. A Next.js route handler verifies the Better Auth server session.
-3. The handler passes the session-derived `userId` and file bytes to `@portfolio/api`.
-4. A provider-specific adapter parses the file into normalized records.
-5. Drizzle writes owner-scoped rows, snapshots and import evidence to PostgreSQL.
+<Steps>
+  <Step title="Select an export">
+    The signed-in user chooses an XLSX, CSV or PDF file in the browser.
+  </Step>
+  <Step title="Verify the session">
+    A Next.js route handler verifies the Better Auth server session before processing the upload.
+  </Step>
+  <Step title="Pass owner-scoped input">
+    The handler sends file bytes and the session-derived `userId` to `@portfolio/api`.
+  </Step>
+  <Step title="Normalize provider data">
+    A provider-specific adapter parses the file into normalized records.
+  </Step>
+  <Step title="Persist with provenance">
+    Drizzle writes owner-scoped rows, snapshots and import evidence to PostgreSQL.
+  </Step>
+</Steps>
 
 Reads take the reverse server-side route. Analytics and FIRE calculations operate on account-scoped database records, disclose missing FX conversions and return derived series for tables and ECharts visualizations.
 

@@ -1,6 +1,7 @@
 ---
 title: Ambient Intelligence
 description: Zero-cost proactive alerts and automated financial insights.
+icon: Sparkles
 ---
 
 ## Proactive Dashboard Insights
@@ -9,26 +10,30 @@ The **Ambient Intelligence** module (`@portfolio/api/ambient-insights`) continuo
 
 Unlike the _Selvam Evaluate_ feature (which relies on external LLMs to score financial posture), Ambient Intelligence is completely **deterministic, zero-cost, and runs instantly in-memory**. It requires no LLM API calls and no paid database branching.
 
+<IconCardGrid columns={3}>
+  <IconCard icon="Wallet" title="Liquidity" description="Highlights idle cash, savings-rate changes and upcoming deposit maturities." />
+  <IconCard icon="ChartNoAxesCombined" title="Allocation" description="Surfaces portfolio drift against the saved deployment targets." />
+  <IconCard icon="FileClock" title="Evidence freshness" description="Flags imported evidence that may need a refresh." />
+</IconCardGrid>
+
 ### Available Insights
 
-The engine currently monitors for the following conditions:
+The engine currently monitors for these conditions:
 
-- **Idle Cash Trap:** Warns the user if their liquid cash exceeds 6 months of living expenses (as calculated by the Financial Twin) and computes the exact monthly drag caused by inflation.
-- **Deployment Drift:** Monitors the Capital Deployment Engine. If any allocated asset bucket drifts more than 5 percentage points from its target weight, it flags a priority rebalance opportunity.
-- **Savings Rate Alerts:** Flags exceptional financial discipline (savings rate > 50%) or warns if the savings rate drops below the recommended 20% floor.
-- **FIRE Milestones:** Celebrates major milestones (25%, 50%, 75%, 90%) as the user progresses toward their FIRE (Financial Independence, Retire Early) required corpus.
-- **FD Maturity:** Surfaces upcoming liquidity events by alerting when any Fixed Deposit is within 30 days of maturity.
-- **Stale Data:** Checks snapshot evidence and warns if any imported data (broker statements, bank exports) is more than 30 days old.
+<IconCardGrid columns={2}>
+  <IconCard icon="Wallet" title="Idle cash" description="Compares liquid cash with six months of household expenses and estimates its inflation drag." />
+  <IconCard icon="ChartNoAxesCombined" title="Deployment drift" description="Flags an allocation bucket more than five percentage points from its saved target." />
+  <IconCard icon="ChartNoAxesCombined" title="Savings rate" description="Highlights rates above 50% or below the 20% reference floor." />
+  <IconCard icon="Flag" title="FIRE milestones" description="Marks progress at 25%, 50%, 75% and 90% of the required corpus." />
+  <IconCard icon="CalendarDays" title="Deposit maturity" description="Surfaces fixed deposits due within 30 days." />
+  <IconCard icon="History" title="Stale data" description="Flags imported broker or bank evidence older than 30 days." />
+</IconCardGrid>
 
 ### Severity Tiers
 
-Alerts are sorted strictly by severity to prevent dashboard fatigue:
-
-1. `critical` (Red border/icon)
-2. `warning` (Amber border/icon)
-3. `info` (Blue border/icon)
-
-Only the top 5 most relevant insights are displayed at any time.
+<InfoPanel title="How the dashboard prioritizes alerts" icon="TriangleAlert" tone="warning">
+Alerts appear in severity order: critical, warning, then info. The dashboard shows only the five most relevant insights at a time.
+</InfoPanel>
 
 ### Architecture
 

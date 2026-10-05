@@ -1,7 +1,14 @@
 ---
 title: Technical architecture
 description: The technology choices and the reasons behind them.
+icon: Layers
 ---
+
+<IconCardGrid columns={3}>
+  <IconCard icon="AppWindow" title="Application" description="Next.js App Router keeps protected pages and authenticated request handling together." />
+  <IconCard icon="Database" title="PostgreSQL" description="Neon is the shared production source of truth; local Docker Postgres is an independent option." />
+  <IconCard icon="ShieldCheck" title="Account boundaries" description="Better Auth sessions and database ownership relationships protect private records." />
+</IconCardGrid>
 
 ## Application stack
 

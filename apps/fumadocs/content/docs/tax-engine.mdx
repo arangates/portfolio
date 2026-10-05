@@ -1,11 +1,20 @@
 ---
 title: Dual-Country Tax Engine
 description: Engineering details for the Netherlands and India tax reconciliation models
+icon: Receipt
 ---
 
-# Dual-Country Tax Engine
-
 Because the primary user profile is an Indian expat residing in the Netherlands, the application includes a specialized tax engine that models and reconciles tax liabilities across both jurisdictions (`packages/api/src/netherlands-tax-queries.ts` and `tax-queries.ts`).
+
+<IconCardGrid columns={3}>
+  <IconCard icon="Globe2" title="Separate jurisdictions" description="Models Netherlands and India tax rules in distinct country-specific paths." />
+  <IconCard icon="Receipt" title="Reconcile evidence" description="Compares normalized imported assessments and withholding with calculated values." />
+  <IconCard icon="FileClock" title="Keep an audit trail" description="Stores tax-year records and masked references without retaining raw source documents." />
+</IconCardGrid>
+
+<InfoPanel title="Review calculations against current rules" icon="TriangleAlert" tone="warning">
+Tax treatment depends on the tax year, personal circumstances and official rules. Use these calculations to review records and reconcile assessments, not as filing or legal advice.
+</InfoPanel>
 
 ## Netherlands Tax Engine (Belastingdienst)
 
