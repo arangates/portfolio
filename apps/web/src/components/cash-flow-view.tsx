@@ -13,7 +13,7 @@ import {
   ReceiptTextIcon,
   Repeat2Icon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 
 const copy = {
   all: {

@@ -35,7 +35,7 @@ import {
   SparklesIcon,
   TargetIcon,
   WalletCardsIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import type { Route } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";

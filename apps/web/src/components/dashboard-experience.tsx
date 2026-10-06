@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon } from "@portfolio/ui/components/icons";
 import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { Button } from "@portfolio/ui/components/button";
 

@@ -51,7 +51,7 @@ import {
   SlidersHorizontalIcon,
   TableIcon,
   WalletIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 

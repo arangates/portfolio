@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
-import { Code2Icon, WalletCardsIcon } from "lucide-react";
+import { Code2Icon, WalletCardsIcon } from "@portfolio/ui/components/icons";
 
 import { appName } from "./shared";
 

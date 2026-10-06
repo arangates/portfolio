@@ -6,7 +6,7 @@ import { CommandSearch } from "@/components/command-search";
 import { NotificationBell } from "@/components/notification-bell";
 import { Button } from "@portfolio/ui/components/button";
 import { SidebarTrigger } from "@portfolio/ui/components/sidebar";
-import { ChevronRightIcon, MessageCircleIcon } from "lucide-react";
+import { ChevronRightIcon, MessageCircleIcon } from "@portfolio/ui/components/icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { dashboardPages } from "@/lib/navigation";

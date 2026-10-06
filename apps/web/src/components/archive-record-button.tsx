@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@portfolio/ui/components/alert-dialog";
 import { Button } from "@portfolio/ui/components/button";
-import { ArchiveIcon } from "lucide-react";
+import { ArchiveIcon } from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

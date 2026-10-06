@@ -4,7 +4,13 @@ import { Badge } from "@portfolio/ui/components/badge";
 import { Button } from "@portfolio/ui/components/button";
 import { Card, CardHeader } from "@portfolio/ui/components/card";
 import { cn } from "@portfolio/ui/lib/utils";
-import { AlertCircleIcon, AlertTriangleIcon, ArrowRightIcon, InfoIcon, XIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  AlertTriangleIcon,
+  ArrowRightIcon,
+  InfoIcon,
+  XIcon,
+} from "@portfolio/ui/components/icons";
 import Link from "next/link";
 
 export type Alert = {

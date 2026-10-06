@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@portfolio/ui/components/card";
-import { RefreshCwIcon, ShieldCheckIcon } from "lucide-react";
+import { RefreshCwIcon, ShieldCheckIcon } from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

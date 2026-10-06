@@ -8,7 +8,7 @@ import {
   LandmarkIcon,
   ShoppingBagIcon,
   TrendingUpIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 
 export function AnalyticsTabs({

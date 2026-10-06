@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { DownloadIcon, ExternalLinkIcon } from "lucide-react";
+import { DownloadIcon, ExternalLinkIcon } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

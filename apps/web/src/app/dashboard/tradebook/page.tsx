@@ -14,7 +14,12 @@ import { formatPercent } from "@/lib/format";
 import { getLatestZerodhaPortfolio } from "@portfolio/api/portfolio-queries";
 import { getZerodhaTradebookAnalytics } from "@portfolio/api/zerodha-tradebook-queries";
 import { auth } from "@portfolio/auth";
-import { CalendarRangeIcon, IndianRupeeIcon, Repeat2Icon, ShieldCheckIcon } from "lucide-react";
+import {
+  CalendarRangeIcon,
+  IndianRupeeIcon,
+  Repeat2Icon,
+  ShieldCheckIcon,
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

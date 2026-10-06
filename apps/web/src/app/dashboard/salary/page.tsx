@@ -26,7 +26,7 @@ import {
   CircleGaugeIcon,
   HandCoinsIcon,
   ReceiptTextIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";

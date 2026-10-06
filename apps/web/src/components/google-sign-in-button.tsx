@@ -3,6 +3,7 @@
 import { Button } from "@portfolio/ui/components/button";
 import { Spinner } from "@portfolio/ui/components/spinner";
 import { IconSwap } from "@portfolio/ui/components/icon-swap";
+import { authPrimaryButtonClass } from "@/components/auth-screen";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -40,8 +41,7 @@ export function GoogleSignInButton({
   return (
     <Button
       type="button"
-      variant="outline"
-      className="w-full"
+      className={authPrimaryButtonClass}
       disabled={isPending}
       onClick={signInWithGoogle}
     >

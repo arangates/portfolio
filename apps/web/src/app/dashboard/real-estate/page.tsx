@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { Building2Icon, FileCheck2Icon, MapIcon, RulerIcon } from "lucide-react";
+import { Building2Icon, FileCheck2Icon, MapIcon, RulerIcon } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

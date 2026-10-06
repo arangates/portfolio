@@ -14,6 +14,7 @@ export function AnalyticsChartCard({
   metric,
   metricTooltip,
   metricLabel,
+  chartHeader,
   children,
 }: {
   id?: string;
@@ -22,6 +23,7 @@ export function AnalyticsChartCard({
   metric?: string;
   metricTooltip?: string;
   metricLabel?: string;
+  chartHeader?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -48,6 +50,7 @@ export function AnalyticsChartCard({
         </div>
       </CardHeader>
       <CardContent className="min-w-0 p-2 sm:p-3">
+        {chartHeader}
         <DeferredChart>{children}</DeferredChart>
       </CardContent>
     </Card>

@@ -1,5 +1,5 @@
 "use client";
-import { CircleHelpIcon } from "lucide-react";
+import { CircleHelpIcon } from "@portfolio/ui/components/icons";
 import { Button } from "@portfolio/ui/components/button";
 import {
   Dialog,

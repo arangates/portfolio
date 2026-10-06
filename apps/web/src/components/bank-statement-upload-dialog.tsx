@@ -17,7 +17,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@portfolio/ui/c
 import { Input } from "@portfolio/ui/components/input";
 import { Progress } from "@portfolio/ui/components/progress";
 import { Spinner } from "@portfolio/ui/components/spinner";
-import { FilesIcon, UploadIcon } from "lucide-react";
+import { FilesIcon, UploadIcon } from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 

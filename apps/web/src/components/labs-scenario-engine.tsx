@@ -10,7 +10,12 @@ import {
   CardTitle,
 } from "@portfolio/ui/components/card";
 import { Badge } from "@portfolio/ui/components/badge";
-import { Loader2Icon, AlertTriangleIcon, CheckCircle2Icon, ArrowRightIcon } from "lucide-react";
+import {
+  Loader2Icon,
+  AlertTriangleIcon,
+  CheckCircle2Icon,
+  ArrowRightIcon,
+} from "@portfolio/ui/components/icons";
 import { cn } from "@portfolio/ui/lib/utils";
 
 type ScenarioAdjustment = {

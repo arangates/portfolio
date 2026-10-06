@@ -2,15 +2,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@portfolio/ui/components/tabs";
 import {
-  FlameIcon,
-  BellRingIcon,
-  KeyRoundIcon,
-  PaletteIcon,
-  RefreshCwIcon,
-  ShieldCheckIcon,
-  SlidersHorizontalIcon,
-  UserRoundIcon,
-} from "lucide-react";
+  ArrowsClockwise,
+  Bell,
+  FireSimple,
+  Key,
+  Palette,
+  ShieldCheck,
+  SlidersHorizontal,
+  UserCircle,
+  type Icon as PhosphorIcon,
+} from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 
 type SettingsSection =
@@ -27,55 +28,55 @@ const sections: {
   value: SettingsSection;
   label: string;
   description: string;
-  icon: typeof UserRoundIcon;
+  icon: PhosphorIcon;
 }[] = [
   {
     value: "account",
     label: "Account",
     description: "Your profile and sign-in details.",
-    icon: UserRoundIcon,
+    icon: UserCircle,
   },
   {
     value: "appearance",
     label: "Appearance",
     description: "Choose how Selvam looks on your devices.",
-    icon: PaletteIcon,
+    icon: Palette,
   },
   {
     value: "notifications",
     label: "Notifications",
     description: "Choose which updates Selvam sends you.",
-    icon: BellRingIcon,
+    icon: Bell,
   },
   {
     value: "portfolio",
     label: "Portfolio",
     description: "Base currency, locale and number display.",
-    icon: SlidersHorizontalIcon,
+    icon: SlidersHorizontal,
   },
   {
     value: "exchange-rates",
     label: "Exchange rates",
     description: "Automatic updates, manual rates and stored quotes.",
-    icon: RefreshCwIcon,
+    icon: ArrowsClockwise,
   },
   {
     value: "planning",
     label: "Planning",
     description: "Assumptions behind your FIRE projections.",
-    icon: FlameIcon,
+    icon: FireSimple,
   },
   {
     value: "security",
     label: "Data & security",
     description: "Backups, archive, password and account deletion.",
-    icon: ShieldCheckIcon,
+    icon: ShieldCheck,
   },
   {
     value: "model-keys",
     label: "Model keys",
     description: "Connect the AI providers used by chat.",
-    icon: KeyRoundIcon,
+    icon: Key,
   },
 ];
 
@@ -128,15 +129,15 @@ export function SettingsTabs({
       <TabsList
         variant="line"
         aria-label="Settings sections"
-        className="flex h-auto w-full flex-row justify-start gap-1 overflow-x-auto rounded-none border-b p-0 pb-2 lg:sticky lg:top-20 lg:w-52 lg:shrink-0 lg:flex-col lg:overflow-visible lg:border-b-0 lg:pb-0"
+        className="flex h-auto w-full flex-row justify-start gap-1 overflow-x-auto rounded-none border-b p-0 pb-2 lg:sticky lg:top-20 lg:w-60 lg:shrink-0 lg:flex-col lg:overflow-visible lg:border-b-0 lg:pb-0"
       >
         {sections.map(({ value: sectionValue, label, icon: Icon }) => (
           <TabsTrigger
             key={sectionValue}
             value={sectionValue}
-            className="h-10 flex-none shrink-0 justify-start gap-2.5 rounded-lg px-3 text-left after:hidden data-active:bg-muted! data-active:text-foreground data-active:shadow-none dark:data-active:border-transparent dark:data-active:bg-muted! lg:w-full"
+            className="h-10 flex-none shrink-0 justify-start gap-2.5 rounded-lg px-3 text-left text-sidebar-foreground/80 after:hidden data-active:bg-muted! data-active:text-foreground data-active:shadow-none dark:text-sidebar-foreground/80 dark:data-active:border-transparent dark:data-active:bg-muted! lg:h-12 lg:w-full lg:gap-3 lg:px-4 lg:text-base"
           >
-            <Icon className="size-4" />
+            <Icon weight="duotone" className="size-4 lg:size-5" />
             {label}
           </TabsTrigger>
         ))}

@@ -6,7 +6,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@portfolio/ui/components/empty";
-import type { LucideIcon } from "lucide-react";
+import type { PhosphorIcon } from "@portfolio/ui/components/icons";
 
 export function EmptyDataState({
   icon: Icon,
@@ -14,7 +14,7 @@ export function EmptyDataState({
   description,
   action,
 }: {
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   title: string;
   description: string;
   action?: React.ReactNode;

@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { CalendarClockIcon, EuroIcon, PieChartIcon } from "lucide-react";
+import { CalendarClockIcon, EuroIcon, PieChartIcon } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

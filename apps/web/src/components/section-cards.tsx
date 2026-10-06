@@ -2,7 +2,7 @@ import {
   CalculationExplanationButton,
   type CalculationExplanation,
 } from "./calculation-explanation";
-import { ArrowUpRightIcon, type LucideIcon } from "lucide-react";
+import { ArrowUpRightIcon, type PhosphorIcon } from "@portfolio/ui/components/icons";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -24,7 +24,7 @@ export type MetricCard = {
   badge?: string;
   note: string;
   detail?: string;
-  icon?: LucideIcon;
+  icon?: PhosphorIcon;
   href?: Route;
 };
 

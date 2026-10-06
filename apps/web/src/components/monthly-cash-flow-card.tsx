@@ -89,83 +89,80 @@ export function MonthlyCashFlowCard({
       description="Internal transfers are removed so money is counted once."
       metric={formatPercent(data.metrics.savingsRate, 1)}
       metricLabel="income retained before investing"
-    >
-      <div className="flex items-start justify-between gap-4 p-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-muted-foreground">Best {timeBin}</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
-              {formatCurrency(
-                (binnedMonthly[peakIndex]?.income ?? 0) +
-                  (binnedMonthly[peakIndex]?.spending ?? 0) +
-                  (binnedMonthly[peakIndex]?.invested ?? 0),
-                "EUR",
-              )}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              total flow in {binnedMonthly[peakIndex]?.month ?? "N/A"}
-            </span>
-          </div>
-        </div>
-        <div className="flex shrink-0 flex-col items-end gap-3 pt-1">
-          <Tabs
-            value={timeBin}
-            onValueChange={(value) => {
-              if (value === "month" || value === "quarter" || value === "year") setTimeBin(value);
-            }}
-            aria-label="Cash flow time bin"
-          >
-            <TabsList className="h-9 gap-0 overflow-hidden rounded-lg border bg-background p-0">
-              <TabsTrigger
-                value="month"
-                className="h-full rounded-none border-r px-3 text-xs data-active:bg-muted data-active:text-foreground dark:data-active:border-r-input"
-              >
-                Month
-              </TabsTrigger>
-              <TabsTrigger
-                value="quarter"
-                className="h-full rounded-none border-r px-3 text-xs data-active:bg-muted data-active:text-foreground dark:data-active:border-r-input"
-              >
-                Quarter
-              </TabsTrigger>
-              <TabsTrigger
-                value="year"
-                className="h-full rounded-none px-3 text-xs data-active:bg-muted data-active:text-foreground"
-              >
-                Year
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div className="flex flex-col items-end gap-1.5">
-            {LEGEND.map(({ key, label, swatch }) => (
-              <span
-                key={key}
-                className="flex items-center gap-2 text-[11px] text-muted-foreground sm:text-xs"
-              >
-                <span className={`size-2.5 shrink-0 rounded-[3px] ${swatch}`} />
-                {label}
+      chartHeader={
+        <div className="flex flex-col gap-4 p-4">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Best {timeBin}</span>
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="whitespace-nowrap text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
+                {formatCurrency(
+                  (binnedMonthly[peakIndex]?.income ?? 0) +
+                    (binnedMonthly[peakIndex]?.spending ?? 0) +
+                    (binnedMonthly[peakIndex]?.invested ?? 0),
+                  "EUR",
+                )}
               </span>
-            ))}
+              <span className="whitespace-nowrap text-sm text-muted-foreground">
+                total flow in {binnedMonthly[peakIndex]?.month ?? "N/A"}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
+            <Tabs
+              value={timeBin}
+              onValueChange={(value) => {
+                if (value === "month" || value === "quarter" || value === "year") setTimeBin(value);
+              }}
+              aria-label="Cash flow time bin"
+            >
+              <TabsList className="h-9 gap-0 overflow-hidden rounded-lg border bg-background p-0">
+                <TabsTrigger
+                  value="month"
+                  className="h-full rounded-none border-r px-3 text-xs data-active:bg-muted data-active:text-foreground dark:data-active:border-r-input"
+                >
+                  Month
+                </TabsTrigger>
+                <TabsTrigger
+                  value="quarter"
+                  className="h-full rounded-none border-r px-3 text-xs data-active:bg-muted data-active:text-foreground dark:data-active:border-r-input"
+                >
+                  Quarter
+                </TabsTrigger>
+                <TabsTrigger
+                  value="year"
+                  className="h-full rounded-none px-3 text-xs data-active:bg-muted data-active:text-foreground"
+                >
+                  Year
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+              {LEGEND.map(({ key, label, swatch }) => (
+                <span
+                  key={key}
+                  className="flex items-center gap-2 text-[11px] text-muted-foreground sm:text-xs"
+                >
+                  <span className={`size-2.5 shrink-0 rounded-[3px] ${swatch}`} />
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="mt-3 min-h-0 w-full flex-1">
-        <EChartsBarChart
-          data={binnedMonthly}
-          config={monthlyChartConfig}
-          xDataKey="month"
-          className="h-[270px] w-full"
-          stackType="stacked"
-        >
-          <EChartsBarChart.XAxis dataKey="month" hideDots />
-          <EChartsBarChart.Tooltip
-            valueFormatter={(value) => formatCurrency(Number(value), "EUR")}
-          />
-          <EChartsBarChart.Bar dataKey="invested" radius={6} />
-          <EChartsBarChart.Bar dataKey="spending" radius={6} />
-          <EChartsBarChart.Bar dataKey="income" radius={6} />
-        </EChartsBarChart>
-      </div>
+      }
+    >
+      <EChartsBarChart
+        data={binnedMonthly}
+        config={monthlyChartConfig}
+        xDataKey="month"
+        className="h-[280px] w-full"
+      >
+        <EChartsBarChart.XAxis dataKey="month" hideDots />
+        <EChartsBarChart.Tooltip valueFormatter={(value) => formatCurrency(Number(value), "EUR")} />
+        <EChartsBarChart.Bar dataKey="invested" radius={6} />
+        <EChartsBarChart.Bar dataKey="spending" radius={6} />
+        <EChartsBarChart.Bar dataKey="income" radius={6} />
+      </EChartsBarChart>
     </AnalyticsChartCard>
   );
 }

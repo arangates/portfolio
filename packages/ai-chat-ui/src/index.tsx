@@ -20,7 +20,7 @@ import {
   CopyIcon,
   XIcon,
   SquareIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import type { ReactNode } from "react";
 
 export type ChatSuggestionGroup = {

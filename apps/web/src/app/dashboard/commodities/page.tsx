@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { AlertTriangleIcon, CoinsIcon, GemIcon, ScaleIcon } from "lucide-react";
+import { AlertTriangleIcon, CoinsIcon, GemIcon, ScaleIcon } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

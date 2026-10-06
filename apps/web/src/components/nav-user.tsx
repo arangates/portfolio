@@ -26,7 +26,8 @@ import {
   KeyRoundIcon,
   LogOutIcon,
   SlidersHorizontalIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 function initials(name: string) {
@@ -89,28 +90,28 @@ export function NavUser({
                 </span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem render={<a href="/dashboard/settings" />}>
+              <DropdownMenuItem render={<Link href="/dashboard/settings" />}>
                 <CircleUserRoundIcon />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem render={<a href="/dashboard/settings?tab=portfolio" />}>
+              <DropdownMenuItem render={<Link href="/dashboard/settings?tab=portfolio" />}>
                 <SlidersHorizontalIcon />
                 Portfolio
               </DropdownMenuItem>
-              <DropdownMenuItem render={<a href="/dashboard/settings?tab=planning" />}>
+              <DropdownMenuItem render={<Link href="/dashboard/settings?tab=planning" />}>
                 <FlameIcon />
                 Planning
               </DropdownMenuItem>
-              <DropdownMenuItem render={<a href="/dashboard/settings?tab=security" />}>
+              <DropdownMenuItem render={<Link href="/dashboard/settings?tab=security" />}>
                 <DatabaseIcon />
                 Data & security
               </DropdownMenuItem>
-              <DropdownMenuItem render={<a href="/dashboard/settings?tab=model-keys" />}>
+              <DropdownMenuItem render={<Link href="/dashboard/settings?tab=model-keys" />}>
                 <KeyRoundIcon />
                 Model keys
               </DropdownMenuItem>
               <DropdownMenuItem
-                render={<a href="/dashboard/settings?tab=notifications#push-notifications" />}
+                render={<Link href="/dashboard/settings?tab=notifications#push-notifications" />}
               >
                 <BellIcon />
                 Notifications

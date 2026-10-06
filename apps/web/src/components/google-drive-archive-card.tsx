@@ -23,7 +23,7 @@ import {
   PauseIcon,
   PlayIcon,
   ShieldCheckIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

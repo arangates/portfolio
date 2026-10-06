@@ -13,7 +13,7 @@ import {
   KeyRoundIcon,
   LockKeyholeIcon,
   Trash2Icon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

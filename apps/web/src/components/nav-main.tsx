@@ -1,7 +1,7 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
-import { ChevronDownIcon } from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import { ChevronDownIcon } from "@portfolio/ui/components/icons";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,9 +20,11 @@ import {
 export function NavMain({
   label,
   items,
+  onNavigate,
 }: {
   label: string;
-  items: ReadonlyArray<{ title: string; url: string; icon: LucideIcon }>;
+  items: ReadonlyArray<{ title: string; url: string; icon: PhosphorIcon }>;
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
@@ -51,13 +53,16 @@ export function NavMain({
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
-                  className="h-9 gap-2.5 rounded-lg px-2.5 text-sidebar-foreground/80 data-active:text-sidebar-accent-foreground [&_svg]:text-sidebar-foreground/60 data-active:[&_svg]:text-sidebar-accent-foreground"
+                  className="h-11 gap-3 rounded-lg px-3 text-base font-medium text-sidebar-foreground/80 data-active:text-sidebar-accent-foreground [&_svg]:text-sidebar-foreground/60 [&_svg]:size-[18px] data-active:[&_svg]:text-sidebar-accent-foreground"
                   isActive={isActive}
-                  onClick={() => setOpenMobile(false)}
+                  onClick={() => {
+                    setOpenMobile(false);
+                    onNavigate?.();
+                  }}
                   tooltip={item.title}
                   render={<Link href={item.url as Route} />}
                 >
-                  <item.icon />
+                  <item.icon weight="duotone" className="!size-[18px]" />
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

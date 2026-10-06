@@ -11,7 +11,7 @@ import {
 } from "@portfolio/ui/components/card";
 import { Input } from "@portfolio/ui/components/input";
 import { Badge } from "@portfolio/ui/components/badge";
-import { Loader2Icon, SparklesIcon, WalletIcon } from "lucide-react";
+import { Loader2Icon, SparklesIcon, WalletIcon } from "@portfolio/ui/components/icons";
 
 type DeploymentLineItem = {
   bucket: string;

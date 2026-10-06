@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BellIcon, BellOffIcon, SendIcon } from "lucide-react";
+import { BellIcon, BellOffIcon, SendIcon } from "@portfolio/ui/components/icons";
 import { toast } from "sonner";
 
 import type { NotificationSettings } from "@/lib/push-notifications";

@@ -39,8 +39,8 @@ import {
   UsersRound,
   Wallet,
   WalletCards,
-  type LucideIcon,
-} from "lucide-react";
+  type PhosphorIcon,
+} from "@portfolio/ui/components/icons";
 import { Children, isValidElement, useId, useState, type ReactNode } from "react";
 
 const iconMap = {
@@ -82,7 +82,7 @@ const iconMap = {
   UsersRound,
   Wallet,
   WalletCards,
-} satisfies Record<string, LucideIcon>;
+} satisfies Record<string, PhosphorIcon>;
 
 type IconName = keyof typeof iconMap;
 

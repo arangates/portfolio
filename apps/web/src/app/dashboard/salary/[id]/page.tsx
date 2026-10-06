@@ -21,7 +21,7 @@ import {
   HandCoinsIcon,
   LandmarkIcon,
   ReceiptTextIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -41,7 +41,12 @@ export default async function SalaryPayslipPage({ params }: { params: Promise<{ 
           title={payslip.periodLabel}
           description={`${payslip.employerName} · parsed revision ${payslip.revision ?? "—"} · ${payslip.validationStatus.replace("_", " ")}`}
           action={
-            <Button variant="outline" size="sm" render={<Link href="/dashboard/salary" />}>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link href="/dashboard/salary" />}
+            >
               <ArrowLeftIcon data-icon="inline-start" />
               Salary overview
             </Button>

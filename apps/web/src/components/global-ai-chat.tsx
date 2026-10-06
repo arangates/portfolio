@@ -11,7 +11,12 @@ import {
   type UIMessage,
 } from "ai";
 import type { AttachmentAdapter } from "@assistant-ui/react";
-import { ArrowUpRightIcon, CheckIcon, ChevronDownIcon, KeyRoundIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  KeyRoundIcon,
+} from "@portfolio/ui/components/icons";
 import { Button, buttonVariants } from "@portfolio/ui/components/button";
 import {
   DropdownMenu,

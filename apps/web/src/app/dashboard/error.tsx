@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@portfolio/ui/components/card";
-import { RotateCcwIcon } from "lucide-react";
+import { RotateCcwIcon } from "@portfolio/ui/components/icons";
 import { useEffect } from "react";
 
 export default function DashboardError({

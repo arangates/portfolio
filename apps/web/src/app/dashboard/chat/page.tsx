@@ -56,7 +56,7 @@ import {
   ShieldCheckIcon,
   Trash2Icon,
   ListChecksIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import Link from "next/link";
 import { useState, useEffect, type FC } from "react";
 import { SelvamComposer, useSelvamChat } from "@/components/global-ai-chat";

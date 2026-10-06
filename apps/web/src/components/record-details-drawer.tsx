@@ -11,7 +11,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@portfolio/ui/components/drawer";
-import { EyeIcon, XIcon } from "lucide-react";
+import { EyeIcon, XIcon } from "@portfolio/ui/components/icons";
 
 type DetailItem = {
   label: string;

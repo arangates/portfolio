@@ -18,7 +18,7 @@ import {
   PieChartIcon,
   TrendingUpIcon,
   WalletCardsIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

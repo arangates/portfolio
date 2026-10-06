@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@portfolio/ui/components/button";
-import { SparklesIcon, Loader2Icon } from "lucide-react";
+import { SparklesIcon, Loader2Icon } from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import EvaluationAlerts, { type Alert } from "./evaluation-alerts";

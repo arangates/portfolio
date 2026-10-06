@@ -2,7 +2,7 @@
 
 import { Button } from "@portfolio/ui/components/button";
 import type { Column } from "@tanstack/react-table";
-import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "@portfolio/ui/components/icons";
 
 export function DataTableColumnHeader<TData>({
   column,

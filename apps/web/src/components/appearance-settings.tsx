@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@portfolio/ui/components/card";
-import { Check, Laptop, Moon, Sun } from "lucide-react";
+import { Check, Laptop, Moon, Sun } from "@portfolio/ui/components/icons";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useAppearance, type ColorPalette } from "./theme-provider";

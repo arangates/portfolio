@@ -2,7 +2,7 @@
 
 import { Button } from "@portfolio/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@portfolio/ui/components/card";
-import { CalendarClockIcon } from "lucide-react";
+import { CalendarClockIcon } from "@portfolio/ui/components/icons";
 import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "salary-did-not-work-months";

@@ -6,7 +6,7 @@ import { Badge } from "@portfolio/ui/components/badge";
 import { buttonVariants } from "@portfolio/ui/components/button";
 import Link from "next/link";
 import { cn } from "@portfolio/ui/lib/utils";
-import * as Icons from "lucide-react";
+import * as Icons from "@portfolio/ui/components/icons";
 
 export async function AmbientInsightsSection() {
   const session = await auth.api.getSession({ headers: await headers() });

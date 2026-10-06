@@ -39,7 +39,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDownIcon, ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon, ListFilterIcon, SearchIcon, XIcon } from "@portfolio/ui/components/icons";
 import * as React from "react";
 
 const FACET_HEADERS = [

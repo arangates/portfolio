@@ -12,7 +12,7 @@ import { getPortfolioOverview, getRealEstateDashboard } from "@portfolio/api/por
 import { getSalaryPayslips } from "@portfolio/api/salary-queries";
 import { getZerodhaTradebookAnalytics } from "@portfolio/api/zerodha-tradebook-queries";
 import { auth } from "@portfolio/auth";
-import { ChartNoAxesCombinedIcon } from "lucide-react";
+import { ChartNoAxesCombinedIcon } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";

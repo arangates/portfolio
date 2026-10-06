@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@portfolio/ui/components/select";
-import { ListFilterIcon, SearchIcon, XIcon } from "lucide-react";
+import { ListFilterIcon, SearchIcon, XIcon } from "@portfolio/ui/components/icons";
 import * as React from "react";
 
 type Facet = { column: number; label: string; values: string[] };

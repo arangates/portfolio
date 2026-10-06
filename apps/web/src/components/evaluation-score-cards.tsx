@@ -9,8 +9,8 @@ import {
   ShieldCheckIcon,
   ReceiptTextIcon,
   SparklesIcon,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+} from "@portfolio/ui/components/icons";
+import type { PhosphorIcon } from "@portfolio/ui/components/icons";
 
 export type EvaluationScore = {
   liquidity: number | null;
@@ -95,7 +95,7 @@ function DimensionCard({
   title: string;
   score: number | null;
   reasoning?: string;
-  Icon: LucideIcon;
+  Icon: PhosphorIcon;
 }) {
   return (
     <Card className="flex flex-col h-full">

@@ -18,7 +18,7 @@ import {
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@portfolio/ui/components/field";
 import { Input } from "@portfolio/ui/components/input";
 import { Spinner } from "@portfolio/ui/components/spinner";
-import { Settings2Icon } from "lucide-react";
+import { Settings2Icon } from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

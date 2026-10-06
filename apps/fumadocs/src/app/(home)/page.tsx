@@ -15,7 +15,7 @@ import {
   SparklesIcon,
   TrendingUpIcon,
   WalletCardsIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import Link from "next/link";
 
 const sourceUrl = process.env.NEXT_PUBLIC_SOURCE_URL;

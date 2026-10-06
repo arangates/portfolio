@@ -19,7 +19,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@portfolio/ui/c
 import { Input } from "@portfolio/ui/components/input";
 import { Spinner } from "@portfolio/ui/components/spinner";
 import { Textarea } from "@portfolio/ui/components/textarea";
-import { PencilIcon, PlusIcon, SaveIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, SaveIcon } from "@portfolio/ui/components/icons";
 import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

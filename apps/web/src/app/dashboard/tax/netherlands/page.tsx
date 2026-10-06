@@ -21,7 +21,12 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { BadgeEuroIcon, BanknoteIcon, CalendarCheckIcon, ReceiptTextIcon } from "lucide-react";
+import {
+  BadgeEuroIcon,
+  BanknoteIcon,
+  CalendarCheckIcon,
+  ReceiptTextIcon,
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

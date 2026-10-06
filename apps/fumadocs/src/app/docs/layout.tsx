@@ -1,5 +1,5 @@
 import { DocsLayout } from "fumadocs-ui/layouts/notebook";
-import { BookOpenIcon } from "lucide-react";
+import { BookOpenIcon } from "@portfolio/ui/components/icons";
 
 import { baseOptions } from "@/lib/layout.shared";
 import { source } from "@/lib/source";

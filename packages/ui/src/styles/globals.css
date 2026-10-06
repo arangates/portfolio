@@ -4,6 +4,35 @@
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
+.skeleton-shimmer::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in oklab, var(--color-foreground) 8%, transparent) 50%,
+    transparent 80%
+  );
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  content: "";
+  pointer-events: none;
+}
+
+@keyframes skeleton-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after {
+    animation: none;
+    transform: none;
+    background: color-mix(in oklab, var(--color-foreground) 5%, transparent);
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {

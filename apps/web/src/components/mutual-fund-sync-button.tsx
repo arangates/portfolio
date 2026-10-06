@@ -5,7 +5,7 @@ import { useOperationBusy } from "@/hooks/use-operation-busy";
 import { appFetch } from "@/lib/app-activity";
 
 import { Button } from "@portfolio/ui/components/button";
-import { RefreshCwIcon } from "lucide-react";
+import { RefreshCwIcon } from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

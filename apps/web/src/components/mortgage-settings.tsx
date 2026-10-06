@@ -18,7 +18,7 @@ import {
 } from "@portfolio/ui/components/card";
 import { Input } from "@portfolio/ui/components/input";
 import { Label } from "@portfolio/ui/components/label";
-import { PlusIcon, RotateCcwIcon, SaveIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, RotateCcwIcon, SaveIcon, Trash2Icon } from "@portfolio/ui/components/icons";
 import { useState } from "react";
 
 const eur = (value: number) => formatFullCurrency(value, "EUR");

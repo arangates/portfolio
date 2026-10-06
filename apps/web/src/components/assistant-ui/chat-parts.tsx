@@ -11,7 +11,7 @@ import {
   LinkIcon,
   ShieldQuestionIcon,
   XIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 import type { Route } from "next";
 import Link from "next/link";
 import { useState, type FC, type ReactNode } from "react";

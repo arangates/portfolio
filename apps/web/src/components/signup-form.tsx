@@ -2,7 +2,6 @@
 
 import { useForm } from "@tanstack/react-form";
 import { Button } from "@portfolio/ui/components/button";
-import { Card, CardContent } from "@portfolio/ui/components/card";
 import {
   Field,
   FieldDescription,
@@ -12,16 +11,20 @@ import {
 } from "@portfolio/ui/components/field";
 import { Input } from "@portfolio/ui/components/input";
 import { Spinner } from "@portfolio/ui/components/spinner";
-import { cn } from "@portfolio/ui/lib/utils";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 
-import { authClient } from "@/lib/auth-client";
+import {
+  AuthScreen,
+  authInputClass,
+  authPrimaryButtonClass,
+  authSecondaryButtonClass,
+} from "@/components/auth-screen";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
+import { authClient } from "@/lib/auth-client";
 
 const signupSchema = z
   .object({
@@ -36,13 +39,15 @@ const signupSchema = z
   });
 
 export function SignupForm({
-  className,
   googleEnabled,
   oauthFailed = false,
-  ...props
-}: React.ComponentProps<"div"> & { googleEnabled: boolean; oauthFailed?: boolean }) {
+}: {
+  googleEnabled: boolean;
+  oauthFailed?: boolean;
+}) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [emailMode, setEmailMode] = useState(!googleEnabled);
   const form = useForm({
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
     validators: { onSubmit: signupSchema },
@@ -69,192 +74,208 @@ export function SignupForm({
   });
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
-          <form
-            ref={formRef}
-            noValidate
-            className="p-6 md:p-8"
-            onSubmit={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              form.handleSubmit();
-            }}
+    <AuthScreen
+      title="Create your workspace"
+      note="Your portfolio data stays private to your Selvam account."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link href="/login" className="text-white/90 hover:text-white">
+            Log in
+          </Link>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        {oauthFailed ? (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-red-400/25 bg-red-400/10 px-3 py-2.5 text-sm text-red-200"
           >
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Create your account</h1>
-                <p className="text-sm text-balance text-muted-foreground">
-                  Start a private portfolio workspace owned by you.
-                </p>
-              </div>
-              {oauthFailed ? (
-                <div
-                  role="alert"
-                  className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-                >
-                  Google sign-up was not completed. Please try again.
-                </div>
-              ) : null}
-              {googleEnabled ? (
-                <>
-                  <GoogleSignInButton errorCallbackURL="/signup?oauth=failed" />
-                  <div className="relative text-center text-xs after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                    <span className="relative z-10 bg-card px-2 text-muted-foreground">
-                      Or create an account with email
-                    </span>
-                  </div>
-                </>
-              ) : null}
-              <form.Field name="name">
-                {(field) => (
-                  <Field data-invalid={field.state.meta.errors.length > 0}>
-                    <FieldLabel htmlFor={field.name}>Name</FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      autoComplete="name"
-                      placeholder="Your name"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      aria-invalid={field.state.meta.errors.length > 0}
-                      aria-describedby={
-                        field.state.meta.errors.length ? "signup-name-error" : undefined
-                      }
-                      required
-                    />
-                    <FieldError id="signup-name-error" role={undefined}>
-                      {field.state.meta.errors
-                        .map((error) => error?.message)
-                        .filter(Boolean)
-                        .join(", ")}
-                    </FieldError>
-                  </Field>
-                )}
-              </form.Field>
-              <form.Field name="email">
-                {(field) => (
-                  <Field data-invalid={field.state.meta.errors.length > 0}>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      type="email"
-                      autoComplete="email"
-                      placeholder="you@example.com"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      aria-invalid={field.state.meta.errors.length > 0}
-                      aria-describedby={
-                        field.state.meta.errors.length ? "signup-email-error" : undefined
-                      }
-                      required
-                    />
-                    <FieldDescription>
-                      Used only for authentication and account communication.
-                    </FieldDescription>
-                    <FieldError id="signup-email-error" role={undefined}>
-                      {field.state.meta.errors
-                        .map((error) => error?.message)
-                        .filter(Boolean)
-                        .join(", ")}
-                    </FieldError>
-                  </Field>
-                )}
-              </form.Field>
-              <Field className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <form.Field name="password">
-                  {(field) => (
-                    <Field data-invalid={field.state.meta.errors.length > 0}>
-                      <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        type="password"
-                        autoComplete="new-password"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(event) => field.handleChange(event.target.value)}
-                        aria-invalid={field.state.meta.errors.length > 0}
-                        aria-describedby={
-                          field.state.meta.errors.length ? "signup-password-error" : undefined
-                        }
-                        minLength={12}
-                        required
-                      />
-                      <FieldError id="signup-password-error" role={undefined}>
-                        {field.state.meta.errors
-                          .map((error) => error?.message)
-                          .filter(Boolean)
-                          .join(", ")}
-                      </FieldError>
-                    </Field>
-                  )}
-                </form.Field>
-                <form.Field name="confirmPassword">
-                  {(field) => (
-                    <Field data-invalid={field.state.meta.errors.length > 0}>
-                      <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        type="password"
-                        autoComplete="new-password"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(event) => field.handleChange(event.target.value)}
-                        aria-invalid={field.state.meta.errors.length > 0}
-                        aria-describedby={
-                          field.state.meta.errors.length
-                            ? "signup-confirm-password-error"
-                            : undefined
-                        }
-                        required
-                      />
-                      <FieldError id="signup-confirm-password-error" role={undefined}>
-                        {field.state.meta.errors
-                          .map((error) => error?.message)
-                          .filter(Boolean)
-                          .join(", ")}
-                      </FieldError>
-                    </Field>
-                  )}
-                </form.Field>
-              </Field>
-              <FieldDescription>Password must contain at least 12 characters.</FieldDescription>
-              <Field>
-                <form.Subscribe selector={(state) => state.isSubmitting}>
-                  {(isSubmitting) => (
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
-                      {isSubmitting ? "Creating account…" : "Create account"}
-                    </Button>
-                  )}
-                </form.Subscribe>
-              </Field>
-              <FieldDescription className="text-center">
-                Already have an account? <Link href="/login">Sign in</Link>
-              </FieldDescription>
-            </FieldGroup>
-          </form>
-          <div className="relative hidden bg-muted md:block">
-            <Image
-              src="/auth-portfolio.svg"
-              alt="Portfolio analytics illustration"
-              fill
-              priority
-              sizes="(min-width: 768px) 448px, 0px"
-              className="object-cover"
-            />
+            Google sign-up was not completed. Please try again.
           </div>
-        </CardContent>
-      </Card>
-      <FieldDescription className="px-6 text-center text-foreground/80">
-        Every portfolio record is isolated to your account.
-      </FieldDescription>
-    </div>
+        ) : null}
+        {!emailMode ? (
+          <>
+            <GoogleSignInButton errorCallbackURL="/signup?oauth=failed" />
+            <Button
+              type="button"
+              variant="secondary"
+              className={authSecondaryButtonClass}
+              onClick={() => setEmailMode(true)}
+            >
+              Continue with email
+            </Button>
+          </>
+        ) : (
+          <>
+            {googleEnabled ? (
+              <button
+                type="button"
+                className="mb-1 text-sm text-white/55 transition-colors hover:text-white"
+                onClick={() => setEmailMode(false)}
+              >
+                ← All sign-up options
+              </button>
+            ) : null}
+            <form
+              ref={formRef}
+              noValidate
+              onSubmit={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                form.handleSubmit();
+              }}
+            >
+              <FieldGroup className="gap-4">
+                <form.Field name="name">
+                  {(field) => (
+                    <Field data-invalid={field.state.meta.errors.length > 0}>
+                      <FieldLabel htmlFor={field.name} className="text-white/75">
+                        Name
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        autoComplete="name"
+                        placeholder="Your name"
+                        className={authInputClass}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) => field.handleChange(event.target.value)}
+                        aria-invalid={field.state.meta.errors.length > 0}
+                        aria-describedby={
+                          field.state.meta.errors.length ? "signup-name-error" : undefined
+                        }
+                        required
+                      />
+                      <FieldError id="signup-name-error" role={undefined}>
+                        {field.state.meta.errors
+                          .map((error) => error?.message)
+                          .filter(Boolean)
+                          .join(", ")}
+                      </FieldError>
+                    </Field>
+                  )}
+                </form.Field>
+                <form.Field name="email">
+                  {(field) => (
+                    <Field data-invalid={field.state.meta.errors.length > 0}>
+                      <FieldLabel htmlFor={field.name} className="text-white/75">
+                        Email
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        className={authInputClass}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) => field.handleChange(event.target.value)}
+                        aria-invalid={field.state.meta.errors.length > 0}
+                        aria-describedby={
+                          field.state.meta.errors.length ? "signup-email-error" : undefined
+                        }
+                        required
+                      />
+                      <FieldError id="signup-email-error" role={undefined}>
+                        {field.state.meta.errors
+                          .map((error) => error?.message)
+                          .filter(Boolean)
+                          .join(", ")}
+                      </FieldError>
+                    </Field>
+                  )}
+                </form.Field>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <form.Field name="password">
+                    {(field) => (
+                      <Field data-invalid={field.state.meta.errors.length > 0}>
+                        <FieldLabel htmlFor={field.name} className="text-white/75">
+                          Password
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          type="password"
+                          autoComplete="new-password"
+                          className={authInputClass}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) => field.handleChange(event.target.value)}
+                          aria-invalid={field.state.meta.errors.length > 0}
+                          aria-describedby={
+                            field.state.meta.errors.length ? "signup-password-error" : undefined
+                          }
+                          minLength={12}
+                          required
+                        />
+                        <FieldError id="signup-password-error" role={undefined}>
+                          {field.state.meta.errors
+                            .map((error) => error?.message)
+                            .filter(Boolean)
+                            .join(", ")}
+                        </FieldError>
+                      </Field>
+                    )}
+                  </form.Field>
+                  <form.Field name="confirmPassword">
+                    {(field) => (
+                      <Field data-invalid={field.state.meta.errors.length > 0}>
+                        <FieldLabel htmlFor={field.name} className="text-white/75">
+                          Confirm password
+                        </FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          type="password"
+                          autoComplete="new-password"
+                          className={authInputClass}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(event) => field.handleChange(event.target.value)}
+                          aria-invalid={field.state.meta.errors.length > 0}
+                          aria-describedby={
+                            field.state.meta.errors.length
+                              ? "signup-confirm-password-error"
+                              : undefined
+                          }
+                          required
+                        />
+                        <FieldError id="signup-confirm-password-error" role={undefined}>
+                          {field.state.meta.errors
+                            .map((error) => error?.message)
+                            .filter(Boolean)
+                            .join(", ")}
+                        </FieldError>
+                      </Field>
+                    )}
+                  </form.Field>
+                </div>
+                <FieldDescription className="text-white/45">
+                  Password must contain at least 12 characters.
+                </FieldDescription>
+                <Field>
+                  <form.Subscribe selector={(state) => state.isSubmitting}>
+                    {(isSubmitting) => (
+                      <Button
+                        type="submit"
+                        className={authPrimaryButtonClass}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? <Spinner data-icon="inline-start" /> : null}
+                        {isSubmitting ? "Creating account…" : "Create account"}
+                      </Button>
+                    )}
+                  </form.Subscribe>
+                </Field>
+              </FieldGroup>
+            </form>
+          </>
+        )}
+      </div>
+    </AuthScreen>
   );
 }

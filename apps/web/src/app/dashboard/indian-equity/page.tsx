@@ -13,7 +13,12 @@ import {
 } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Button } from "@portfolio/ui/components/button";
-import { IndianRupeeIcon, LineChartIcon, RefreshCwIcon, TrendingUpIcon } from "lucide-react";
+import {
+  IndianRupeeIcon,
+  LineChartIcon,
+  RefreshCwIcon,
+  TrendingUpIcon,
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import type { Route } from "next";
 import Link from "next/link";
@@ -83,6 +88,7 @@ export default async function IndianEquityPage() {
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={<Link href={"/dashboard/mutual-funds" as Route} />}
             >
               Fund intelligence
@@ -90,6 +96,7 @@ export default async function IndianEquityPage() {
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={<Link href={"/dashboard/tradebook" as Route} />}
             >
               Tradebook insights

@@ -1,6 +1,6 @@
 "use client";
 
-import { BellIcon, CheckIcon, InboxIcon, XIcon } from "lucide-react";
+import { BellIcon, CheckIcon, InboxIcon, XIcon } from "@portfolio/ui/components/icons";
 import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import Link from "next/link";
 import type { Route } from "next";

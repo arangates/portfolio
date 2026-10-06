@@ -2,7 +2,7 @@
 
 import { Button } from "@portfolio/ui/components/button";
 import { IconSwap } from "@portfolio/ui/components/icon-swap";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "@portfolio/ui/components/icons";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 

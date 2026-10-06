@@ -18,7 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { BanknoteIcon, CircleGaugeIcon, LandmarkIcon, PieChartIcon } from "lucide-react";
+import {
+  BanknoteIcon,
+  CircleGaugeIcon,
+  LandmarkIcon,
+  PieChartIcon,
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

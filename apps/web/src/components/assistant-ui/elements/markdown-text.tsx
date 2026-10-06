@@ -12,7 +12,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { type ComponentProps, memo, useRef, useCallback, useState } from "react";
-import { CopyIcon, CheckIcon } from "lucide-react";
+import { CopyIcon, CheckIcon } from "@portfolio/ui/components/icons";
 import { IconSwap } from "@portfolio/ui/components/icon-swap";
 import { cn } from "@portfolio/ui/lib/utils";
 

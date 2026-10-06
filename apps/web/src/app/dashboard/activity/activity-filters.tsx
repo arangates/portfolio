@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import type { Route } from "next";
 import { useState, useTransition } from "react";
-import { ListFilterIcon } from "lucide-react";
+import { ListFilterIcon } from "@portfolio/ui/components/icons";
 
 import { Button } from "@portfolio/ui/components/button";
 import { Field, FieldGroup, FieldLabel } from "@portfolio/ui/components/field";

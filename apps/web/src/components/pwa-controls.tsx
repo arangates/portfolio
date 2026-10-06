@@ -13,7 +13,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { DownloadIcon, RefreshCwIcon, WifiOffIcon } from "lucide-react";
+import { DownloadIcon, RefreshCwIcon, WifiOffIcon } from "@portfolio/ui/components/icons";
 import { Button } from "@portfolio/ui/components/button";
 import {
   Dialog,

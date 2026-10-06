@@ -19,7 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { CalendarClockIcon, HistoryIcon, LandmarkIcon, PercentIcon } from "lucide-react";
+import {
+  CalendarClockIcon,
+  HistoryIcon,
+  LandmarkIcon,
+  PercentIcon,
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

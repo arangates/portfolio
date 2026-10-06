@@ -24,7 +24,7 @@ import {
 } from "@portfolio/ui/components/field";
 import { Input } from "@portfolio/ui/components/input";
 import { Spinner } from "@portfolio/ui/components/spinner";
-import { UploadIcon } from "lucide-react";
+import { UploadIcon } from "@portfolio/ui/components/icons";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 

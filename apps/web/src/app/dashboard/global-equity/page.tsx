@@ -22,7 +22,12 @@ import {
   TableHeader,
   TableRow,
 } from "@portfolio/ui/components/table";
-import { CircleDollarSignIcon, Globe2Icon, LineChartIcon, TrendingUpIcon } from "lucide-react";
+import {
+  CircleDollarSignIcon,
+  Globe2Icon,
+  LineChartIcon,
+  TrendingUpIcon,
+} from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

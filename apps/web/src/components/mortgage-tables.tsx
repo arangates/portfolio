@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@portfolio/ui/components/table";
 import { cn } from "@portfolio/ui/lib/utils";
-import { DownloadIcon } from "lucide-react";
+import { DownloadIcon } from "@portfolio/ui/components/icons";
 import { useState } from "react";
 
 const eur = (value: number) => formatFullCurrency(value, "EUR");

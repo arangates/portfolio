@@ -11,7 +11,7 @@ import {
   PlusIcon,
   RefreshCwIcon,
   UploadIcon,
-} from "lucide-react";
+} from "@portfolio/ui/components/icons";
 
 import { PageHeader } from "@/components/page-header";
 import { ActivityFilters } from "./activity-filters";

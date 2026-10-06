@@ -10,7 +10,7 @@ import {
   CommandItem,
   CommandList,
 } from "@portfolio/ui/components/command";
-import { SearchIcon } from "lucide-react";
+import { SearchIcon } from "@portfolio/ui/components/icons";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import * as React from "react";
