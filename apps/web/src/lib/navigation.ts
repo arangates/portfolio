@@ -25,6 +25,7 @@ import { ChartNoAxesCombinedIcon, ShieldCheckIcon } from "@portfolio/ui/componen
 export const dashboardNavigation = [
   {
     label: "Portfolio",
+    overviewUrl: "/dashboard",
     items: [
       {
         title: "Ask Selvam",
@@ -74,6 +75,7 @@ export const dashboardNavigation = [
   },
   {
     label: "Cash accounts",
+    overviewUrl: "/dashboard/sections/cash-accounts",
     items: [
       {
         title: "Unified cash flow",
@@ -111,6 +113,7 @@ export const dashboardNavigation = [
   },
   {
     label: "Investments",
+    overviewUrl: "/dashboard/sections/investments",
     items: [
       {
         title: "Indian equity",
@@ -167,6 +170,7 @@ export const dashboardNavigation = [
   },
   {
     label: "Income",
+    overviewUrl: "/dashboard/sections/income",
     items: [
       {
         title: "Salary",
@@ -191,6 +195,7 @@ export const dashboardNavigation = [
   },
   {
     label: "Planning",
+    overviewUrl: "/dashboard/sections/planning",
     items: [
       {
         title: "Verified financial twin",
@@ -222,6 +227,7 @@ export const dashboardNavigation = [
   },
   {
     label: "Data",
+    overviewUrl: "/dashboard/sections/data",
     items: [
       {
         title: "Source documents",

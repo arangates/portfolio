@@ -120,7 +120,12 @@ export function AppSidebar({
           )
         ) : (
           visibleGroups.map((group) => (
-            <NavMain key={group.label} label={group.label} items={group.items} />
+            <NavMain
+              key={group.label}
+              label={group.label}
+              overviewUrl={group.overviewUrl}
+              items={group.items}
+            />
           ))
         )}
       </SidebarContent>

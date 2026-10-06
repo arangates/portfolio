@@ -41,21 +41,23 @@ import { cn } from "@portfolio/ui/lib/utils";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  BanknoteIcon,
   BrainCircuitIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CopyIcon,
   DownloadIcon,
+  HouseIcon,
   KeyRoundIcon,
   MoreHorizontalIcon,
   PencilIcon,
   PlusIcon,
   RefreshCwIcon,
   SearchIcon,
-  ShieldCheckIcon,
   Trash2Icon,
   ListChecksIcon,
+  PiggyBankIcon,
 } from "@portfolio/ui/components/icons";
 import Link from "next/link";
 import { useState, useEffect, type FC } from "react";
@@ -72,33 +74,298 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
     icon: <BrainCircuitIcon className="size-4" />,
     options: [
       {
-        label: "Portfolio value",
-        prompt: "What is my current portfolio value?",
+        label: "Portfolio overview",
+        prompt:
+          "Summarize my latest portfolio overview. State its valuation date, base currency, included totals, and any unconverted currencies.",
       },
-      { label: "Liquid assets", prompt: "How much of my portfolio is liquid?" },
-      { label: "Asset allocation", prompt: "Show my asset allocation breakdown" },
+      {
+        label: "Asset allocation",
+        prompt:
+          "How is my reported asset value distributed by category? Include amounts, percentages, and the base currency.",
+      },
+      {
+        label: "Largest recorded assets",
+        prompt:
+          "Which recorded assets contribute most to my portfolio? Show their native value, base-currency value, and source date.",
+      },
+      {
+        label: "Liquid assets",
+        prompt:
+          "How much is currently classified as liquid, and which recorded asset categories contribute to that value?",
+      },
+      {
+        label: "Missing currency rates",
+        prompt:
+          "Which currencies lack stored conversion rates, and which asset records could not be converted as a result?",
+      },
+      {
+        label: "Indian equity",
+        prompt:
+          "Summarize my recorded Indian-equity holdings. Separate invested value, market value, and unrealized profit or loss.",
+      },
+      {
+        label: "Snapshot freshness",
+        prompt:
+          "How old is each recorded asset value? Show its source date and flag older snapshots instead of treating them as current.",
+      },
+      {
+        label: "Net worth and liquidity",
+        prompt:
+          "Compare my recorded net worth, liquid value, and equity invested. Explain what each total represents and state the valuation date.",
+      },
     ],
   },
   {
-    label: "FIRE Plan",
-    icon: <ShieldCheckIcon className="size-4" />,
+    label: "Cash flow",
+    icon: <ArrowDownIcon className="size-4" />,
     options: [
-      { label: "Am I on track?", prompt: "Am I on track for financial independence?" },
       {
-        label: "My FIRE number",
-        prompt: "What is my FIRE number based on current spending?",
+        label: "Personal cash flow",
+        prompt:
+          "Summarize my personal cash flow for the available period: income, spending, investing, and net cash flow. State the coverage dates and currency.",
+      },
+      {
+        label: "Monthly personal trends",
+        prompt:
+          "Show personal income, spending, investment, and net cash flow month by month. Call out changes supported by the records.",
+      },
+      {
+        label: "Personal spending categories",
+        prompt:
+          "Which personal spending categories are largest in the available data? Include the currency and mention low-confidence classifications.",
+      },
+      {
+        label: "Average personal spending",
+        prompt:
+          "What is my average monthly personal spending, and which months and records are included in that average?",
+      },
+      {
+        label: "Household cash flow",
+        prompt:
+          "Summarize household account cash flow month by month. Include the available coverage period, currency, and any data-quality caveats.",
+      },
+      {
+        label: "Household spending categories",
+        prompt:
+          "Which household cash-flow spending categories are largest? Keep the reported currency and note low-confidence classifications.",
+      },
+      {
+        label: "Personal savings rate",
+        prompt:
+          "What personal savings rate is reported, and which recorded income and spending figures are used to calculate it?",
+      },
+      {
+        label: "Salary credit reconciliation",
+        prompt:
+          "Summarize the salary reconciliation counts in my cash-flow records: matched, missing, and mismatched credits. State any coverage limits.",
       },
     ],
   },
   {
     label: "Investments",
     icon: <ArrowUpIcon className="size-4" />,
-    options: [{ label: "Verified returns", prompt: "What were my verified investment returns?" }],
+    options: [
+      {
+        label: "Verified returns",
+        prompt:
+          "Summarize my verified investment returns by provider. Explain the evidence included and the limits of each figure.",
+      },
+      {
+        label: "Return value coverage",
+        prompt:
+          "How much closing value is included in verified returns, how much is excluded, and what recorded reasons explain the exclusions?",
+      },
+      {
+        label: "Available return measures",
+        prompt:
+          "Which return measures are available in my records? Explain why a combined return or true time-weighted return may be unavailable.",
+      },
+      {
+        label: "Global equity holdings",
+        prompt:
+          "What do my recorded global-equity holdings show by name, quantity, currency, and market value?",
+      },
+      {
+        label: "Indian equity breakdown",
+        prompt:
+          "Show my recorded Indian-equity holdings with invested value, market value, and unrealized profit or loss. Keep those measures distinct.",
+      },
+      {
+        label: "Fixed deposit details",
+        prompt:
+          "List my recorded fixed deposits with principal, interest rate, currency, start date, maturity date, compounding, and status.",
+      },
+      {
+        label: "Upcoming deposit maturities",
+        prompt:
+          "Which recorded fixed deposits mature soonest? Show their maturity dates and status, and distinguish deposits from cash already available.",
+      },
+      {
+        label: "Returns versus portfolio value",
+        prompt:
+          "How does the value covered by verified returns compare with my portfolio overview? Explain the coverage and valuation differences.",
+      },
+    ],
   },
   {
-    label: "Spending",
-    icon: <ArrowDownIcon className="size-4" />,
-    options: [{ label: "Monthly spending", prompt: "Show my monthly spending trends" }],
+    label: "Income",
+    icon: <BanknoteIcon className="size-4" />,
+    options: [
+      {
+        label: "Payslip history",
+        prompt:
+          "Summarize my imported payslips by employer and pay period. Keep currencies separate and include validation status.",
+      },
+      {
+        label: "Gross and net pay trends",
+        prompt:
+          "How have gross pay, net pay, and recorded wage tax changed across my available payslip history? Keep currencies separate.",
+      },
+      {
+        label: "Latest payslip comparison",
+        prompt:
+          "Compare my latest payslip with the previous one using only fields present in both records. State the pay periods and currencies.",
+      },
+      {
+        label: "Payslip data quality",
+        prompt:
+          "How complete is my imported payslip history? Summarize validation statuses and any gaps visible in the recorded pay periods.",
+      },
+      {
+        label: "Gross-to-net difference",
+        prompt:
+          "What is the gross-to-net pay difference across my imported payslips? Keep currencies separate and state which recorded fields you used.",
+      },
+    ],
+  },
+  {
+    label: "FIRE planning",
+    icon: <PiggyBankIcon className="size-4" />,
+    options: [
+      {
+        label: "FIRE scenarios",
+        prompt:
+          "Summarize each saved FIRE scenario with its retirement year, required corpus, gap, progress, and modeled success probability.",
+      },
+      {
+        label: "Compare FIRE scenarios",
+        prompt:
+          "Compare my saved FIRE scenarios by retirement year, required corpus, gap, and modeled success probability. Explain where results differ.",
+      },
+      {
+        label: "Saved FIRE assumptions",
+        prompt:
+          "List the assumptions saved in my FIRE profile. Separate model assumptions from values observed in my financial records.",
+      },
+      {
+        label: "Retirement income and costs",
+        prompt:
+          "For each saved FIRE scenario, show the modeled annual expenses and income at retirement. State the currency and scenario year.",
+      },
+      {
+        label: "Assets used in FIRE",
+        prompt:
+          "How do investable assets and family net worth differ in my FIRE context? Identify the recorded figures and currency used.",
+      },
+      {
+        label: "FIRE currency coverage",
+        prompt:
+          "Does my FIRE plan show currencies left unconverted? Explain which figures may be incomplete because of missing rates.",
+      },
+      {
+        label: "FIRE expense inputs",
+        prompt:
+          "What monthly expenses are recorded in my FIRE plan, and how do they relate to each scenario's projected annual retirement expenses?",
+      },
+    ],
+  },
+  {
+    label: "Household budget",
+    icon: <ListChecksIcon className="size-4" />,
+    options: [
+      {
+        label: "Current household budget",
+        prompt:
+          "Summarize my saved household budget by category, including essential versus flexible costs and the currency.",
+      },
+      {
+        label: "Largest household costs",
+        prompt:
+          "Which categories contribute most to my household budget? Separate expenses from refunds and show the resulting net monthly cost.",
+      },
+      {
+        label: "Household scenario comparison",
+        prompt:
+          "Compare my saved household scenarios by gross monthly expenses, refunds, net monthly cost, and annual net cost.",
+      },
+      {
+        label: "Expenses and refunds",
+        prompt:
+          "How do gross expenses, refunds, and net monthly cost relate in my saved household budget? Show the recorded totals.",
+      },
+      {
+        label: "Essential budget lines",
+        prompt:
+          "Which saved household budget lines are marked essential? Group them by category and include monthly amounts and effective dates.",
+      },
+    ],
+  },
+  {
+    label: "Home and mortgage",
+    icon: <HouseIcon className="size-4" />,
+    options: [
+      {
+        label: "Saved mortgage details",
+        prompt:
+          "Which mortgage details are saved versus prefilled defaults? Identify the source and do not treat unsaved defaults as verified lender terms.",
+      },
+      {
+        label: "Mortgage snapshot",
+        prompt:
+          "Summarize the mortgage model's recorded balance, monthly payment, rate basis, and principal-versus-interest figures. State the data status.",
+      },
+      {
+        label: "Repayment schedule",
+        prompt:
+          "How does the modeled mortgage repayment schedule change principal and interest over time? Summarize the available yearly figures.",
+      },
+      {
+        label: "Rate sensitivity",
+        prompt:
+          "What do the saved mortgage rate-sensitivity scenarios show? State the model assumptions and distinguish projections from lender quotes.",
+      },
+      {
+        label: "Extra repayments",
+        prompt:
+          "What extra mortgage repayments are saved, and how does the model calculate their projected impact? Separate saved entries from estimates.",
+      },
+      {
+        label: "Bank payment reconciliation",
+        prompt:
+          "Compare scheduled mortgage payments with recorded bank payments. Which covered months match, differ, or lack payment data?",
+      },
+    ],
+  },
+  {
+    label: "Evidence and freshness",
+    icon: <CheckIcon className="size-4" />,
+    options: [
+      {
+        label: "Currency conversion gaps",
+        prompt:
+          "Which currencies lack stored exchange rates, and what portfolio or FIRE figures could not be converted as a result?",
+      },
+      {
+        label: "Return evidence quality",
+        prompt:
+          "What evidence coverage and reconciliation support my verified-return figures? Explain any exclusions or unavailable measures.",
+      },
+      {
+        label: "Observed versus modeled",
+        prompt:
+          "Which figures in my records are observed values, saved assumptions, or model outputs? Include their source dates and flag unsaved defaults.",
+      },
+    ],
   },
 ];
 

@@ -19,10 +19,12 @@ import {
 
 export function NavMain({
   label,
+  overviewUrl,
   items,
   onNavigate,
 }: {
   label: string;
+  overviewUrl?: string;
   items: ReadonlyArray<{ title: string; url: string; icon: PhosphorIcon }>;
   onNavigate?: () => void;
 }) {
@@ -33,18 +35,34 @@ export function NavMain({
 
   return (
     <SidebarGroup className="px-3 py-1.5">
-      <SidebarGroupLabel
-        className="h-7 w-full cursor-pointer justify-between px-2 text-xs font-semibold tracking-wider text-sidebar-foreground/60 uppercase hover:text-sidebar-foreground"
-        render={<button type="button" aria-expanded={isOpen} aria-controls={contentId} />}
-        onClick={() => setIsOpen((open) => !open)}
-      >
-        {label}
-        <ChevronDownIcon
-          aria-hidden="true"
-          data-state={isOpen ? "open" : "closed"}
-          className="size-3.5! transition-transform motion-reduce:transition-none data-[state=closed]:-rotate-90"
-        />
-      </SidebarGroupLabel>
+      <div className="flex h-7 items-center justify-between px-2">
+        {overviewUrl ? (
+          <SidebarGroupLabel
+            className="h-7 cursor-pointer px-0 text-xs font-semibold tracking-wider text-sidebar-foreground/60 uppercase hover:text-sidebar-foreground"
+            render={<Link href={overviewUrl as Route} />}
+          >
+            {label}
+          </SidebarGroupLabel>
+        ) : (
+          <SidebarGroupLabel className="h-7 px-0 text-xs font-semibold tracking-wider text-sidebar-foreground/60 uppercase">
+            {label}
+          </SidebarGroupLabel>
+        )}
+        <button
+          type="button"
+          className="flex size-7 items-center justify-center rounded-md text-sidebar-foreground/60 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          aria-label={`${isOpen ? "Collapse" : "Expand"} ${label}`}
+          aria-expanded={isOpen}
+          aria-controls={contentId}
+          onClick={() => setIsOpen((open) => !open)}
+        >
+          <ChevronDownIcon
+            aria-hidden="true"
+            data-state={isOpen ? "open" : "closed"}
+            className="size-3.5! transition-transform motion-reduce:transition-none data-[state=closed]:-rotate-90"
+          />
+        </button>
+      </div>
       <SidebarGroupContent id={contentId} hidden={!isOpen}>
         <SidebarMenu>
           {items.map((item) => {
