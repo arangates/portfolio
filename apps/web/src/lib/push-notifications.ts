@@ -12,6 +12,7 @@ import {
 } from "@portfolio/db";
 import { env } from "@portfolio/env/server";
 import { and, eq, or } from "drizzle-orm";
+import { Resend } from "resend";
 
 import { createReminderNotification } from "@/lib/in-app-notifications";
 import { notificationCategories } from "@/lib/notification-categories";
@@ -156,16 +157,23 @@ export async function saveNotificationPreference(
 async function sendEmail(to: string, subject: string, textBody: string, idempotencyKey?: string) {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM)
     throw new Error("Email delivery is not configured. Set RESEND_API_KEY and EMAIL_FROM.");
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
-    },
-    body: JSON.stringify({ from: env.EMAIL_FROM, to: [to], subject, text: textBody }),
-  });
-  if (!response.ok) throw new Error(`Email provider rejected delivery (${response.status})`);
+  // Vercel dashboard values can contain invisible Unicode characters when copied from formatted text.
+  const from = env.EMAIL_FROM.normalize("NFKC")
+    .replace(/[^\x20-\x7E]/g, "")
+    .trim();
+  const resend = new Resend(env.RESEND_API_KEY);
+  const { error } = await resend.emails.send(
+    { from, to: [to], subject, text: textBody },
+    idempotencyKey ? { idempotencyKey } : undefined,
+  );
+  if (error) {
+    console.error("Resend rejected email delivery", {
+      name: error.name,
+      message: error.message,
+      statusCode: error.statusCode,
+    });
+    throw new Error(`Resend rejected email: ${error.message}`);
+  }
 }
 
 export async function sendTestEmail(userId: string) {
