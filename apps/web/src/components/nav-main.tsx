@@ -62,7 +62,7 @@ export function NavMain({
                   tooltip={item.title}
                   render={<Link href={item.url as Route} />}
                 >
-                  <item.icon weight="duotone" className="!size-[18px]" />
+                  <item.icon className="!size-[18px]" />
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

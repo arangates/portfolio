@@ -417,8 +417,12 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     }
     setThreads((current) => current.filter((thread) => thread.id !== id));
     if (id === activeThreadId) {
+      selectionRef.current += 1;
+      stop();
       setActiveThreadId(null);
-      void newThread();
+      setPendingHistory(null);
+      setMessages([]);
+      setThreadLoading(false);
     }
   }
 
@@ -436,8 +440,12 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     const deletedIds = new Set(data.deleted);
     setThreads((current) => current.filter((thread) => !deletedIds.has(thread.id)));
     if (ids === undefined || (activeThreadId && deletedIds.has(activeThreadId))) {
+      selectionRef.current += 1;
+      stop();
       setActiveThreadId(null);
-      await newThread();
+      setPendingHistory(null);
+      setMessages([]);
+      setThreadLoading(false);
     }
   }
 

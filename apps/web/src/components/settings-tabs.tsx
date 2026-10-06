@@ -137,7 +137,7 @@ export function SettingsTabs({
             value={sectionValue}
             className="h-10 flex-none shrink-0 justify-start gap-2.5 rounded-lg px-3 text-left text-sidebar-foreground/80 after:hidden data-active:bg-muted! data-active:text-foreground data-active:shadow-none dark:text-sidebar-foreground/80 dark:data-active:border-transparent dark:data-active:bg-muted! lg:h-12 lg:w-full lg:gap-3 lg:px-4 lg:text-base"
           >
-            <Icon weight="duotone" className="size-4 lg:size-5" />
+            <Icon className="size-4 lg:size-5" />
             {label}
           </TabsTrigger>
         ))}

@@ -235,7 +235,7 @@ export type PhosphorIcon = ComponentType<IconProps>;
 
 function duotoneIcon(BaseIcon: PhosphorIconComponent): PhosphorIcon {
   return function DuotoneIcon(props: IconProps) {
-    return <BaseIcon {...props} weight={props.weight ?? "duotone"} />;
+    return <BaseIcon {...props} weight={props.weight ?? "regular"} />;
   };
 }
 
