@@ -50,7 +50,10 @@ export default async function SettingsPage({
     ]);
   const requestedTab = (await searchParams).tab;
   const defaultTab =
+    requestedTab === "appearance" ||
+    requestedTab === "notifications" ||
     requestedTab === "portfolio" ||
+    requestedTab === "exchange-rates" ||
     requestedTab === "planning" ||
     requestedTab === "security" ||
     requestedTab === "model-keys"
@@ -76,13 +79,9 @@ export default async function SettingsPage({
         <SettingsTabs
           defaultValue={defaultTab}
           modelKeys={<ModelKeysSettings />}
-          account={
-            <div className="space-y-4">
-              <AppearanceSettings />
-              <AccountForm name={session.user.name} email={session.user.email} />
-              <NotificationSettingsCard initialSettings={notifications} />
-            </div>
-          }
+          account={<AccountForm name={session.user.name} email={session.user.email} />}
+          appearance={<AppearanceSettings />}
+          notifications={<NotificationSettingsCard initialSettings={notifications} />}
           portfolio={
             <>
               <Card>
@@ -97,6 +96,10 @@ export default async function SettingsPage({
                 </CardContent>
               </Card>
               <PreferenceForm preference={preference} />
+            </>
+          }
+          exchangeRates={
+            <>
               <ExchangeRateSyncCard status={exchangeRateStatus} />
               <ExchangeRateForm baseCurrency={preference.baseCurrency} />
               <Card className="2xl:col-span-2">

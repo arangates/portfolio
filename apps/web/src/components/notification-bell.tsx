@@ -158,7 +158,7 @@ export function NotificationBell() {
           </div>
           <div className="flex items-center justify-between border-t px-4 py-2">
             <Link
-              href="/dashboard/settings#notification-preferences"
+              href="/dashboard/settings?tab=notifications#notification-preferences"
               className="text-xs text-muted-foreground hover:text-foreground"
               onClick={() => setOpen(false)}
             >

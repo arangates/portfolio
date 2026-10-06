@@ -50,8 +50,12 @@ export async function GET(request: Request) {
       return Response.json({ models });
     } catch (error) {
       console.error("Failed to fetch models for", provider, error);
-      // Return a fallback list for the provider
-      return Response.json({ models: getFallbackModels(provider) });
+      return Response.json(
+        {
+          error: `Could not load ${provider} models from the provider. Check the API key and provider access.`,
+        },
+        { status: 502 },
+      );
     }
   }
 
@@ -62,6 +66,7 @@ export async function GET(request: Request) {
   }
 
   const allModels: Record<string, Array<{ id: string; label: string; provider: string }>> = {};
+  const errors: Partial<Record<AIProvider, string>> = {};
 
   for (const provider of [
     "openai",
@@ -77,10 +82,12 @@ export async function GET(request: Request) {
         const models = await fetchModelsFromProvider(provider, key);
         allModels[provider] = models.map((m) => ({ ...m, provider }));
       } catch {
-        allModels[provider] = getFallbackModels(provider).map((m) => ({ ...m, provider }));
+        allModels[provider] = [];
+        errors[provider] =
+          `Could not load ${provider} models from the provider. Check the API key and provider access.`;
       }
     } else {
-      allModels[provider] = getFallbackModels(provider).map((m) => ({ ...m, provider }));
+      allModels[provider] = [];
     }
   }
 
@@ -88,7 +95,7 @@ export async function GET(request: Request) {
   try {
     selected = await getSelectedProviderModels(session.user.id);
   } catch {}
-  return Response.json({ models: allModels, selected });
+  return Response.json({ models: allModels, selected, errors });
 }
 
 export async function PUT(request: Request) {
@@ -251,37 +258,4 @@ async function fetchGatewayModels(apiKey: string): Promise<Array<{ id: string; l
   return (data.data as Array<{ id: string; name?: string; type?: string }>)
     .filter((m) => !m.type || m.type === "language")
     .map((m) => ({ id: m.id, label: m.name ? `${m.name} · ${m.id.split("/")[0]}` : m.id }));
-}
-
-function getFallbackModels(provider: string): Array<{ id: string; label: string }> {
-  const fallback: Record<string, Array<{ id: string; label: string }>> = {
-    openai: [
-      { id: "gpt-4.1-mini", label: "GPT-4.1 mini" },
-      { id: "gpt-5.4-mini", label: "GPT-5.4 mini" },
-      { id: "gpt-4o-mini", label: "GPT-4o mini" },
-      { id: "gpt-4o", label: "GPT-4o" },
-    ],
-    google: [
-      { id: "gemini-3.6-flash", label: "Gemini 3.6 Flash" },
-      { id: "gemini-3-flash", label: "Gemini 3 Flash" },
-      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-    ],
-    anthropic: [
-      { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6" },
-      { id: "claude-3-7-sonnet-20250219", label: "Claude 3.7 Sonnet" },
-      { id: "claude-3-haiku-20240307", label: "Claude 3 Haiku" },
-    ],
-    mistral: [
-      { id: "mistral-large-2", label: "Mistral Large 2" },
-      { id: "mistral-large", label: "Mistral Large" },
-      { id: "mistral-small", label: "Mistral Small" },
-    ],
-    opencode: [{ id: "gpt-5.6-sol", label: "GPT-5.6 Sol · OpenCode Zen" }],
-    gateway: [
-      { id: "openai/gpt-4.1-mini", label: "GPT-4.1 mini · openai" },
-      { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash · google" },
-    ],
-  };
-
-  return fallback[provider] || [];
 }

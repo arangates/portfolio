@@ -3,14 +3,25 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@portfolio/ui/components/tabs";
 import {
   FlameIcon,
+  BellRingIcon,
   KeyRoundIcon,
+  PaletteIcon,
+  RefreshCwIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
   UserRoundIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-type SettingsSection = "account" | "portfolio" | "planning" | "security" | "model-keys";
+type SettingsSection =
+  | "account"
+  | "appearance"
+  | "notifications"
+  | "portfolio"
+  | "exchange-rates"
+  | "planning"
+  | "security"
+  | "model-keys";
 
 const sections: {
   value: SettingsSection;
@@ -21,14 +32,32 @@ const sections: {
   {
     value: "account",
     label: "Account",
-    description: "Your profile and how Selvam notifies you.",
+    description: "Your profile and sign-in details.",
     icon: UserRoundIcon,
+  },
+  {
+    value: "appearance",
+    label: "Appearance",
+    description: "Choose how Selvam looks on your devices.",
+    icon: PaletteIcon,
+  },
+  {
+    value: "notifications",
+    label: "Notifications",
+    description: "Choose which updates Selvam sends you.",
+    icon: BellRingIcon,
   },
   {
     value: "portfolio",
     label: "Portfolio",
-    description: "Currency, number display and exchange rates.",
+    description: "Base currency, locale and number display.",
     icon: SlidersHorizontalIcon,
+  },
+  {
+    value: "exchange-rates",
+    label: "Exchange rates",
+    description: "Automatic updates, manual rates and stored quotes.",
+    icon: RefreshCwIcon,
   },
   {
     value: "planning",
@@ -52,14 +81,20 @@ const sections: {
 
 export function SettingsTabs({
   account,
+  appearance,
+  notifications,
   portfolio,
+  exchangeRates,
   planning,
   dataAndSecurity,
   modelKeys,
   defaultValue = "account",
 }: {
   account: React.ReactNode;
+  appearance: React.ReactNode;
+  notifications: React.ReactNode;
   portfolio: React.ReactNode;
+  exchangeRates: React.ReactNode;
   planning: React.ReactNode;
   dataAndSecurity: React.ReactNode;
   modelKeys: React.ReactNode;
@@ -115,8 +150,14 @@ export function SettingsTabs({
             </header>
             {section.value === "account" ? (
               <div className="max-w-3xl">{account}</div>
+            ) : section.value === "appearance" ? (
+              <div className="max-w-3xl">{appearance}</div>
+            ) : section.value === "notifications" ? (
+              <div className="max-w-3xl">{notifications}</div>
             ) : section.value === "portfolio" ? (
               <div className="grid min-w-0 gap-4 2xl:grid-cols-2">{portfolio}</div>
+            ) : section.value === "exchange-rates" ? (
+              <div className="grid min-w-0 gap-4 2xl:grid-cols-2">{exchangeRates}</div>
             ) : section.value === "planning" ? (
               planning
             ) : section.value === "security" ? (

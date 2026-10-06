@@ -109,7 +109,9 @@ export function NavUser({
                 <KeyRoundIcon />
                 Model keys
               </DropdownMenuItem>
-              <DropdownMenuItem render={<a href="/dashboard/settings#push-notifications" />}>
+              <DropdownMenuItem
+                render={<a href="/dashboard/settings?tab=notifications#push-notifications" />}
+              >
                 <BellIcon />
                 Notifications
               </DropdownMenuItem>

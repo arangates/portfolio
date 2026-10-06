@@ -35,18 +35,27 @@ export function ModelKeysSettings() {
     {} as Record<ChatProvider, ModelEntry[]>,
   );
   const [selected, setSelected] = useState<Partial<Record<ChatProvider, string[]>>>({});
+  const [modelErrors, setModelErrors] = useState<Partial<Record<ChatProvider, string>>>({});
+  const [loadingModels, setLoadingModels] = useState(false);
   const [filters, setFilters] = useState<Partial<Record<ChatProvider, string>>>({});
   const [open, setOpen] = useState<ChatProvider | null>(null);
 
   async function loadModels() {
-    const response = await fetch("/api/ai/models", { cache: "no-store" });
-    if (!response.ok) throw new Error("Could not load available models.");
-    const data = (await response.json()) as {
-      models: Record<ChatProvider, ModelEntry[]>;
-      selected?: Partial<Record<ChatProvider, string[]>>;
-    };
-    setModels(data.models);
-    setSelected(data.selected ?? {});
+    setLoadingModels(true);
+    try {
+      const response = await fetch("/api/ai/models", { cache: "no-store" });
+      if (!response.ok) throw new Error("Could not load provider models. Refresh to retry.");
+      const data = (await response.json()) as {
+        models: Record<ChatProvider, ModelEntry[]>;
+        selected?: Partial<Record<ChatProvider, string[]>>;
+        errors?: Partial<Record<ChatProvider, string>>;
+      };
+      setModels(data.models);
+      setSelected(data.selected ?? {});
+      setModelErrors(data.errors ?? {});
+    } finally {
+      setLoadingModels(false);
+    }
   }
 
   useEffect(() => {
@@ -256,6 +265,27 @@ export function ModelKeysSettings() {
                       })}
                     </div>
                   </fieldset>
+                )}
+                {connected && providerModels.length === 0 && (
+                  <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+                    <p className="text-sm text-muted-foreground">
+                      {modelErrors[provider] ?? "No models were returned by this provider."}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={loadingModels}
+                      onClick={() =>
+                        void loadModels().catch(() =>
+                          toast.error("Could not load provider models. Refresh to retry."),
+                        )
+                      }
+                    >
+                      {loadingModels && <Spinner data-icon="inline-start" />}
+                      Retry model discovery
+                    </Button>
+                  </div>
                 )}
                 {connected && (
                   <Button

@@ -1,13 +1,7 @@
 "use client";
 
 import { ChatComposer } from "@portfolio/ai-chat-ui";
-import {
-  chatModels,
-  defaultModel,
-  type ChatModel,
-  type ChatProvider,
-  type ModelEntry,
-} from "@/lib/ai-models";
+import { type ChatModel, type ChatProvider, type ModelEntry } from "@/lib/ai-models";
 import { useChat } from "@ai-sdk/react";
 import { useAISDKRuntime } from "@assistant-ui/ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
@@ -120,7 +114,7 @@ function ModelPicker({
   onSelect: (entry: ModelEntry) => void;
 }) {
   const current = models.find((entry) => entry.provider === provider && entry.id === model);
-  const label = current?.label ?? model;
+  const label = current?.label ?? (model || "No models available");
   if (models.length < 2) {
     return (
       <span className="max-w-56 truncate px-2 text-sm font-medium text-foreground/80">{label}</span>
@@ -192,6 +186,26 @@ export function SelvamComposer() {
           <span className="block text-sm font-medium">Connect an AI provider</span>
           <span className="block text-xs font-normal text-muted-foreground">
             Add an API key to send messages
+          </span>
+        </span>
+        <ArrowUpRightIcon className="size-4 shrink-0 text-muted-foreground" />
+      </Link>
+    );
+  }
+
+  if (!chat.models.some((entry) => entry.provider === chat.provider && entry.id === chat.model)) {
+    return (
+      <Link
+        href="/dashboard/settings?tab=model-keys"
+        className={buttonVariants({
+          variant: "outline",
+          className: "h-auto min-h-14 w-full justify-start gap-3 rounded-2xl px-4 py-3 text-left",
+        })}
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium">No provider models available</span>
+          <span className="block text-xs font-normal text-muted-foreground">
+            Check the provider API key and model access in Settings
           </span>
         </span>
         <ArrowUpRightIcon className="size-4 shrink-0 text-muted-foreground" />
@@ -273,8 +287,8 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
   const pathname = usePathname();
   const onChatPage = pathname === "/dashboard/chat";
   const [provider, setProvider] = useState<Provider>("openai");
-  const [model, setModelState] = useState<ChatModel>("gpt-4.1-mini");
-  const [models, setModels] = useState<ModelEntry[]>([...chatModels]);
+  const [model, setModelState] = useState<ChatModel>("");
+  const [models, setModels] = useState<ModelEntry[]>([]);
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [threadLoading, setThreadLoading] = useState(false);
@@ -502,9 +516,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     clearError();
     setNotice("");
     setProvider(value);
-    setModelState(
-      models.find((candidate) => candidate.provider === value)?.id ?? defaultModel[value],
-    );
+    setModelState(models.find((candidate) => candidate.provider === value)?.id ?? "");
   }
   function chooseModel(value: ChatModel) {
     clearError();
@@ -557,15 +569,16 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
             .flatMap((candidate) => {
               const available = data.models[candidate] ?? [];
               const saved = data.selected?.[candidate] ?? [];
-              const ids = saved.length ? saved : [available[0]?.id ?? defaultModel[candidate]];
-              return ids.map(
-                (id) =>
-                  available.find((entry) => entry.id === id) ?? {
-                    id,
-                    label: id,
-                    provider: candidate,
-                  },
+              const availableSelected = saved.filter((id) =>
+                available.some((entry) => entry.id === id),
               );
+              const ids = availableSelected.length
+                ? availableSelected
+                : available.slice(0, 1).map((entry) => entry.id);
+              return ids.flatMap((id) => {
+                const entry = available.find((candidateModel) => candidateModel.id === id);
+                return entry ? [{ ...entry, provider: candidate }] : [];
+              });
             });
           setModels(entries);
           const current = entries.find(
