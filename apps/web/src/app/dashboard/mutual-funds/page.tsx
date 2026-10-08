@@ -15,13 +15,13 @@ import {
   CardTitle,
 } from "@portfolio/ui/components/card";
 import {
-  ActivityIcon,
   CalendarCheckIcon,
   DatabaseZapIcon,
   GitCompareArrowsIcon,
   Layers3Icon,
   LockKeyholeIcon,
   ShieldCheckIcon,
+  TrendingUpIcon,
   WavesIcon,
 } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
@@ -79,7 +79,7 @@ export default async function MutualFundsPage() {
                 badge: "NAV based",
                 note: "Current-value weighted",
                 detail: "Not investor XIRR",
-                icon: ActivityIcon,
+                icon: TrendingUpIcon,
               },
               {
                 label: "Weighted 3Y volatility",

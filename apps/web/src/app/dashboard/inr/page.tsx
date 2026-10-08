@@ -19,10 +19,10 @@ import {
   TableRow,
 } from "@portfolio/ui/components/table";
 import {
-  BanknoteIcon,
-  CircleGaugeIcon,
+  IndianRupeeIcon,
   LandmarkIcon,
   PieChartIcon,
+  ShieldCheckIcon,
 } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -70,7 +70,7 @@ export default async function InrPage() {
         {accounts.length === 0 ? (
           <div className="px-4 lg:px-6">
             <EmptyDataState
-              icon={BanknoteIcon}
+              icon={IndianRupeeIcon}
               title="No INR accounts"
               description="Add your first account and balance to begin a dated cash history."
               action={<PortfolioRecordDialog kind="bank_account" values={{ currency: "INR" }} />}
@@ -86,7 +86,7 @@ export default async function InrPage() {
                   badge: `${funded.length} funded`,
                   note: "Latest balance from each account",
                   detail: `${accounts.length} registered accounts`,
-                  icon: BanknoteIcon,
+                  icon: IndianRupeeIcon,
                 },
                 {
                   label: "NRE balances",
@@ -112,7 +112,7 @@ export default async function InrPage() {
                   badge: belowMinimum === 0 ? "All covered" : `${belowMinimum} below minimum`,
                   note: `${formatCurrency(requiredMinimum, "INR")} required across accounts`,
                   detail: "Based on configured minimum balances",
-                  icon: CircleGaugeIcon,
+                  icon: ShieldCheckIcon,
                 },
               ]}
             />

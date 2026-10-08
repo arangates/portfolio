@@ -28,7 +28,7 @@ import {
   BadgeCheckIcon,
   BrainCircuitIcon,
   CircleHelpIcon,
-  GaugeIcon,
+  CoinsIcon,
   ListChecksIcon,
   RouteIcon,
   ShieldCheckIcon,
@@ -174,7 +174,7 @@ export default async function FinancialTwinPage() {
             badge: "Already owned",
             note: "Staging reserve and eligible cash",
             detail: "Never counted as new income",
-            icon: GaugeIcon,
+            icon: CoinsIcon,
             href: "/dashboard/deployment",
           },
           {

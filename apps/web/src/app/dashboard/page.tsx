@@ -13,6 +13,7 @@ import { getPortfolioOverview } from "@portfolio/api/portfolio-queries";
 import { auth } from "@portfolio/auth";
 import { Badge } from "@portfolio/ui/components/badge";
 import {
+  CoinsIcon,
   DatabaseIcon,
   LandmarkIcon,
   PieChartIcon,
@@ -149,7 +150,7 @@ export default async function DashboardPage() {
                   ),
                   note: "Cash and readily sellable holdings",
                   detail: "Driven by each record’s liquidity setting",
-                  icon: PieChartIcon,
+                  icon: CoinsIcon,
                   href: "/dashboard/analytics#liquidity-structure",
                 },
                 overview.equityBreakdown.length > 0

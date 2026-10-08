@@ -20,8 +20,8 @@ import {
   TableRow,
 } from "@portfolio/ui/components/table";
 import {
+  CalendarCheckIcon,
   CalendarClockIcon,
-  HistoryIcon,
   LandmarkIcon,
   PercentIcon,
 } from "@portfolio/ui/components/icons";
@@ -154,7 +154,7 @@ export default async function FixedDepositsPage() {
                 ? formatCurrency(nextMaturity.principal, nextMaturity.currency)
                 : "No upcoming maturity",
               detail: "Review upcoming rollover needs",
-              icon: HistoryIcon,
+              icon: CalendarCheckIcon,
             },
           ]}
         />

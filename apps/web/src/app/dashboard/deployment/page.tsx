@@ -25,7 +25,6 @@ import {
   TableRow,
 } from "@portfolio/ui/components/table";
 import {
-  ArrowDownToLineIcon,
   CalendarClockIcon,
   CircleHelpIcon,
   Layers3Icon,
@@ -121,7 +120,7 @@ export default async function CapitalDeploymentPage() {
             detail: engine.policy.includeBankCash
               ? "Includes broker cash and opted-in bank cash above configured minimums"
               : "Operational bank balances are excluded by policy",
-            icon: ArrowDownToLineIcon,
+            icon: WalletCardsIcon,
           },
           {
             label: "Scheduled liquidity",

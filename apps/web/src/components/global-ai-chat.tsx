@@ -169,13 +169,9 @@ function ModelPicker({
 export function SelvamComposer() {
   const chat = useSelvamChat();
 
-  if (chat.statusLoading || !chat.status) {
-    return (
-      <div className="h-10 w-full animate-pulse rounded-2xl border bg-muted/40" role="status" />
-    );
-  }
+  const loadingModels = chat.statusLoading || !chat.status;
 
-  if (!chat.status[chat.provider]) {
+  if (!loadingModels && !chat.status?.[chat.provider]) {
     return (
       <Link
         href="/dashboard/settings?tab=model-keys"
@@ -198,7 +194,10 @@ export function SelvamComposer() {
     );
   }
 
-  if (!chat.models.some((entry) => entry.provider === chat.provider && entry.id === chat.model)) {
+  if (
+    !loadingModels &&
+    !chat.models.some((entry) => entry.provider === chat.provider && entry.id === chat.model)
+  ) {
     return (
       <Link
         href="/dashboard/settings?tab=model-keys"
@@ -221,15 +220,23 @@ export function SelvamComposer() {
   return (
     <ChatComposer
       modelSelector={
-        <ModelPicker
-          models={chat.models}
-          provider={chat.provider}
-          model={chat.model}
-          onSelect={(entry) => {
-            chat.setProvider(entry.provider);
-            chat.setModel(entry.id);
-          }}
-        />
+        loadingModels ? (
+          <span
+            role="status"
+            aria-label="Loading models"
+            className="ml-2 block h-4 w-28 animate-pulse rounded-full bg-muted-foreground/20"
+          />
+        ) : (
+          <ModelPicker
+            models={chat.models}
+            provider={chat.provider}
+            model={chat.model}
+            onSelect={(entry) => {
+              chat.setProvider(entry.provider);
+              chat.setModel(entry.id);
+            }}
+          />
+        )
       }
       commands={[
         {
@@ -510,6 +517,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     URL.revokeObjectURL(url);
   }
   function sendPrompt(text: string) {
+    if (statusLoading) return;
     if (!status?.[provider]) {
       setNotice(`Add your ${provider} API key in Settings → Model keys to chat.`);
       return;

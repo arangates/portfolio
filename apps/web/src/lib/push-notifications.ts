@@ -12,11 +12,13 @@ import {
 } from "@portfolio/db";
 import { env } from "@portfolio/env/server";
 import { and, eq, or } from "drizzle-orm";
-import { Resend } from "resend";
 
 import { createReminderNotification } from "@/lib/in-app-notifications";
 import { notificationCategories } from "@/lib/notification-categories";
 import * as webPush from "web-push";
+
+// Import React Email template services
+import { sendTestTemplatedEmail, sendNotificationEmail } from "@/emails/services/email-service";
 
 type BrowserSubscription = {
   endpoint: string;
@@ -154,39 +156,15 @@ export async function saveNotificationPreference(
   });
 }
 
-async function sendEmail(to: string, subject: string, textBody: string, idempotencyKey?: string) {
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM)
-    throw new Error("Email delivery is not configured. Set RESEND_API_KEY and EMAIL_FROM.");
-  // Vercel dashboard values can contain invisible Unicode characters when copied from formatted text.
-  const from = env.EMAIL_FROM.normalize("NFKC")
-    .replace(/[^\x20-\x7E]/g, "")
-    .trim();
-  const resend = new Resend(env.RESEND_API_KEY);
-  const { error } = await resend.emails.send(
-    { from, to: [to], subject, text: textBody },
-    idempotencyKey ? { idempotencyKey } : undefined,
-  );
-  if (error) {
-    console.error("Resend rejected email delivery", {
-      name: error.name,
-      message: error.message,
-      statusCode: error.statusCode,
-    });
-    throw new Error(`Resend rejected email: ${error.message}`);
-  }
-}
-
 export async function sendTestEmail(userId: string) {
   const account = await db.query.user.findFirst({
     where: (u, { eq }) => eq(u.id, userId),
-    columns: { email: true },
+    columns: { email: true, name: true },
   });
   if (!account?.email) throw new Error("Your account does not have an email address");
-  await sendEmail(
-    account.email,
-    "Selvam email notifications are ready",
-    "You’ll receive selected financial reminders and updates from your Selvam modules.",
-  );
+
+  // Use the new React Email template for test emails
+  await sendTestTemplatedEmail(account.email, account.name || undefined, `test-email-${userId}`);
   return { sent: 1 };
 }
 
@@ -292,7 +270,7 @@ export async function sendTestNotification(userId: string) {
   if (subscriptions.length === 0) throw new Error("Enable notifications on this device first");
   const payload = JSON.stringify({
     title: "Selvam notifications are ready",
-    body: "You’ll receive reminders for upcoming bills, contract endings and deposit maturities.",
+    body: "You'll receive reminders for upcoming bills, contract endings and deposit maturities.",
     url: "/dashboard/calendar",
     tag: "push-test",
   });
@@ -308,6 +286,8 @@ export async function sendScheduledReminders(now = new Date()) {
   const preferences = await db
     .select({
       userId: notificationPreference.userId,
+      pushEnabled: notificationPreference.pushEnabled,
+      inAppEnabled: notificationPreference.inAppEnabled,
       reminderHour: notificationPreference.reminderHour,
       daysAhead: notificationPreference.daysAhead,
       emailEnabled: notificationPreference.emailEnabled,
@@ -319,10 +299,13 @@ export async function sendScheduledReminders(now = new Date()) {
     .innerJoin(user, eq(user.id, notificationPreference.userId))
     .leftJoin(portfolioPreference, eq(portfolioPreference.userId, notificationPreference.userId))
     .where(
-      or(
-        eq(notificationPreference.pushEnabled, true),
-        eq(notificationPreference.inAppEnabled, true),
-        eq(notificationPreference.emailEnabled, true),
+      and(
+        eq(notificationPreference.enabled, true),
+        or(
+          eq(notificationPreference.pushEnabled, true),
+          eq(notificationPreference.inAppEnabled, true),
+          eq(notificationPreference.emailEnabled, true),
+        ),
       ),
     );
 
@@ -342,30 +325,41 @@ export async function sendScheduledReminders(now = new Date()) {
       if (events.length === 0) continue;
       const payload = reminderPayload(today, events, preference.daysAhead);
       const parsedPayload = JSON.parse(payload) as { title: string; body: string; url: string };
-      await createReminderNotification(preference.userId, {
-        deliveryKey: `reminders:${today}`,
-        title: parsedPayload.title,
-        body: parsedPayload.body,
-        url: parsedPayload.url,
-      });
+      if (preference.inAppEnabled) {
+        await createReminderNotification(preference.userId, {
+          deliveryKey: `reminders:${today}`,
+          title: parsedPayload.title,
+          body: parsedPayload.body,
+          url: parsedPayload.url,
+        });
+      }
       if (preference.emailEnabled && env.RESEND_API_KEY && env.EMAIL_FROM) {
         const selectedEvents = events.filter((event) =>
           preference.emailCategories.includes(event.category),
         );
         if (selectedEvents.length) {
-          const lines = selectedEvents.map(
-            (event) => `${event.date}: ${event.title} (${event.category})`,
-          );
-          await sendEmail(
+          await sendNotificationEmail(
             preference.email,
+            selectedEvents.map((event) => ({
+              date: event.date,
+              title: event.title,
+              category: event.category,
+              href: event.href,
+              amount:
+                event.amount === null
+                  ? undefined
+                  : `${event.amount} ${event.currency ?? ""}`.trim(),
+              description: event.detail,
+            })),
+            selectedEvents.length,
+            preference.daysAhead,
             parsedPayload.title,
-            `${parsedPayload.title}\n\n${lines.join("\n")}\n\nOpen your financial calendar: ${new URL(parsedPayload.url, env.BETTER_AUTH_URL).toString()}`,
             `reminders-${preference.userId}-${today}`,
           );
           sent += 1;
         }
       }
-      if (subscriptions.length === 0 || !pushConfigured()) continue;
+      if (!preference.pushEnabled || subscriptions.length === 0 || !pushConfigured()) continue;
       const results = await Promise.allSettled(
         subscriptions.map((subscription) =>
           sendToSubscription(subscription, payload, `reminders:${today}`),

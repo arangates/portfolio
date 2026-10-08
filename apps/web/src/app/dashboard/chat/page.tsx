@@ -39,25 +39,26 @@ import {
 } from "@portfolio/ui/components/dropdown-menu";
 import { cn } from "@portfolio/ui/lib/utils";
 import {
-  ArrowDownIcon,
-  ArrowUpIcon,
+  ArrowsDownUpIcon,
   BanknoteIcon,
-  BrainCircuitIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CopyIcon,
   DownloadIcon,
+  FlameIcon,
   HouseIcon,
   KeyRoundIcon,
+  ListChecksIcon,
   MoreHorizontalIcon,
   PencilIcon,
+  PieChartIcon,
   PlusIcon,
   RefreshCwIcon,
   SearchIcon,
+  ShieldCheckIcon,
   Trash2Icon,
-  ListChecksIcon,
-  PiggyBankIcon,
+  TrendingUpIcon,
 } from "@portfolio/ui/components/icons";
 import Link from "next/link";
 import { useState, useEffect, type FC } from "react";
@@ -71,7 +72,7 @@ import { Checkbox } from "@portfolio/ui/components/checkbox";
 const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
   {
     label: "Portfolio",
-    icon: <BrainCircuitIcon className="size-4" />,
+    icon: <PieChartIcon className="size-4" />,
     options: [
       {
         label: "Portfolio overview",
@@ -117,7 +118,7 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
   },
   {
     label: "Cash flow",
-    icon: <ArrowDownIcon className="size-4" />,
+    icon: <ArrowsDownUpIcon className="size-4" />,
     options: [
       {
         label: "Personal cash flow",
@@ -163,7 +164,7 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
   },
   {
     label: "Investments",
-    icon: <ArrowUpIcon className="size-4" />,
+    icon: <TrendingUpIcon className="size-4" />,
     options: [
       {
         label: "Verified returns",
@@ -240,7 +241,7 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
   },
   {
     label: "FIRE planning",
-    icon: <PiggyBankIcon className="size-4" />,
+    icon: <FlameIcon className="size-4" />,
     options: [
       {
         label: "FIRE scenarios",
@@ -348,7 +349,7 @@ const SUGGESTION_GROUPS: ChatSuggestionGroup[] = [
   },
   {
     label: "Evidence and freshness",
-    icon: <CheckIcon className="size-4" />,
+    icon: <ShieldCheckIcon className="size-4" />,
     options: [
       {
         label: "Currency conversion gaps",

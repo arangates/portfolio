@@ -7,7 +7,9 @@
     "build": "node scripts/build-pwa.mjs && next build",
     "check-types": "tsc --noEmit",
     "start": "next start",
-    "test:pwa": "node --test scripts/service-worker.test.mjs"
+    "test:pwa": "node --test scripts/service-worker.test.mjs",
+    "emails:preview": "open http://localhost:3001/emails/preview",
+    "emails:dev": "next dev --port 3001"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.58",
@@ -26,6 +28,9 @@
     "@portfolio/db": "workspace:*",
     "@portfolio/env": "workspace:*",
     "@portfolio/ui": "workspace:*",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.1.0",
+    "@react-email/tailwind": "^2.0.7",
     "@swc/helpers": "^0.5.23",
     "@tanstack/react-form": "^1.33.2",
     "@tanstack/react-query": "^5.101.4",

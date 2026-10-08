@@ -22,8 +22,8 @@ import {
 } from "@portfolio/ui/components/table";
 import {
   BanknoteIcon,
+  BriefcaseBusiness,
   CalendarClockIcon,
-  CircleGaugeIcon,
   HandCoinsIcon,
   ReceiptTextIcon,
 } from "@portfolio/ui/components/icons";
@@ -195,7 +195,7 @@ export default async function SalaryPage() {
               badge: latest?.periodLabel,
               note: `${latest?.partTimePercentage ?? 100}% contracted hours`,
               detail: `${latest?.employerName ?? "Latest employer"} · revision ${latest?.revision ?? "—"}`,
-              icon: CircleGaugeIcon,
+              icon: BriefcaseBusiness,
             },
           ]}
         />

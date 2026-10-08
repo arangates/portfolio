@@ -24,8 +24,8 @@ import {
 import {
   BadgeEuroIcon,
   BanknoteIcon,
-  CalendarCheckIcon,
   ReceiptTextIcon,
+  ShieldCheckIcon,
 } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -128,7 +128,7 @@ export default async function NetherlandsTaxPage() {
               badge: `${new Set(assessments.map((row) => row.taxYear)).size} years`,
               note: "Assessment arithmetic independently reconciled",
               detail: "Exact duplicate PDFs are ignored",
-              icon: CalendarCheckIcon,
+              icon: ShieldCheckIcon,
             },
           ]}
         />

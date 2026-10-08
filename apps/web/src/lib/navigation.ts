@@ -1,24 +1,32 @@
 import {
   Bank,
+  BookOpen,
   Brain,
   Buildings,
   CalendarDots,
   ChartLineUp,
+  ChartPieSlice,
+  ChatCircleDots,
   ClockCounterClockwise,
   Coins,
   CurrencyCircleDollar,
   CurrencyEur,
+  CurrencyInr,
   Files,
   FireSimple,
+  Flask,
   Globe,
   HandCoins,
   House,
-  Money,
   Path,
+  Percent,
   Receipt,
-  Sparkle,
+  Scales,
   SquaresFour,
   TrendUp,
+  User,
+  Users,
+  UsersThree,
 } from "@phosphor-icons/react";
 import { ChartNoAxesCombinedIcon, ShieldCheckIcon } from "@portfolio/ui/components/icons";
 
@@ -30,7 +38,7 @@ export const dashboardNavigation = [
       {
         title: "Ask Selvam",
         url: "/dashboard/chat",
-        icon: Brain,
+        icon: ChatCircleDots,
         keywords: "ai assistant chat ask portfolio fire budget returns",
       },
       {
@@ -43,7 +51,7 @@ export const dashboardNavigation = [
       {
         title: "Selvam Labs",
         url: "/dashboard/labs",
-        icon: Sparkle,
+        icon: Flask,
         keywords: "experiments labs ai insights what-if scenarios",
       },
 
@@ -86,20 +94,20 @@ export const dashboardNavigation = [
       {
         title: "Personal cash flow",
         url: "/dashboard/cash-flow/personal",
-        icon: HandCoins,
+        icon: User,
         keywords: "personal bank salary abn amro investment household funding",
       },
       {
         title: "Household cash flow",
         url: "/dashboard/cash-flow/household",
-        icon: House,
+        icon: UsersThree,
         keywords: "joint bank ing household actual spending merchants refunds",
       },
       {
         title: "INR accounts",
         shortTitle: "INR",
         url: "/dashboard/inr",
-        icon: Money,
+        icon: CurrencyInr,
         keywords: "india cash bank rupees",
       },
       {
@@ -125,21 +133,21 @@ export const dashboardNavigation = [
         title: "Mutual fund intelligence",
         shortTitle: "Fund intelligence",
         url: "/dashboard/mutual-funds",
-        icon: Sparkle,
+        icon: ChartPieSlice,
         keywords: "mfapi mutual fund nav risk drawdown correlation performance overlap",
       },
       {
         title: "Verified returns",
         shortTitle: "Returns",
         url: "/dashboard/returns",
-        icon: ChartLineUp,
+        icon: Percent,
         keywords: "performance xirr money weighted return realized unrealized pnl fees dividends",
       },
       {
         title: "Tradebook insights",
         shortTitle: "Tradebook",
         url: "/dashboard/tradebook",
-        icon: Receipt,
+        icon: BookOpen,
         keywords: "trades xirr cagr profit turnover investing behaviour",
       },
       {
@@ -188,7 +196,7 @@ export const dashboardNavigation = [
         title: "Dutch income tax",
         shortTitle: "Dutch tax",
         url: "/dashboard/tax/netherlands",
-        icon: Bank,
+        icon: Scales,
         keywords: "netherlands belastingdienst definitieve aanslag box 1 2 3 refund",
       },
     ],
@@ -214,7 +222,7 @@ export const dashboardNavigation = [
       {
         title: "Household",
         url: "/dashboard/household",
-        icon: House,
+        icon: Users,
         keywords: "expenses housing car contracts budget",
       },
       {

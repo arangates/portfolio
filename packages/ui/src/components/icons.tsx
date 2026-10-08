@@ -111,6 +111,7 @@ import {
   FlagIcon as BaseFlagIcon,
 } from "@phosphor-icons/react/dist/ssr/Flag";
 import { FlameIcon as BaseFlameIcon } from "@phosphor-icons/react/dist/ssr/Flame";
+import { FlaskIcon as BaseFlaskIcon } from "@phosphor-icons/react/dist/ssr/Flask";
 import { FloppyDiskIcon as BaseSaveIcon } from "@phosphor-icons/react/dist/ssr/FloppyDisk";
 import { FolderPlusIcon as BaseFolderPlusIcon } from "@phosphor-icons/react/dist/ssr/FolderPlus";
 import { FunnelIcon as BaseListFilterIcon } from "@phosphor-icons/react/dist/ssr/Funnel";
@@ -235,7 +236,7 @@ export type PhosphorIcon = ComponentType<IconProps>;
 
 function duotoneIcon(BaseIcon: PhosphorIconComponent): PhosphorIcon {
   return function DuotoneIcon(props: IconProps) {
-    return <BaseIcon {...props} weight={props.weight ?? "regular"} />;
+    return <BaseIcon {...props} weight={props.weight ?? "duotone"} />;
   };
 }
 
@@ -250,6 +251,7 @@ export const ArrowLeftIcon = duotoneIcon(BaseArrowLeftIcon);
 export const ArrowRightIcon = duotoneIcon(BaseArrowRightIcon);
 export const ArrowRightLeftIcon = duotoneIcon(BaseArrowRightLeftIcon);
 export const ArrowUpDownIcon = duotoneIcon(BaseArrowUpDownIcon);
+export const ArrowsDownUpIcon = ArrowUpDownIcon;
 export const ArrowUpIcon = duotoneIcon(BaseArrowUpIcon);
 export const ArrowUpRight = duotoneIcon(BaseArrowUpRight);
 export const ArrowUpRightIcon = duotoneIcon(BaseArrowUpRightIcon);
@@ -317,6 +319,7 @@ export const Fingerprint = duotoneIcon(BaseFingerprint);
 export const Flag = duotoneIcon(BaseFlag);
 export const FlagIcon = duotoneIcon(BaseFlagIcon);
 export const FlameIcon = duotoneIcon(BaseFlameIcon);
+export const FlaskIcon = duotoneIcon(BaseFlaskIcon);
 export const FolderPlusIcon = duotoneIcon(BaseFolderPlusIcon);
 export const GaugeIcon = duotoneIcon(BaseGaugeIcon);
 export const GemIcon = duotoneIcon(BaseGemIcon);

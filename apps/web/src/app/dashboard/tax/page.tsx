@@ -20,9 +20,9 @@ import {
 } from "@portfolio/ui/components/table";
 import {
   BanknoteIcon,
-  CalendarCheckIcon,
   LandmarkIcon,
   ReceiptTextIcon,
+  ShieldCheckIcon,
 } from "@portfolio/ui/components/icons";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -128,7 +128,7 @@ export default async function IncomeTaxPage() {
                   ? "No missing years inside the imported range"
                   : `Missing AY ${gaps.join(", ")}`,
               detail: "Arithmetic reconciliation only; not government acceptance",
-              icon: CalendarCheckIcon,
+              icon: ShieldCheckIcon,
             },
           ]}
         />
