@@ -9,8 +9,16 @@ icon: KeyRound
 Selvam uses Better Auth with two sign-in paths:
 
 <IconCardGrid columns={2}>
-  <IconCard icon="Globe2" title="Google OAuth" description="Available when both Google client credentials are configured." />
-  <IconCard icon="KeyRound" title="Email and password" description="Password sign-in requires a minimum of 12 characters." />
+  <IconCard
+    icon="Globe2"
+    title="Google OAuth"
+    description="Available when both Google client credentials are configured."
+  />
+  <IconCard
+    icon="KeyRound"
+    title="Email and password"
+    description="Password sign-in requires a minimum of 12 characters."
+  />
 </IconCardGrid>
 
 Both paths create the same account-owned database session. A new Google user is created on the first successful sign-in; a returning user is taken directly to the dashboard.
@@ -36,7 +44,8 @@ If the Google consent screen is in **Testing**, add each permitted Google accoun
 The source-document archive uses the same Google Cloud project and OAuth client. Enable the **Google Drive API** in that project; no additional redirect URI is required. A signed-in user connects Drive separately from **Settings → Data & security**, so ordinary Google sign-in does not request file access.
 
 <InfoPanel title="Drive access is separate from sign-in" icon="ShieldCheck" tone="info">
-The archive requests the incremental `drive.file` scope only after you connect Drive. Google sign-in by itself does not grant the archive access to Drive files.
+  The archive requests the incremental `drive.file` scope only after you connect Drive. Google
+  sign-in by itself does not grant the archive access to Drive files.
 </InfoPanel>
 
 Selvam requests only `drive.file`, a non-sensitive incremental scope that lets it manage files and folders it creates. It does not request access to browse or modify the user's other Drive content. OAuth access and refresh tokens are encrypted in Postgres by Better Auth, and offline access keeps the archive working after a short-lived access token expires.

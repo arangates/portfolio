@@ -11,9 +11,21 @@ The **Ambient Intelligence** module (`@portfolio/api/ambient-insights`) continuo
 Unlike the _Selvam Evaluate_ feature (which relies on external LLMs to score financial posture), Ambient Intelligence is completely **deterministic, zero-cost, and runs instantly in-memory**. It requires no LLM API calls and no paid database branching.
 
 <IconCardGrid columns={3}>
-  <IconCard icon="Wallet" title="Liquidity" description="Highlights idle cash, savings-rate changes and upcoming deposit maturities." />
-  <IconCard icon="ChartNoAxesCombined" title="Allocation" description="Surfaces portfolio drift against the saved deployment targets." />
-  <IconCard icon="FileClock" title="Evidence freshness" description="Flags imported evidence that may need a refresh." />
+  <IconCard
+    icon="Wallet"
+    title="Liquidity"
+    description="Highlights idle cash, savings-rate changes and upcoming deposit maturities."
+  />
+  <IconCard
+    icon="ChartNoAxesCombined"
+    title="Allocation"
+    description="Surfaces portfolio drift against the saved deployment targets."
+  />
+  <IconCard
+    icon="FileClock"
+    title="Evidence freshness"
+    description="Flags imported evidence that may need a refresh."
+  />
 </IconCardGrid>
 
 ### Available Insights
@@ -21,18 +33,43 @@ Unlike the _Selvam Evaluate_ feature (which relies on external LLMs to score fin
 The engine currently monitors for these conditions:
 
 <IconCardGrid columns={2}>
-  <IconCard icon="Wallet" title="Idle cash" description="Compares liquid cash with six months of household expenses and estimates its inflation drag." />
-  <IconCard icon="ChartNoAxesCombined" title="Deployment drift" description="Flags an allocation bucket more than five percentage points from its saved target." />
-  <IconCard icon="ChartNoAxesCombined" title="Savings rate" description="Highlights rates above 50% or below the 20% reference floor." />
-  <IconCard icon="Flag" title="FIRE milestones" description="Marks progress at 25%, 50%, 75% and 90% of the required corpus." />
-  <IconCard icon="CalendarDays" title="Deposit maturity" description="Surfaces fixed deposits due within 30 days." />
-  <IconCard icon="History" title="Stale data" description="Flags imported broker or bank evidence older than 30 days." />
+  <IconCard
+    icon="Wallet"
+    title="Idle cash"
+    description="Compares liquid cash with six months of household expenses and estimates its inflation drag."
+  />
+  <IconCard
+    icon="ChartNoAxesCombined"
+    title="Deployment drift"
+    description="Flags an allocation bucket more than five percentage points from its saved target."
+  />
+  <IconCard
+    icon="ChartNoAxesCombined"
+    title="Savings rate"
+    description="Highlights rates above 50% or below the 20% reference floor."
+  />
+  <IconCard
+    icon="Flag"
+    title="FIRE milestones"
+    description="Marks progress at 25%, 50%, 75% and 90% of the required corpus."
+  />
+  <IconCard
+    icon="CalendarDays"
+    title="Deposit maturity"
+    description="Surfaces fixed deposits due within 30 days."
+  />
+  <IconCard
+    icon="History"
+    title="Stale data"
+    description="Flags imported broker or bank evidence older than 30 days."
+  />
 </IconCardGrid>
 
 ### Severity Tiers
 
 <InfoPanel title="How the dashboard prioritizes alerts" icon="TriangleAlert" tone="warning">
-Alerts appear in severity order: critical, warning, then info. The dashboard shows only the five most relevant insights at a time.
+  Alerts appear in severity order: critical, warning, then info. The dashboard shows only the five
+  most relevant insights at a time.
 </InfoPanel>
 
 ### Architecture

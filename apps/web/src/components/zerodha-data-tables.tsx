@@ -16,8 +16,11 @@ type Holding = {
   quantity: number;
   averagePrice: number;
   currentPrice: number;
+  investedValue: number;
   marketValue: number;
   unrealizedPnl: number;
+  netChangePercent?: number | null;
+  dayChangePercent?: number | null;
 };
 
 export function HoldingsDataTable({ data }: { data: Holding[] }) {
@@ -36,14 +39,9 @@ export function HoldingsDataTable({ data }: { data: Holding[] }) {
       enableHiding: false,
     },
     {
-      accessorKey: "category",
-      header: "Category",
-      cell: ({ row }) => <Badge variant="outline">{row.original.category}</Badge>,
-    },
-    {
       accessorKey: "quantity",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Quantity" className="ml-auto" />
+        <DataTableColumnHeader column={column} title="Qty." className="ml-auto" />
       ),
       cell: ({ row }) => (
         <div className="text-right tabular-nums">
@@ -54,21 +52,28 @@ export function HoldingsDataTable({ data }: { data: Holding[] }) {
     {
       accessorKey: "averagePrice",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Average" className="ml-auto" />
+        <DataTableColumnHeader column={column} title="Avg. cost" className="ml-auto" />
       ),
       cell: ({ row }) => <Money value={row.original.averagePrice} />,
     },
     {
       accessorKey: "currentPrice",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Price" className="ml-auto" />
+        <DataTableColumnHeader column={column} title="LTP" className="ml-auto" />
       ),
       cell: ({ row }) => <Money value={row.original.currentPrice} />,
     },
     {
+      accessorKey: "investedValue",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Invested" className="ml-auto" />
+      ),
+      cell: ({ row }) => <Money value={row.original.investedValue} />,
+    },
+    {
       accessorKey: "marketValue",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Value" className="ml-auto" />
+        <DataTableColumnHeader column={column} title="Cur. val" className="ml-auto" />
       ),
       cell: ({ row }) => <Money value={row.original.marketValue} />,
     },
@@ -78,6 +83,30 @@ export function HoldingsDataTable({ data }: { data: Holding[] }) {
         <DataTableColumnHeader column={column} title="P&L" className="ml-auto" />
       ),
       cell: ({ row }) => <Money value={row.original.unrealizedPnl} />,
+    },
+    {
+      accessorKey: "netChangePercent",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Net chg." className="ml-auto" />
+      ),
+      cell: ({ row }) =>
+        row.original.netChangePercent === null || row.original.netChangePercent === undefined ? (
+          <div className="text-right text-muted-foreground">—</div>
+        ) : (
+          <PercentCell value={row.original.netChangePercent / 100} />
+        ),
+    },
+    {
+      accessorKey: "dayChangePercent",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Day chg." className="ml-auto" />
+      ),
+      cell: ({ row }) =>
+        row.original.dayChangePercent === null || row.original.dayChangePercent === undefined ? (
+          <div className="text-right text-muted-foreground">—</div>
+        ) : (
+          <PercentCell value={row.original.dayChangePercent / 100} />
+        ),
     },
     {
       id: "details",
@@ -90,10 +119,9 @@ export function HoldingsDataTable({ data }: { data: Holding[] }) {
             {
               label: "Unrealized return",
               value: formatPercent(
-                row.original.marketValue === row.original.unrealizedPnl
+                row.original.investedValue === 0
                   ? 0
-                  : row.original.unrealizedPnl /
-                      (row.original.marketValue - row.original.unrealizedPnl),
+                  : row.original.unrealizedPnl / row.original.investedValue,
                 2,
               ),
               detail: "Current unrealized P&L relative to the implied cost basis.",
@@ -112,6 +140,7 @@ export function HoldingsDataTable({ data }: { data: Holding[] }) {
             { label: "Quantity", value: row.original.quantity.toLocaleString("en-IN") },
             { label: "Average price", value: formatCurrency(row.original.averagePrice, "INR") },
             { label: "Current price", value: formatCurrency(row.original.currentPrice, "INR") },
+            { label: "Invested value", value: formatCurrency(row.original.investedValue, "INR") },
             { label: "Market value", value: formatCurrency(row.original.marketValue, "INR") },
             { label: "Unrealized P&L", value: formatCurrency(row.original.unrealizedPnl, "INR") },
           ]}
@@ -356,4 +385,15 @@ function Money({ value }: { value: number }) {
 
 function NumberCell({ value }: { value: number }) {
   return <div className="text-right tabular-nums">{value.toLocaleString("en-IN")}</div>;
+}
+
+function PercentCell({ value }: { value: number }) {
+  const className = value >= 0 ? "text-emerald-600" : "text-rose-600";
+  const sign = value >= 0 ? "+" : "";
+  return (
+    <div className={`text-right tabular-nums font-medium ${className}`}>
+      {sign}
+      {formatPercent(value, 2)}
+    </div>
+  );
 }

@@ -5,13 +5,26 @@ icon: ShieldCheck
 ---
 
 <IconCardGrid columns={3}>
-  <IconCard icon="Fingerprint" title="Owner from the session" description="Private operations derive the account owner from the verified server session." />
-  <IconCard icon="ShieldCheck" title="Minimize stored data" description="Sensitive source documents are parsed in memory and discarded where the workflow allows." />
-  <IconCard icon="KeyRound" title="Keep credentials private" description="Secrets stay in server-side environment variables and never enter browser bundles." />
+  <IconCard
+    icon="Fingerprint"
+    title="Owner from the session"
+    description="Private operations derive the account owner from the verified server session."
+  />
+  <IconCard
+    icon="ShieldCheck"
+    title="Minimize stored data"
+    description="Sensitive source documents are parsed in memory and discarded where the workflow allows."
+  />
+  <IconCard
+    icon="KeyRound"
+    title="Keep credentials private"
+    description="Secrets stay in server-side environment variables and never enter browser bundles."
+  />
 </IconCardGrid>
 
 <InfoPanel title="Preview and production data" icon="TriangleAlert" tone="warning">
-Never point untrusted preview code at production portfolio data. Use separate database branches and credentials for development, Preview and Production.
+  Never point untrusted preview code at production portfolio data. Use separate database branches
+  and credentials for development, Preview and Production.
 </InfoPanel>
 
 ## User isolation

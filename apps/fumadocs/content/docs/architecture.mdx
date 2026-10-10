@@ -5,23 +5,35 @@ icon: Layers
 ---
 
 <IconCardGrid columns={3}>
-  <IconCard icon="AppWindow" title="Application" description="Next.js App Router keeps protected pages and authenticated request handling together." />
-  <IconCard icon="Database" title="PostgreSQL" description="Neon is the shared production source of truth; local Docker Postgres is an independent option." />
-  <IconCard icon="ShieldCheck" title="Account boundaries" description="Better Auth sessions and database ownership relationships protect private records." />
+  <IconCard
+    icon="AppWindow"
+    title="Application"
+    description="Next.js App Router keeps protected pages and authenticated request handling together."
+  />
+  <IconCard
+    icon="Database"
+    title="PostgreSQL"
+    description="Neon is the shared production source of truth; local Docker Postgres is an independent option."
+  />
+  <IconCard
+    icon="ShieldCheck"
+    title="Account boundaries"
+    description="Better Auth sessions and database ownership relationships protect private records."
+  />
 </IconCardGrid>
 
 ## Application stack
 
-| Concern         | Decision                                                        | Why it matters                                                                                                                             |
-| --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Web application | Next.js 16 App Router and React 19                              | Server Components keep financial queries on the server while authenticated route handlers provide explicit mutation and import boundaries. |
-| Interface       | Tailwind CSS, shadcn/ui New York styling and EvilCharts/ECharts | A consistent dashboard-01 visual system with responsive, interactive financial visualizations.                                             |
+| Concern         | Decision                                                        | Why it matters                                                                                                                                                              |
+| --------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Web application | Next.js 16 App Router and React 19                              | Server Components keep financial queries on the server while authenticated route handlers provide explicit mutation and import boundaries.                                  |
+| Interface       | Tailwind CSS, shadcn/ui New York styling and EvilCharts/ECharts | A consistent dashboard-01 visual system with responsive, interactive financial visualizations.                                                                              |
 | Database        | PostgreSQL; Neon is the recommended managed service             | The same schema can back Vercel and Docker. Neon keeps one managed production database available when switching app hosts; Docker Postgres is an optional independent mode. |
-| Data access     | Drizzle ORM, postgres.js and tracked SQL migrations             | A standard PostgreSQL client supports Neon and self-hosted Postgres, with reviewable migrations and database-enforced ownership relationships. |
-| Authentication  | Better Auth                                                     | Google OAuth, email/password authentication, rolling database sessions, secure production cookies and database-backed rate limiting.       |
-| Source archive  | User-owned Google Drive                                         | Optional exact-file retention without placing sensitive documents or storage cost in the application database.                             |
-| Repository      | pnpm workspaces and Turborepo                                   | Keeps the web app, API logic, authentication, database, environment validation, UI and documentation in independently checkable packages.  |
-| Documentation   | Fumadocs                                                        | Versioned product and engineering documentation stored beside the implementation.                                                          |
+| Data access     | Drizzle ORM, postgres.js and tracked SQL migrations             | A standard PostgreSQL client supports Neon and self-hosted Postgres, with reviewable migrations and database-enforced ownership relationships.                              |
+| Authentication  | Better Auth                                                     | Google OAuth, email/password authentication, rolling database sessions, secure production cookies and database-backed rate limiting.                                        |
+| Source archive  | User-owned Google Drive                                         | Optional exact-file retention without placing sensitive documents or storage cost in the application database.                                                              |
+| Repository      | pnpm workspaces and Turborepo                                   | Keeps the web app, API logic, authentication, database, environment validation, UI and documentation in independently checkable packages.                                   |
+| Documentation   | Fumadocs                                                        | Versioned product and engineering documentation stored beside the implementation.                                                                                           |
 
 ## Package boundaries
 

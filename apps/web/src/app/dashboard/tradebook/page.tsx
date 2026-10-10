@@ -10,9 +10,11 @@ import {
   TradebookImportsDataTable,
 } from "@/components/zerodha-data-tables";
 import { ZerodhaTradebookCharts } from "@/components/zerodha-tradebook-charts";
+import { ZerodhaSyncButton } from "@/components/zerodha-sync-button";
 import { formatPercent } from "@/lib/format";
 import { getLatestZerodhaPortfolio } from "@portfolio/api/portfolio-queries";
 import { getZerodhaTradebookAnalytics } from "@portfolio/api/zerodha-tradebook-queries";
+import { getActiveConnection } from "@portfolio/api/zerodha-sync";
 import { auth } from "@portfolio/auth";
 import {
   CalendarRangeIcon,
@@ -25,16 +27,19 @@ import { redirect } from "next/navigation";
 
 const xlsxAccept = ".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-function TradebookImport() {
+function TradebookActions({ isConnected }: { isConnected: boolean }) {
   return (
-    <UploadDialog
-      kind="zerodha_tradebook"
-      title="Import Zerodha tradebooks"
-      description="Select annual Mutual Fund or Equity tradebook XLSX files. Overlapping rows are deduplicated."
-      accept={xlsxAccept}
-      multiple
-      triggerLabel="Import tradebooks"
-    />
+    <div className="flex items-center gap-2">
+      <ZerodhaSyncButton isConnected={isConnected} />
+      <UploadDialog
+        kind="zerodha_tradebook"
+        title="Import Zerodha tradebooks"
+        description="Select annual Mutual Fund or Equity tradebook XLSX files. Overlapping rows are deduplicated."
+        accept={xlsxAccept}
+        multiple
+        triggerLabel="Import tradebooks"
+      />
+    </div>
   );
 }
 
@@ -42,10 +47,13 @@ export default async function TradebookPage() {
   const { formatCurrency } = await getAmountFormatter();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect("/login");
-  const [tradebook, portfolio] = await Promise.all([
+  const [tradebook, portfolio, connection] = await Promise.all([
     getZerodhaTradebookAnalytics(session.user.id),
     getLatestZerodhaPortfolio(session.user.id),
+    getActiveConnection(session.user.id),
   ]);
+
+  const isConnected = Boolean(connection);
 
   if (tradebook.summary.trades === 0) {
     return (
@@ -53,14 +61,14 @@ export default async function TradebookPage() {
         <PageHeader
           title="Tradebook insights"
           description="Turn complete Zerodha transaction history into contribution, redemption and data-quality intelligence."
-          action={<TradebookImport />}
+          action={<TradebookActions isConnected={isConnected} />}
         />
         <div className="mt-4 px-4 lg:px-6">
           <EmptyDataState
             icon={CalendarRangeIcon}
             title="No tradebook history"
-            description="Import every available annual tradebook together. Selvam safely removes overlaps between files."
-            action={<TradebookImport />}
+            description="Connect Zerodha for on-demand sync, or import annual tradebook files."
+            action={<TradebookActions isConnected={isConnected} />}
           />
         </div>
       </div>
@@ -75,7 +83,7 @@ export default async function TradebookPage() {
       <PageHeader
         title="Tradebook insights"
         description="Deduplicated multi-year cash flows, investing behaviour and explicit confidence checks—separate from current holdings."
-        action={<TradebookImport />}
+        action={<TradebookActions isConnected={isConnected} />}
       />
       <SectionCards
         items={[

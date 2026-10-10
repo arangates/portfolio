@@ -7,9 +7,21 @@ icon: ChartPie
 The Capital Deployment Engine (`packages/api/src/capital-deployment-queries.ts` and `capital-deployment-calculations.ts`) dictates how monthly surpluses and uninvested cash should be deployed into the market based on target allocations.
 
 <IconCardGrid columns={3}>
-  <IconCard icon="ChartPie" title="Target weights" description="Your saved policy assigns exactly 100% across the supported asset buckets." />
-  <IconCard icon="ChartNoAxesCombined" title="Contribution-only" description="New capital is directed to underweight buckets without selling existing assets." />
-  <IconCard icon="Globe2" title="Currency-aware" description="Current values are normalized into your base currency before drift is calculated." />
+  <IconCard
+    icon="ChartPie"
+    title="Target weights"
+    description="Your saved policy assigns exactly 100% across the supported asset buckets."
+  />
+  <IconCard
+    icon="ChartNoAxesCombined"
+    title="Contribution-only"
+    description="New capital is directed to underweight buckets without selling existing assets."
+  />
+  <IconCard
+    icon="Globe2"
+    title="Currency-aware"
+    description="Current values are normalized into your base currency before drift is calculated."
+  />
 </IconCardGrid>
 
 ## Target Allocation Policy
@@ -57,7 +69,8 @@ Because the user holds assets in both EUR and INR, the deployment engine relies 
 The `missingCurrencies` array tracks if any asset lacks a valid exchange rate, which would skew the deployment math. If critical exchange rates are missing, the UI flags this as a warning so the user doesn't execute trades based on bad math.
 
 <InfoPanel title="Missing FX blocks trustworthy drift" icon="TriangleAlert" tone="warning">
-When a required currency rate is missing, the portfolio total and calculated weights can be incomplete. Review the warning before using a deployment plan.
+  When a required currency rate is missing, the portfolio total and calculated weights can be
+  incomplete. Review the warning before using a deployment plan.
 </InfoPanel>
 
 ## The Shopping List (Actionable Deployment Plan)

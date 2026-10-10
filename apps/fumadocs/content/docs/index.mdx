@@ -9,26 +9,90 @@ Selvam is a private, multi-currency portfolio application for consolidating cash
 ## Product principles
 
 <IconCardGrid columns={2}>
-  <IconCard icon="Fingerprint" title="Private by account" description="Every portfolio record belongs to one authenticated user. New accounts start with an empty portfolio." />
-  <IconCard icon="FileClock" title="History stays intact" description="Balance and valuation updates add dated snapshots instead of replacing earlier records." />
-  <IconCard icon="Database" title="Repeatable imports" description="Broker files are retained and deduplicated, so overlapping uploads preserve earlier activity." />
-  <IconCard icon="ChartNoAxesCombined" title="Evidence before estimates" description="Imported facts remain distinct from estimates, including values derived from a latest trade price." />
-  <IconCard icon="ShieldCheck" title="Secrets stay private" description="Credentials and personal source files come from local or deployment environment variables." />
+  <IconCard
+    icon="Fingerprint"
+    title="Private by account"
+    description="Every portfolio record belongs to one authenticated user. New accounts start with an empty portfolio."
+  />
+  <IconCard
+    icon="FileClock"
+    title="History stays intact"
+    description="Balance and valuation updates add dated snapshots instead of replacing earlier records."
+  />
+  <IconCard
+    icon="Database"
+    title="Repeatable imports"
+    description="Broker files are retained and deduplicated, so overlapping uploads preserve earlier activity."
+  />
+  <IconCard
+    icon="ChartNoAxesCombined"
+    title="Evidence before estimates"
+    description="Imported facts remain distinct from estimates, including values derived from a latest trade price."
+  />
+  <IconCard
+    icon="ShieldCheck"
+    title="Secrets stay private"
+    description="Credentials and personal source files come from local or deployment environment variables."
+  />
 </IconCardGrid>
 
-<ShowcaseSection icon="Rocket" title="Explore Selvam" description="Go straight to the product areas and guides you need.">
+<ShowcaseSection
+  icon="Rocket"
+  title="Explore Selvam"
+  description="Go straight to the product areas and guides you need."
+>
   <ShowcaseGrid>
-    <ShowcaseCard icon="WalletCards" title="Product features" href="/docs/features" description="Assets, analytics, imports and planning." tone="violet" />
-    <ShowcaseCard icon="Layers3" title="Architecture" href="/docs/architecture" description="How the application is structured." tone="blue" />
-    <ShowcaseCard icon="Database" title="Data and history" href="/docs/data-and-history" description="Snapshots, ledgers and repeatable imports." tone="emerald" />
-    <ShowcaseCard icon="ShieldCheck" title="Security" href="/docs/security" description="Account isolation and production safeguards." tone="rose" />
-    <ShowcaseCard icon="Fingerprint" title="Authentication" href="/docs/authentication" description="Sign-in, sessions and OAuth setup." tone="amber" />
-    <ShowcaseCard icon="Rocket" title="Deployment" href="/docs/deployment" description="Vercel, Docker, databases and failover." tone="cyan" />
+    <ShowcaseCard
+      icon="WalletCards"
+      title="Product features"
+      href="/docs/features"
+      description="Assets, analytics, imports and planning."
+      tone="violet"
+    />
+    <ShowcaseCard
+      icon="Layers3"
+      title="Architecture"
+      href="/docs/architecture"
+      description="How the application is structured."
+      tone="blue"
+    />
+    <ShowcaseCard
+      icon="Database"
+      title="Data and history"
+      href="/docs/data-and-history"
+      description="Snapshots, ledgers and repeatable imports."
+      tone="emerald"
+    />
+    <ShowcaseCard
+      icon="ShieldCheck"
+      title="Security"
+      href="/docs/security"
+      description="Account isolation and production safeguards."
+      tone="rose"
+    />
+    <ShowcaseCard
+      icon="Fingerprint"
+      title="Authentication"
+      href="/docs/authentication"
+      description="Sign-in, sessions and OAuth setup."
+      tone="amber"
+    />
+    <ShowcaseCard
+      icon="Rocket"
+      title="Deployment"
+      href="/docs/deployment"
+      description="Vercel, Docker, databases and failover."
+      tone="cyan"
+    />
   </ShowcaseGrid>
 </ShowcaseSection>
 
 ## Current boundaries
 
 <InfoPanel title="Scope and valuation limits" icon="ShieldCheck" tone="info">
-Selvam does not provide live security prices, trading, bank connectivity, tax calculations or investment advice. Global-equity market values are estimates from the latest imported Degiro trade price. EUR/INR conversion uses official ECB reference-rate history and can optionally use a fresh licensed intraday quote for current valuation; assets without FX coverage are excluded rather than silently assigned a rate.
+  Selvam does not provide live security prices, trading, bank connectivity, tax calculations or
+  investment advice. Global-equity market values are estimates from the latest imported Degiro trade
+  price. EUR/INR conversion uses official ECB reference-rate history and can optionally use a fresh
+  licensed intraday quote for current valuation; assets without FX coverage are excluded rather than
+  silently assigned a rate.
 </InfoPanel>

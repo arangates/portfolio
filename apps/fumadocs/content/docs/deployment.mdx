@@ -10,19 +10,21 @@ Selvam can run on Vercel or as a Docker container. Both deployments use the same
 
 <Tabs label="Deployment pattern" defaultValue="Shared Neon">
   <Tab value="Shared Neon" icon="Globe2">
-    Use one Neon production branch for both Vercel and Docker. You can move the app host during failover without copying or synchronizing the database.
+    Use one Neon production branch for both Vercel and Docker. You can move the app host during
+    failover without copying or synchronizing the database.
   </Tab>
   <Tab value="Self-contained Docker" icon="Server">
-    Run the app with its own Compose Postgres database when you want an independent installation. It starts empty and does not synchronize with Neon or Vercel.
+    Run the app with its own Compose Postgres database when you want an independent installation. It
+    starts empty and does not synchronize with Neon or Vercel.
   </Tab>
 </Tabs>
 
-| Environment | App host | Database | Purpose |
-| --- | --- | --- | --- |
-| Production | Vercel | Neon production branch | Normal live service. |
-| Failover | Docker | The same Neon production branch | Move the app host without moving or synchronizing the database. |
-| Development | Local Next.js or Docker | Separate Neon development branch | Test schema and app changes without writing to production. |
-| Self-contained Docker | Docker Compose | Postgres container and `postgres_data` volume | Independent installation or recovery copy; data is separate from Neon. |
+| Environment           | App host                | Database                                      | Purpose                                                                |
+| --------------------- | ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
+| Production            | Vercel                  | Neon production branch                        | Normal live service.                                                   |
+| Failover              | Docker                  | The same Neon production branch               | Move the app host without moving or synchronizing the database.        |
+| Development           | Local Next.js or Docker | Separate Neon development branch              | Test schema and app changes without writing to production.             |
+| Self-contained Docker | Docker Compose          | Postgres container and `postgres_data` volume | Independent installation or recovery copy; data is separate from Neon. |
 
 Neon branches have separate connection strings and isolate database changes. Because Selvam contains private financial information, use synthetic or schema-only data for development rather than copying personal production records. Never point local development or untrusted previews at the production branch.
 
@@ -30,27 +32,27 @@ Neon branches have separate connection strings and isolate database changes. Bec
 
 Import the Git repository as a Vercel project with:
 
-| Setting | Value |
-| --- | --- |
-| Framework preset | Next.js |
-| Root directory | `apps/web` |
-| Install command | Automatically detected |
-| Output directory | Next.js default |
+| Setting                           | Value                                                |
+| --------------------------------- | ---------------------------------------------------- |
+| Framework preset                  | Next.js                                              |
+| Root directory                    | `apps/web`                                           |
+| Install command                   | Automatically detected                               |
+| Output directory                  | Next.js default                                      |
 | Manual build command, if required | `cd ../.. && pnpm exec turbo run build --filter=web` |
 
 Configure these Production variables:
 
-| Variable | Value |
-| --- | --- |
-| `DATABASE_URL` | Neon pooled connection string; the hostname contains `-pooler`. |
-| `BETTER_AUTH_SECRET` | Random secret of at least 32 characters; generate with `openssl rand -base64 32`. |
-| `BETTER_AUTH_URL` | Exact HTTPS production origin with no trailing slash. |
-| `CORS_ORIGIN` | The same exact production origin. |
-| `GOOGLE_CLIENT_ID` | Optional Google Web OAuth client ID. |
-| `GOOGLE_CLIENT_SECRET` | Optional Google Web OAuth client secret. |
-| `TWELVE_DATA_API_KEY` | Optional server-only key for an indicative intraday EUR/INR quote. |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Optional browser push-notification configuration. |
-| `CRON_SECRET` | Optional secret for protecting cron routes when not supplied by Vercel. |
+| Variable                                                 | Value                                                                             |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                           | Neon pooled connection string; the hostname contains `-pooler`.                   |
+| `BETTER_AUTH_SECRET`                                     | Random secret of at least 32 characters; generate with `openssl rand -base64 32`. |
+| `BETTER_AUTH_URL`                                        | Exact HTTPS production origin with no trailing slash.                             |
+| `CORS_ORIGIN`                                            | The same exact production origin.                                                 |
+| `GOOGLE_CLIENT_ID`                                       | Optional Google Web OAuth client ID.                                              |
+| `GOOGLE_CLIENT_SECRET`                                   | Optional Google Web OAuth client secret.                                          |
+| `TWELVE_DATA_API_KEY`                                    | Optional server-only key for an indicative intraday EUR/INR quote.                |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Optional browser push-notification configuration.                                 |
+| `CRON_SECRET`                                            | Optional secret for protecting cron routes when not supplied by Vercel.           |
 
 Do not put `DATABASE_URL_DIRECT` in the Vercel web runtime. Run migrations from a trusted environment before deploying application code that requires them. The migration command prefers `DATABASE_URL_DIRECT` and falls back to `DATABASE_URL`.
 
@@ -121,6 +123,7 @@ Schema changes are tracked in `packages/db/src/migrations`.
     ```bash
     pnpm db:generate
     ```
+
   </Step>
   <Step title="Review and apply it to a safe branch">
     Review the generated SQL and apply it to a development or preview branch first:
@@ -128,6 +131,7 @@ Schema changes are tracked in `packages/db/src/migrations`.
     ```bash
     pnpm db:migrate
     ```
+
   </Step>
   <Step title="Update the target database before deployment">
     Apply the reviewed migration to the target database before deploying application code that depends on it. The command is safe to repeat because it only runs unapplied tracked migrations.

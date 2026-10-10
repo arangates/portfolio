@@ -38,6 +38,22 @@ type RawRow = {
   rowHash: string;
 };
 
+function firstText(payload: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const text = stringValue(payload[key]).trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function firstNumber(payload: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = numberValue(payload[key]);
+    if (value !== null) return value;
+  }
+  return null;
+}
+
 const CHUNK_SIZE = 200;
 const MAX_IMPORT_ROWS = 100_000;
 
@@ -362,17 +378,34 @@ async function importZerodha(userId: string, file: PortfolioImportFile) {
         const row = worksheet.getRow(rowNumber);
         const values = headers.map((_, index) => normalizeValue(row.getCell(index + 1).value));
         const payload = rowPayload(headers, values);
-        const isin = stringValue(payload.ISIN);
-        const symbol = stringValue(payload.Symbol);
+        const isin = firstText(payload, ["ISIN"]);
+        const symbol = firstText(payload, ["Symbol", "Instrument", "Security", "Name"]);
         if (!isin || !symbol) continue;
 
         const rowHash = stableRowHash([worksheet.name, ...values]);
         rawRows.push({ rowNumber: rawRows.length + 1, values, payload, rowHash });
 
-        const quantity = numberValue(payload["Quantity Available"]);
-        const averagePrice = numberValue(payload["Average Price"]);
-        const marketPrice = numberValue(payload["Previous Closing Price"]);
-        const unrealizedPnl = numberValue(payload["Unrealized P&L"]);
+        const quantity = firstNumber(payload, ["Quantity Available", "Qty.", "Qty", "Quantity"]);
+        const averagePrice = firstNumber(payload, [
+          "Average Price",
+          "Avg. cost",
+          "Average",
+          "Avg Cost",
+        ]);
+        const marketPrice = firstNumber(payload, [
+          "LTP",
+          "Current Price",
+          "Current NAV",
+          "Previous Closing Price",
+        ]);
+        const explicitInvested = firstNumber(payload, ["Invested", "Invested Value"]);
+        const explicitMarketValue = firstNumber(payload, [
+          "Cur. val",
+          "Current Value",
+          "Market Value",
+          "Cur val",
+        ]);
+        const explicitUnrealizedPnl = firstNumber(payload, ["P&L", "Unrealized P&L"]);
         if (quantity === null) continue;
 
         const assetClass = stringValue(payload.Sector || payload["Instrument Type"] || "Equity");
@@ -384,8 +417,15 @@ async function importZerodha(userId: string, file: PortfolioImportFile) {
           assetClass,
           currency: "INR",
         });
-        const rowInvestedValue = averagePrice === null ? null : quantity * averagePrice;
-        const rowMarketValue = marketPrice === null ? null : quantity * marketPrice;
+        const rowInvestedValue =
+          explicitInvested ?? (averagePrice === null ? null : quantity * averagePrice);
+        const rowMarketValue =
+          explicitMarketValue ?? (marketPrice === null ? null : quantity * marketPrice);
+        const unrealizedPnl =
+          explicitUnrealizedPnl ??
+          (rowInvestedValue !== null && rowMarketValue !== null
+            ? rowMarketValue - rowInvestedValue
+            : null);
         const inserted = await db
           .insert(positionSnapshot)
           .values({

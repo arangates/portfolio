@@ -18,6 +18,8 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().min(1).optional(),
     EMAIL_FROM: z.string().min(3).optional(),
     CRON_SECRET: z.string().min(16).optional(),
+    KITE_API_KEY: z.string().min(1).optional(),
+    KITE_API_SECRET: z.string().min(1).optional(),
     NEXT_PUBLIC_ENABLE_LABS: z.string().optional(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   },

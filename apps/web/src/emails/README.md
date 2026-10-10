@@ -69,7 +69,7 @@ import {
   sendNotificationEmail,
   sendBillsEmail,
   sendContractsEmail,
-  sendDepositsEmail
+  sendDepositsEmail,
 } from "@/emails/services/email-service";
 
 // Send a test email
@@ -85,7 +85,7 @@ await sendNotificationEmail(
   totalCount,
   daysAhead,
   "Custom Title",
-  "idempotency-key-123"
+  "idempotency-key-123",
 );
 ```
 
@@ -137,11 +137,13 @@ export async function sendCustomEmail(to: string, name: string, idempotencyKey?:
 ### Local Development Preview
 
 Access the email preview interface at:
+
 ```
 http://localhost:3001/emails/preview
 ```
 
 Or preview specific templates:
+
 ```
 http://localhost:3001/emails/preview/notification
 http://localhost:3001/emails/preview/test
@@ -154,6 +156,7 @@ http://localhost:3001/emails/preview/deposits
 ### API Preview
 
 Get HTML preview via API:
+
 ```bash
 curl http://localhost:3001/api/emails/preview/notification
 ```
@@ -174,6 +177,7 @@ export const emailConfig = {
 ## Environment Variables
 
 Required for email sending:
+
 - `RESEND_API_KEY` - API key from Resend
 - `EMAIL_FROM` - Sender email address
 
@@ -184,6 +188,7 @@ These are already configured in your `.env` file.
 The existing `sendEmail` function in `push-notifications.ts` has been updated to use the new React Email services while maintaining backward compatibility.
 
 ### Before (Plain Text)
+
 ```typescript
 async function sendEmail(to: string, subject: string, textBody: string) {
   const resend = new Resend(env.RESEND_API_KEY);
@@ -191,12 +196,13 @@ async function sendEmail(to: string, subject: string, textBody: string) {
     from: env.EMAIL_FROM,
     to: [to],
     subject,
-    text: textBody
+    text: textBody,
   });
 }
 ```
 
 ### After (React Email Templates)
+
 ```typescript
 import { sendTemplatedEmail } from "@/emails/services/email-service";
 
@@ -208,6 +214,7 @@ async function sendEmail(to: string, subject: string, reactElement: React.ReactE
 ## Email Design Guidelines
 
 ### Colors
+
 - **Primary**: `#0ea5e9` (Sky Blue)
 - **Success**: `#22c55e` (Green)
 - **Warning**: `#f59e0b` (Amber)
@@ -218,6 +225,7 @@ async function sendEmail(to: string, subject: string, reactElement: React.ReactE
 - **Text Secondary**: `#64748b` (Medium Gray)
 
 ### Typography
+
 - **Heading 1**: 32px, bold
 - **Heading 2**: 24px, bold
 - **Heading 3**: 20px, semibold
@@ -226,6 +234,7 @@ async function sendEmail(to: string, subject: string, reactElement: React.ReactE
 - **Small**: 12px, regular
 
 ### Spacing
+
 - Use multiples of 4px for consistent spacing
 - Main content: 32px padding
 - Sections: 24px margin
@@ -234,12 +243,14 @@ async function sendEmail(to: string, subject: string, reactElement: React.ReactE
 ## Testing Emails
 
 ### Test Email Function
+
 ```typescript
 // This has been updated to use the new React Email template
 await sendTestEmail(userId);
 ```
 
 ### Manual Testing
+
 1. Start the development server
 2. Visit `/emails/preview` to see all templates
 3. Use the authenticated API endpoint `/api/emails/send` with `{ "type": "test" }` or `{ "type": "welcome" }`. It sends only to the signed-in user's verified account email; recipient addresses cannot be supplied.
@@ -247,17 +258,21 @@ await sendTestEmail(userId);
 ## Troubleshooting
 
 ### Missing Dependencies
+
 If you see import errors, ensure you've installed the required packages:
+
 ```bash
 pnpm add @react-email/components @react-email/render @react-email/tailwind
 ```
 
 ### Email Not Sending
+
 1. Verify `RESEND_API_KEY` and `EMAIL_FROM` are set in `.env`
 2. Check that your Resend account is properly configured
 3. Ensure your domain is verified in Resend
 
 ### Template Rendering Issues
+
 1. Check for React syntax errors in your templates
 2. Ensure all components are properly imported
 3. Verify that you're using email-compatible components from `@react-email/components`
@@ -267,27 +282,35 @@ pnpm add @react-email/components @react-email/render @react-email/tailwind
 ### Email Service Functions
 
 #### `sendTemplatedEmail(to, subject, template, idempotencyKey?)`
+
 Send any React Email template
 
 #### `sendNotificationEmail(to, events, totalCount, daysAhead, title?, idempotencyKey?)`
+
 Send financial notification email
 
 #### `sendTestTemplatedEmail(to, userName?, idempotencyKey?)`
+
 Send test email template
 
 #### `sendWelcomeEmail(to, userName, idempotencyKey?)`
+
 Send welcome/onboarding email
 
 #### `sendBillsEmail(to, bills, totalAmount, dueTodayCount, overdueCount, upcomingCount, idempotencyKey?)`
+
 Send bills reminder email
 
 #### `sendContractsEmail(to, contracts, totalContracts, expiringSoonCount, expiringTodayCount, expiredCount, idempotencyKey?)`
+
 Send contracts renewal email
 
 #### `sendDepositsEmail(to, deposits, totalDeposits, maturingTodayCount, maturedCount, maturingSoonCount, totalMaturityAmount, idempotencyKey?)`
+
 Send deposits maturity email
 
 #### `sendLegacyTextEmail(to, subject, textBody, idempotencyKey?)`
+
 Send plain text email (for backward compatibility)
 
 ## Resources

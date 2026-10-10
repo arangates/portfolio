@@ -7,13 +7,26 @@ icon: ChartLine
 The Verified Returns Engine (`packages/api/src/verified-returns-queries.ts`) calculates annualized performance from dated cash flows when the underlying evidence is sufficient. Unlike point-to-point yield, XIRR accounts for when capital was added or withdrawn.
 
 <IconCardGrid columns={3}>
-  <IconCard icon="ChartNoAxesCombined" title="Cash-flow timing" description="XIRR uses dated purchases, sales and current value to annualize a return." />
-  <IconCard icon="Globe2" title="Provider and currency scope" description="Zerodha INR and Degiro EUR returns remain isolated from one another." />
-  <IconCard icon="BadgeCheck" title="Evidence coverage" description="The engine qualifies data quality and withholds XIRR when the evidence is insufficient." />
+  <IconCard
+    icon="ChartNoAxesCombined"
+    title="Cash-flow timing"
+    description="XIRR uses dated purchases, sales and current value to annualize a return."
+  />
+  <IconCard
+    icon="Globe2"
+    title="Provider and currency scope"
+    description="Zerodha INR and Degiro EUR returns remain isolated from one another."
+  />
+  <IconCard
+    icon="BadgeCheck"
+    title="Evidence coverage"
+    description="The engine qualifies data quality and withholds XIRR when the evidence is insufficient."
+  />
 </IconCardGrid>
 
 <InfoPanel title="Verified and derived returns differ" icon="Lightbulb" tone="info">
-XIRR requires dated cash-flow evidence. Modified Dietz uses periodic valuations where a complete transaction ledger is unavailable, so the interface labels it as a derived estimate.
+  XIRR requires dated cash-flow evidence. Modified Dietz uses periodic valuations where a complete
+  transaction ledger is unavailable, so the interface labels it as a derived estimate.
 </InfoPanel>
 
 ## XIRR (Extended Internal Rate of Return)

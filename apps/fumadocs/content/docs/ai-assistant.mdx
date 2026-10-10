@@ -7,15 +7,28 @@ icon: Bot
 The **Ask Selvam** feature is a conversational assistant embedded in the application. It can read selected, account-scoped financial context to answer questions about the user's records.
 
 <IconCardGrid columns={3}>
-  <IconCard icon="KeyRound" title="Your provider key" description="You connect a supported model provider with your own API key." />
-  <IconCard icon="Database" title="Account-scoped context" description="Responses can use a portfolio overview and selected read-only financial sections." />
-  <IconCard icon="ShieldCheck" title="Private conversations" description="Threads stay attached to the account and do not create public share links." />
+  <IconCard
+    icon="KeyRound"
+    title="Your provider key"
+    description="You connect a supported model provider with your own API key."
+  />
+  <IconCard
+    icon="Database"
+    title="Account-scoped context"
+    description="Responses can use a portfolio overview and selected read-only financial sections."
+  />
+  <IconCard
+    icon="ShieldCheck"
+    title="Private conversations"
+    description="Threads stay attached to the account and do not create public share links."
+  />
 </IconCardGrid>
 
 ## Bring Your Own Key (BYO-Key) Security
 
 <InfoPanel title="Key handling" icon="ShieldCheck" tone="tip">
-Provider keys are encrypted per account, decrypted only in memory for a chat request, and never returned to the browser after saving.
+  Provider keys are encrypted per account, decrypted only in memory for a chat request, and never
+  returned to the browser after saving.
 </InfoPanel>
 
 Because personal financial data is highly sensitive, the application uses a Bring Your Own Key (BYO-key) model for the chat feature.

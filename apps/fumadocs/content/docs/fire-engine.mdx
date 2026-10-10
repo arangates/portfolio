@@ -7,9 +7,21 @@ icon: Flame
 The FIRE Engine is responsible for projecting whether the user's current wealth and savings velocity can safely sustain them through their planned retirement, handling complex dual-country tax implications and inflation.
 
 <IconCardGrid columns={3}>
-  <IconCard icon="WalletCards" title="Starting position" description="Builds investable assets and savings from account-owned financial records." />
-  <IconCard icon="ChartNoAxesCombined" title="Deterministic plan" description="Projects accumulation, retirement spending and the resulting corpus gap." />
-  <IconCard icon="ChartPie" title="Range of outcomes" description="Uses seeded market and inflation paths to show uncertainty around the plan." />
+  <IconCard
+    icon="WalletCards"
+    title="Starting position"
+    description="Builds investable assets and savings from account-owned financial records."
+  />
+  <IconCard
+    icon="ChartNoAxesCombined"
+    title="Deterministic plan"
+    description="Projects accumulation, retirement spending and the resulting corpus gap."
+  />
+  <IconCard
+    icon="ChartPie"
+    title="Range of outcomes"
+    description="Uses seeded market and inflation paths to show uncertainty around the plan."
+  />
 </IconCardGrid>
 
 ## Architecture
@@ -34,7 +46,9 @@ The deterministic projection uses fixed return and inflation rates to calculate 
 ## Monte Carlo Simulation
 
 <InfoPanel title="A range, not a promise" icon="TriangleAlert" tone="warning">
-The success probability summarizes simulated paths using the configured assumptions. It is sensitive to returns, inflation, spending and sequence risk, and does not predict or guarantee a future outcome.
+  The success probability summarizes simulated paths using the configured assumptions. It is
+  sensitive to returns, inflation, spending and sequence risk, and does not predict or guarantee a
+  future outcome.
 </InfoPanel>
 
 Because straight-line returns are unrealistic, the engine runs a 1,000-path Monte Carlo simulation (`runMonteCarlo`).

@@ -144,14 +144,42 @@ export async function getLatestZerodhaPortfolio(userId: string) {
       investedValue: positionSnapshot.investedValue,
       marketValue: positionSnapshot.marketValue,
       unrealizedPnl: positionSnapshot.unrealizedPnl,
+      sourcePayload: importRow.payload,
     })
     .from(positionSnapshot)
     .innerJoin(
       instrument,
       and(eq(positionSnapshot.instrumentId, instrument.id), eq(instrument.userId, userId)),
     )
+    .leftJoin(
+      importRow,
+      and(
+        eq(importRow.userId, userId),
+        eq(importRow.batchId, positionSnapshot.batchId),
+        eq(importRow.rowHash, positionSnapshot.rawRowHash),
+      ),
+    )
     .where(and(eq(positionSnapshot.userId, userId), eq(positionSnapshot.batchId, latestImport.id)))
     .orderBy(desc(positionSnapshot.marketValue));
+
+  const parseImportedNumber = (value: unknown) => {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value !== "string") return null;
+    const cleaned = value.replace(/[^0-9.+-]/g, "").trim();
+    if (!cleaned) return null;
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const getImportedMetric = (payload: unknown, keys: string[]) => {
+    if (!payload || typeof payload !== "object") return null;
+    const record = payload as Record<string, unknown>;
+    for (const key of keys) {
+      const parsed = parseImportedNumber(record[key]);
+      if (parsed !== null) return parsed;
+    }
+    return null;
+  };
 
   return {
     statementDate: latestImport.statementDate,
@@ -167,6 +195,8 @@ export async function getLatestZerodhaPortfolio(userId: string) {
       investedValue: Number(row.investedValue ?? 0),
       marketValue: Number(row.marketValue ?? 0),
       unrealizedPnl: Number(row.unrealizedPnl ?? 0),
+      netChangePercent: getImportedMetric(row.sourcePayload, ["Net chg.", "Net chg"]),
+      dayChangePercent: getImportedMetric(row.sourcePayload, ["Day chg.", "Day chg"]),
     })),
   };
 }

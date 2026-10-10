@@ -5,13 +5,26 @@ icon: Database
 ---
 
 <IconCardGrid columns={3}>
-  <IconCard icon="Database" title="Dated snapshots" description="Changing financial values add history instead of overwriting earlier records." />
-  <IconCard icon="FileClock" title="Import evidence" description="Batches, fingerprints and normalized rows make uploads traceable and repeatable." />
-  <IconCard icon="ShieldCheck" title="Account ownership" description="Every stored record and source document remains scoped to its authenticated account." />
+  <IconCard
+    icon="Database"
+    title="Dated snapshots"
+    description="Changing financial values add history instead of overwriting earlier records."
+  />
+  <IconCard
+    icon="FileClock"
+    title="Import evidence"
+    description="Batches, fingerprints and normalized rows make uploads traceable and repeatable."
+  />
+  <IconCard
+    icon="ShieldCheck"
+    title="Account ownership"
+    description="Every stored record and source document remains scoped to its authenticated account."
+  />
 </IconCardGrid>
 
 <InfoPanel title="Source-file boundary" icon="ShieldCheck" tone="info">
-New browser imports do not keep the original broker or tax file in Postgres. Optional Drive archiving stores selected source documents privately in the owner's Drive account.
+  New browser imports do not keep the original broker or tax file in Postgres. Optional Drive
+  archiving stores selected source documents privately in the owner's Drive account.
 </InfoPanel>
 
 ## Historical model

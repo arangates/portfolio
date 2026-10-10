@@ -58,17 +58,17 @@ That local database persists in the `postgres_data` volume. It does not sync dat
 
 ## Environment variables
 
-| Variable              | Purpose                                 |
-| --------------------- | --------------------------------------- |
-| `DATABASE_URL`        | Pooled application connection           |
-| `DATABASE_URL_DIRECT` | Direct migration connection             |
-| `BETTER_AUTH_SECRET`  | Random secret of at least 32 characters |
-| `BETTER_AUTH_URL`     | Canonical application URL               |
-| `CORS_ORIGIN`         | Trusted browser origin                  |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional Google OAuth sign-in |
-| `TWELVE_DATA_API_KEY`  | Optional indicative intraday FX quote   |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Optional browser push notifications |
-| `CRON_SECRET`          | Optional secret for cron endpoints      |
+| Variable                                                 | Purpose                                 |
+| -------------------------------------------------------- | --------------------------------------- |
+| `DATABASE_URL`                                           | Pooled application connection           |
+| `DATABASE_URL_DIRECT`                                    | Direct migration connection             |
+| `BETTER_AUTH_SECRET`                                     | Random secret of at least 32 characters |
+| `BETTER_AUTH_URL`                                        | Canonical application URL               |
+| `CORS_ORIGIN`                                            | Trusted browser origin                  |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`               | Optional Google OAuth sign-in           |
+| `TWELVE_DATA_API_KEY`                                    | Optional indicative intraday FX quote   |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Optional browser push notifications     |
+| `CRON_SECRET`                                            | Optional secret for cron endpoints      |
 
 Generate an authentication secret with `openssl rand -base64 32`. Never commit a real `.env` file.
 

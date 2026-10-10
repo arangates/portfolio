@@ -13,3 +13,4 @@ export * from "./tax";
 export * from "./netherlands-tax";
 export * from "./mortgage";
 export * from "./notifications";
+export * from "./zerodha";

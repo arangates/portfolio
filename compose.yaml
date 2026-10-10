@@ -45,8 +45,7 @@ services:
       target: runtime
     restart: unless-stopped
     working_dir: /repo/packages/db
-    command:
-      ["./node_modules/.bin/drizzle-kit", "studio", "--host", "0.0.0.0", "--port", "4983"]
+    command: ["./node_modules/.bin/drizzle-kit", "studio", "--host", "0.0.0.0", "--port", "4983"]
     environment:
       DATABASE_URL: ${DATABASE_URL:-}
       DATABASE_URL_DIRECT: ${DATABASE_URL_DIRECT:-}

@@ -5,9 +5,21 @@ icon: Trash2
 ---
 
 <IconCardGrid columns={3}>
-  <IconCard icon="Eye" title="Inspect the branch" description="Start with a dry run and verify the displayed database host." />
-  <IconCard icon="ShieldCheck" title="Preserve recovery" description="Create a Neon restore point before resetting valuable data." />
-  <IconCard icon="Database" title="Keep the schema" description="The guarded reset removes application rows but preserves tracked migrations." />
+  <IconCard
+    icon="Eye"
+    title="Inspect the branch"
+    description="Start with a dry run and verify the displayed database host."
+  />
+  <IconCard
+    icon="ShieldCheck"
+    title="Preserve recovery"
+    description="Create a Neon restore point before resetting valuable data."
+  />
+  <IconCard
+    icon="Database"
+    title="Keep the schema"
+    description="The guarded reset removes application rows but preserves tracked migrations."
+  />
 </IconCardGrid>
 
 The repository includes a guarded reset command for removing test or disposable portfolio data. It erases every table in the Postgres `public` schema, including users, sessions, imports, ledgers, snapshots, assets, audit events, verification records and rate limits.
@@ -45,11 +57,13 @@ The command preserves the Drizzle migration table in the separate `drizzle` sche
     - the exact `--expect-host` value required for execution.
 
     No rows are changed during a dry run. Confirm that the displayed host is the intended Neon branch before continuing.
+
   </Step>
 
-  <Step title="Preserve a recovery point when needed">
-    For production or valuable data, create a Neon branch or verify that a suitable restore point exists. The reset command does not create a backup automatically.
-  </Step>
+<Step title="Preserve a recovery point when needed">
+  For production or valuable data, create a Neon branch or verify that a suitable restore point
+  exists. The reset command does not create a backup automatically.
+</Step>
 
   <Step title="Execute the reset">
     Copy the hostname printed by the dry run and execute:
@@ -64,6 +78,7 @@ The command preserves the Drizzle migration table in the separate `drizzle` sche
     All three destructive arguments are required. A missing confirmation, altered phrase or hostname mismatch stops the command before truncation.
 
     The script prefers `DATABASE_URL_DIRECT` and falls back to `DATABASE_URL`. Both are loaded from `apps/web/.env` during local operation.
+
   </Step>
 
   <Step title="Verify the result">
@@ -75,6 +90,7 @@ The command preserves the Drizzle migration table in the separate `drizzle` sche
     It exits with an error if either check fails. A successful reset reports `"verified": true` and `"totalRows": 0`.
 
     Existing sessions become invalid because all users and sessions are removed. Open `/signup` to create the first clean account.
+
   </Step>
 </Steps>
 
