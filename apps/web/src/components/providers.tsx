@@ -13,7 +13,7 @@ import { ThemeProvider } from "./theme-provider";
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      <IconContext.Provider value={{ weight: "duotone" }}>
+      <IconContext.Provider value={{ weight: "regular" }}>
         <PwaProvider>
           <QueryClientProvider client={queryClient}>
             {children}

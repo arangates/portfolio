@@ -235,8 +235,8 @@ import { XIcon as BaseXIcon } from "@phosphor-icons/react/dist/ssr/X";
 export type PhosphorIcon = ComponentType<IconProps>;
 
 function duotoneIcon(BaseIcon: PhosphorIconComponent): PhosphorIcon {
-  return function DuotoneIcon(props: IconProps) {
-    return <BaseIcon {...props} weight={props.weight ?? "duotone"} />;
+  return function WrappedIcon(props: IconProps) {
+    return <BaseIcon {...props} weight={props.weight ?? "regular"} />;
   };
 }
 
