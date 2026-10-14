@@ -13,6 +13,8 @@ import {
   householdServiceContractSnapshot,
 } from "@portfolio/db";
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { buildMortgageModel } from "./mortgage-calculations";
+import { getMortgageBankPayments, getMortgageRecord } from "./mortgage-queries";
 
 function latestBy<T>(rows: T[], key: (row: T) => string) {
   const latest = new Map<string, T>();
@@ -57,6 +59,88 @@ function contractHealth(status: string, contractEndDate: string | null) {
   return "active";
 }
 
+export type HouseSetupCategory =
+  | "Notary"
+  | "Broker commission"
+  | "Mortgage advisor"
+  | "Taxes"
+  | "Other expenses";
+
+export type HouseSetupGroup = {
+  category: HouseSetupCategory;
+  amount: number;
+  itemCount: number;
+  percentageOfTotal: number;
+  percentageOfMortgage: number;
+  items: Array<{
+    id: string;
+    name: string;
+    amount: number;
+    purchasedOn: string | null;
+    vendor: string | null;
+  }>;
+};
+
+export type HouseAcquisitionCosts = {
+  currency: string;
+  mortgagePaidSoFar: number;
+  mortgagePaymentsCount: number;
+  mortgageMonthlyPayment: number | null;
+  purchasePrice: number | null;
+  propertyValue: number | null;
+  oneTimeSetupTotal: number;
+  totalCosts: number;
+  totalAcquisitionCosts: number;
+  groups: HouseSetupGroup[];
+};
+
+export function classifyHouseSetupExpense(purchase: {
+  name: string;
+  category: string;
+  vendor?: string | null;
+  notes?: string | null;
+}): HouseSetupCategory {
+  const cat = purchase.category?.trim();
+  if (
+    cat === "Notary" ||
+    cat === "Broker commission" ||
+    cat === "Mortgage advisor" ||
+    cat === "Taxes" ||
+    cat === "Other expenses"
+  ) {
+    return cat as HouseSetupCategory;
+  }
+  const text =
+    `${purchase.category || ""} ${purchase.name || ""} ${purchase.vendor ?? ""} ${purchase.notes ?? ""}`.toLowerCase();
+  if (text.includes("notar")) return "Notary";
+  if (
+    text.includes("makelaar") ||
+    text.includes("broker") ||
+    text.includes("brokage") ||
+    text.includes("real estate advisor") ||
+    text.includes("real estate agent")
+  ) {
+    return "Broker commission";
+  }
+  if (
+    text.includes("mortgage advisor") ||
+    text.includes("financieel fit") ||
+    text.includes("hypotheekadv") ||
+    text.includes("loan advisor")
+  ) {
+    return "Mortgage advisor";
+  }
+  if (
+    text.includes("tax") ||
+    text.includes("belasting") ||
+    text.includes("overdracht") ||
+    text.includes("kadaster")
+  ) {
+    return "Taxes";
+  }
+  return "Other expenses";
+}
+
 async function getHouseholdDashboardUncached(userId: string) {
   const [
     profiles,
@@ -67,6 +151,7 @@ async function getHouseholdDashboardUncached(userId: string) {
     contractRows,
     termRows,
     purchases,
+    mortgageRecord,
   ] = await Promise.all([
     db.select().from(householdProfile).where(eq(householdProfile.userId, userId)).limit(1),
     db
@@ -117,6 +202,7 @@ async function getHouseholdDashboardUncached(userId: string) {
       .from(householdPurchase)
       .where(and(eq(householdPurchase.userId, userId), isNull(householdPurchase.archivedAt)))
       .orderBy(desc(householdPurchase.purchasedOn), desc(householdPurchase.createdAt)),
+    getMortgageRecord(userId),
   ]);
 
   const profileRow = profiles[0];
@@ -244,6 +330,78 @@ async function getHouseholdDashboardUncached(userId: string) {
     }),
   );
 
+  let totalMortgagePaid = 0;
+  let mortgagePaymentsCount = 0;
+  if (mortgageRecord) {
+    const bank = await getMortgageBankPayments(
+      userId,
+      mortgageRecord.settings.terms.monthlyPayment,
+    );
+    if (bank.payments.length > 0) {
+      totalMortgagePaid = money(bank.payments.reduce((sum, p) => sum + Math.abs(p.amount), 0));
+      mortgagePaymentsCount = bank.payments.length;
+    } else {
+      const model = buildMortgageModel({
+        terms: mortgageRecord.settings.terms,
+        rateBasis: mortgageRecord.settings.rateBasis,
+        extras: mortgageRecord.settings.extras,
+      });
+      totalMortgagePaid = money(model.summary.paidToDate);
+      mortgagePaymentsCount = model.history.length;
+    }
+  }
+
+  const houseSetupPurchases = oneTimeExpenses.filter((p) => p.scope === "house_setup");
+  const categoriesList: HouseSetupCategory[] = [
+    "Notary",
+    "Broker commission",
+    "Mortgage advisor",
+    "Taxes",
+    "Other expenses",
+  ];
+
+  const houseSetupGroups: HouseSetupGroup[] = categoriesList.map((category) => {
+    const items = houseSetupPurchases.filter((p) => classifyHouseSetupExpense(p) === category);
+    const amount = money(items.reduce((sum, item) => sum + item.amount, 0));
+    return {
+      category,
+      amount,
+      itemCount: items.length,
+      percentageOfTotal: 0,
+      percentageOfMortgage: totalMortgagePaid > 0 ? (amount / totalMortgagePaid) * 100 : 0,
+      items: items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        amount: item.amount,
+        purchasedOn: item.purchasedOn,
+        vendor: item.vendor,
+      })),
+    };
+  });
+
+  const houseSetupTotal = money(houseSetupGroups.reduce((sum, group) => sum + group.amount, 0));
+  const totalCosts = money(totalMortgagePaid + houseSetupTotal);
+  for (const group of houseSetupGroups) {
+    group.percentageOfTotal = totalCosts > 0 ? (group.amount / totalCosts) * 100 : 0;
+  }
+
+  const purchasePrice = mortgageRecord?.settings.terms.originalAmount ?? null;
+  const propertyValue = mortgageRecord?.settings.terms.propertyValue ?? null;
+  const totalAcquisitionCosts = money((purchasePrice ?? 0) + houseSetupTotal);
+
+  const houseAcquisitionCosts: HouseAcquisitionCosts = {
+    currency,
+    mortgagePaidSoFar: totalMortgagePaid,
+    mortgagePaymentsCount,
+    mortgageMonthlyPayment: mortgageRecord?.settings.terms.monthlyPayment ?? null,
+    purchasePrice,
+    propertyValue,
+    oneTimeSetupTotal: houseSetupTotal,
+    totalCosts,
+    totalAcquisitionCosts,
+    groups: houseSetupGroups,
+  };
+
   return {
     configured: Boolean(profileRow),
     profile: profileRow
@@ -269,6 +427,7 @@ async function getHouseholdDashboardUncached(userId: string) {
     })),
     categoryBreakdown,
     purchaseTotals,
+    houseAcquisitionCosts,
     metrics: {
       ...currentTotals,
       essentialExpenses: money(
@@ -305,6 +464,7 @@ export async function getHouseholdExport(userId: string) {
     scenarios: dashboard.scenarios,
     contracts: dashboard.contracts,
     purchases: dashboard.oneTimeExpenses,
+    houseAcquisitionCosts: dashboard.houseAcquisitionCosts,
     budgetHistory: dashboard.budgetHistory,
     contractHistory: dashboard.contractHistory,
   };

@@ -9,6 +9,7 @@ import {
   type HouseholdArchiveKind,
 } from "@portfolio/api/household-mutations";
 import { auth } from "@portfolio/auth";
+import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
 
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
               : input.kind === "household_service_contract"
                 ? await saveHouseholdContract(session.user.id, input.data)
                 : await saveHouseholdPurchase(session.user.id, input.data);
+    revalidateTag("household", { expire: 0 });
     return Response.json(result, { status: 201 });
   } catch (error) {
     return Response.json(
@@ -70,7 +72,9 @@ export async function DELETE(request: Request) {
     const url = new URL(request.url);
     const kind = archiveKind.parse(url.searchParams.get("kind")) as HouseholdArchiveKind;
     const id = z.uuid().parse(url.searchParams.get("id"));
-    return Response.json(await archiveHouseholdRecord(session.user.id, kind, id));
+    const result = await archiveHouseholdRecord(session.user.id, kind, id);
+    revalidateTag("household", { expire: 0 });
+    return Response.json(result);
   } catch (error) {
     return Response.json(
       { error: safeMessage(error, "Could not archive household record") },

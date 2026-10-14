@@ -295,11 +295,11 @@ for (let rowNumber = 2; rowNumber <= contractsSheet.rowCount; rowNumber += 1) {
 }
 
 function setupCategory(name) {
-  if (/notary|makelaar|advisor|appraiser|financieel/i.test(name))
-    return "Transaction & professional";
-  if (/mover|exit dieze/i.test(name)) return "Moving";
-  if (/garden/i.test(name)) return "Garden";
-  return "Furnishing & appliances";
+  if (/notar/i.test(name)) return "Notary";
+  if (/makelaar|broker|advisor\(real|real estate/i.test(name)) return "Broker commission";
+  if (/financieel fit|mortgage advisor|hypotheek/i.test(name)) return "Mortgage advisor";
+  if (/tax|belasting|overdracht/i.test(name)) return "Taxes";
+  return "Other expenses";
 }
 const purchases = [];
 for (let rowNumber = 2; rowNumber <= setupSheet.rowCount; rowNumber += 1) {

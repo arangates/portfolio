@@ -2,6 +2,7 @@ import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
 import { HouseholdArchiveButton } from "@/components/household-archive-button";
 import { HouseholdCharts } from "@/components/household-charts";
+import { HouseCostBreakdownChart } from "@/components/house-cost-breakdown-chart";
 import { HouseholdRecordDialog } from "@/components/household-record-dialog";
 import { PageHeader } from "@/components/page-header";
 import { SectionCards } from "@/components/section-cards";
@@ -476,6 +477,10 @@ export default async function HouseholdPage() {
               </TableBody>
             </Table>
           </TableCard>
+        </div>
+
+        <div className="px-4 lg:px-6">
+          <HouseCostBreakdownChart costs={data.houseAcquisitionCosts} />
         </div>
 
         <div className="px-4 lg:px-6">

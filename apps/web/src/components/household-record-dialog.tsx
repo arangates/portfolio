@@ -60,6 +60,7 @@ function TextField({
   max,
   step,
   description,
+  list,
 }: {
   values: Values;
   name: string;
@@ -70,6 +71,7 @@ function TextField({
   max?: string;
   step?: string;
   description?: string;
+  list?: string;
 }) {
   return (
     <Field>
@@ -83,6 +85,7 @@ function TextField({
         min={min}
         max={max}
         step={step}
+        list={list}
       />
       {description ? <FieldDescription>{description}</FieldDescription> : null}
     </Field>
@@ -406,7 +409,20 @@ function Fields({
             { value: "other", label: "Other" },
           ]}
         />
-        <TextField values={values} name="category" label="Category" />
+        <TextField
+          values={values}
+          name="category"
+          label="Category"
+          list="house-setup-category-options"
+          description="E.g. Notary, Broker commission, Mortgage advisor, Taxes, Other expenses"
+        />
+        <datalist id="house-setup-category-options">
+          <option value="Notary" />
+          <option value="Broker commission" />
+          <option value="Mortgage advisor" />
+          <option value="Taxes" />
+          <option value="Other expenses" />
+        </datalist>
         <TextField values={values} name="vendor" label="Vendor" required={false} />
         <TextField values={values} name="amount" label="Amount" type="number" min="0" step="0.01" />
         <TextField values={values} name="currency" label="Currency" />
