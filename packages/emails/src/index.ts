@@ -15,6 +15,32 @@ export { DepositsEmail, DepositsEmailPreview } from "./templates/DepositsEmail";
 
 export { InvestmentsEmail, InvestmentsEmailPreview } from "./templates/InvestmentsEmail";
 
+export { CurrencyAlertEmail, CurrencyAlertEmailPreview } from "./templates/CurrencyAlertEmail";
+
+export { FireMilestoneEmail, FireMilestoneEmailPreview } from "./templates/FireMilestoneEmail";
+
+export { SalaryCreditEmail, SalaryCreditEmailPreview } from "./templates/SalaryCreditEmail";
+
+export {
+  BullionValuationEmail,
+  BullionValuationEmailPreview,
+} from "./templates/BullionValuationEmail";
+
+export { MortgageUpdateEmail, MortgageUpdateEmailPreview } from "./templates/MortgageUpdateEmail";
+
+export {
+  TaxFilingReminderEmail,
+  TaxFilingReminderEmailPreview,
+} from "./templates/TaxFilingReminderEmail";
+
+export { CashFlowDigestEmail, CashFlowDigestEmailPreview } from "./templates/CashFlowDigestEmail";
+
+export { DividendPayoutEmail, DividendPayoutEmailPreview } from "./templates/DividendPayoutEmail";
+
+export { SipExecutionEmail, SipExecutionEmailPreview } from "./templates/SipExecutionEmail";
+
+export { DocumentExpiryEmail, DocumentExpiryEmailPreview } from "./templates/DocumentExpiryEmail";
+
 // Email components
 export { EmailLayout } from "./components/EmailLayout";
 

@@ -31,8 +31,8 @@
   --color-fd-secondary: #171717;
   --color-fd-muted: #171717;
   --color-fd-border: #252525;
-  --color-fd-primary: #a78bfa;
-  --color-fd-primary-foreground: #10091f;
+  --color-fd-primary: #10b981;
+  --color-fd-primary-foreground: #022c22;
   --color-fd-muted-foreground: hsl(0 0% 67%);
 }
 
@@ -166,7 +166,7 @@ body {
 }
 
 #main-content figure.shiki [role="region"]:focus-visible {
-  outline: 2px solid #a78bfa;
+  outline: 2px solid #10b981;
   outline-offset: -3px;
 }
 
@@ -203,7 +203,7 @@ html:not(.dark)
 #nd-subnav a[href^="https://myselvam.vercel.app"] {
   border: 1px solid color-mix(in srgb, var(--color-fd-primary) 76%, white 24%);
   border-radius: 999px;
-  background: linear-gradient(135deg, #855cff, #6336d8);
+  background: linear-gradient(135deg, #10b981, #047857);
   padding: 0.55rem 1rem;
   white-space: nowrap;
   flex-shrink: 0;
@@ -213,11 +213,11 @@ html:not(.dark)
 }
 
 #nd-subnav a[href^="https://myselvam.vercel.app"]:hover {
-  background: linear-gradient(135deg, #946fff, #7044e8);
+  background: linear-gradient(135deg, #34d399, #059669);
   box-shadow:
-    0 0 0 1px rgb(167 139 250 / 0.35),
-    0 0 26px rgb(124 87 255 / 0.38),
-    0 8px 24px rgb(76 45 170 / 0.28);
+    0 0 0 1px rgb(52 211 153 / 0.35),
+    0 0 26px rgb(16 185 129 / 0.38),
+    0 8px 24px rgb(4 120 87 / 0.28);
   transform: translateY(-1px);
 }
 
@@ -229,7 +229,7 @@ html:not(.dark)
 }
 
 #nd-subnav a[href^="https://myselvam.vercel.app"]:focus-visible {
-  outline: 2px solid #c4b5fd;
+  outline: 2px solid #6ee7b7;
   outline-offset: 3px;
 }
 
@@ -285,7 +285,7 @@ pre {
 
 /* Rich MDX blocks: vivid icon artwork, focused cards, clear callouts and steps. */
 .docs-showcase {
-  --showcase-glow: 139 92 246;
+  --showcase-glow: 16 185 129;
   margin-block: 2rem;
   overflow: hidden;
   border: 1px solid #252525;
@@ -315,7 +315,7 @@ pre {
   width: 1.25rem;
   height: 1.25rem;
   flex: 0 0 auto;
-  color: #c4b5fd;
+  color: #6ee7b7;
   stroke-width: 2.5;
 }
 
@@ -339,8 +339,8 @@ pre {
 
 .docs-showcase__anchor:hover,
 .docs-showcase__anchor:focus-visible {
-  background: rgb(167 139 250 / 0.14);
-  color: #d6ccff;
+  background: rgb(16 185 129 / 0.14);
+  color: #a7f3d0;
 }
 
 .docs-showcase__description {
@@ -361,7 +361,7 @@ pre {
 }
 
 .docs-art-card {
-  --art-rgb: 139 92 246;
+  --art-rgb: 16 185 129;
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -378,7 +378,7 @@ pre {
 }
 
 .docs-art-card--violet {
-  --art-rgb: 139 92 246;
+  --art-rgb: 16 185 129;
 }
 .docs-art-card--blue {
   --art-rgb: 59 130 246;
@@ -516,7 +516,7 @@ pre {
 
 .docs-art-card:hover .docs-art-card__arrow,
 .docs-art-card:focus-visible .docs-art-card__arrow {
-  color: #d6ccff;
+  color: #a7f3d0;
   opacity: 1;
   transform: translate(0, -50%);
 }
@@ -525,7 +525,7 @@ pre {
 .docs-icon-card--link:focus-visible,
 .docs-tabs__tab:focus-visible,
 .docs-showcase__anchor:focus-visible {
-  outline: 2px solid #c4b5fd;
+  outline: 2px solid #6ee7b7;
   outline-offset: 3px;
 }
 
@@ -571,11 +571,11 @@ pre {
 
 .docs-icon-card--link:hover,
 .docs-icon-card--link:focus-visible {
-  border-color: rgb(167 139 250 / 0.56);
-  background: #121116;
+  border-color: rgb(52 211 153 / 0.56);
+  background: #0b1511;
   box-shadow:
-    0 0 0 1px rgb(167 139 250 / 0.16),
-    0 10px 28px rgb(124 87 255 / 0.14);
+    0 0 0 1px rgb(52 211 153 / 0.16),
+    0 10px 28px rgb(16 185 129 / 0.14);
   transform: translateY(-2px);
 }
 
@@ -585,10 +585,10 @@ pre {
   height: 2.7rem;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid #303030;
+  border: 1px solid #1a3c2f;
   border-radius: 0.7rem;
-  background: linear-gradient(145deg, #19191d, #111113);
-  color: #d7ccff;
+  background: linear-gradient(145deg, #10261e, #0b1c15);
+  color: #a7f3d0;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.045);
 }
 
@@ -732,11 +732,11 @@ pre {
   width: 2.25rem;
   height: 2.25rem;
   place-items: center;
-  border: 1px solid #38343f;
+  border: 1px solid #1a3c2f;
   border-radius: 50%;
-  background: #111013;
-  color: #ded7f5;
-  box-shadow: 0 0 16px rgb(124 87 255 / 0.1);
+  background: #0b1a14;
+  color: #a7f3d0;
+  box-shadow: 0 0 16px rgb(16 185 129 / 0.12);
 }
 
 .docs-step__number::before {
@@ -820,12 +820,12 @@ pre {
 }
 
 .docs-tabs__tab.is-active {
-  border-color: rgb(196 181 253 / 0.42);
-  background: linear-gradient(135deg, #8b5cf6, #6438d8);
+  border-color: rgb(110 231 183 / 0.42);
+  background: linear-gradient(135deg, #10b981, #047857);
   color: white;
   box-shadow:
-    0 4px 14px rgb(111 70 220 / 0.28),
-    0 0 22px rgb(124 87 255 / 0.14);
+    0 4px 14px rgb(5 150 105 / 0.28),
+    0 0 22px rgb(16 185 129 / 0.14);
 }
 
 .docs-tabs__panel {

@@ -184,16 +184,16 @@ export function WelcomeEmail({ userName }: WelcomeEmailProps) {
       <EmailFaqCard
         questions={[
           {
-            question: "How do I link my bank accounts and portfolios?",
-            href: `${emailConfig.baseUrl}/faq#linking-accounts`,
+            question: "How do I link bank accounts and investment portfolios?",
+            href: `${emailConfig.docsUrl}/faq#which-financial-assets-can-i-track-in-selvam`,
           },
           {
             question: "Can I import existing data from Excel or CSV?",
-            href: `${emailConfig.baseUrl}/faq#importing-data`,
+            href: `${emailConfig.docsUrl}/faq#can-i-import-past-transactions-via-excel-or-csv`,
           },
           {
-            question: "How do I set up automated bill and deposit alerts?",
-            href: `${emailConfig.baseUrl}/faq#configuring-alerts`,
+            question: "How do I customize alert frequency or delivery channels?",
+            href: `${emailConfig.docsUrl}/faq#how-do-i-customize-alert-frequency-or-delivery-channels`,
           },
         ]}
       />

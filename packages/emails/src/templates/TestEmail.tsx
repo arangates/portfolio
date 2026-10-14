@@ -164,16 +164,16 @@ export const TestEmail = ({ email, userName }: TestEmailProps) => {
       <EmailFaqCard
         questions={[
           {
-            question: "How do I add a secondary email or WhatsApp alert number?",
-            href: `${emailConfig.baseUrl}/dashboard/settings#contacts`,
-          },
-          {
             question: "What should I do if emails land in Spam or Promotions?",
-            href: `${emailConfig.baseUrl}/faq#email-whitelisting`,
+            href: `${emailConfig.docsUrl}/faq#what-should-i-do-if-selvam-emails-land-in-spam-or-promotions`,
           },
           {
-            question: "Can I receive instant alerts for large bank transactions?",
-            href: `${emailConfig.baseUrl}/faq#transaction-alerts`,
+            question: "How do I customize notification frequency or delivery channels?",
+            href: `${emailConfig.docsUrl}/faq#how-do-i-customize-alert-frequency-or-delivery-channels`,
+          },
+          {
+            question: "What automated email digests does Selvam deliver?",
+            href: `${emailConfig.docsUrl}/faq#what-automated-email-digests-does-selvam-deliver`,
           },
         ]}
       />

@@ -217,15 +217,15 @@ export function BillsEmail({
         questions={[
           {
             question: "How do I mark a bill as paid or set up auto-debit?",
-            href: `${emailConfig.baseUrl}/faq#marking-bills`,
+            href: `${emailConfig.docsUrl}/faq#notifications--digests`,
           },
           {
             question: "Can I receive WhatsApp or SMS notifications for urgent bills?",
-            href: `${emailConfig.baseUrl}/dashboard/settings#notifications`,
+            href: `${emailConfig.docsUrl}/faq#how-do-i-customize-alert-frequency-or-delivery-channels`,
           },
           {
-            question: "How do I add a new recurring utility or credit card bill?",
-            href: `${emailConfig.baseUrl}/faq#adding-bills`,
+            question: "Which financial assets and liabilities can I track?",
+            href: `${emailConfig.docsUrl}/faq#which-financial-assets-can-i-track-in-selvam`,
           },
         ]}
       />

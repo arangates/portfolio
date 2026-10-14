@@ -127,6 +127,17 @@ export function EmailLayout({
                 </Link>
                 {" · "}
                 <Link
+                  href={emailConfig.docsUrl}
+                  style={{
+                    color: "#163300",
+                    textDecoration: "underline",
+                    fontWeight: 600,
+                  }}
+                >
+                  Documentation
+                </Link>
+                {" · "}
+                <Link
                   href={`mailto:${emailConfig.supportEmail}`}
                   style={{
                     color: "#163300",

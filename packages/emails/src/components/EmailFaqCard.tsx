@@ -1,21 +1,39 @@
 import { Link, Section, Text } from "@react-email/components";
 import type React from "react";
+import { emailConfig } from "../config";
 
 export interface FaqItem {
   question: string;
-  href: string;
+  href?: string;
 }
 
 export interface EmailFaqCardProps {
   title?: string;
-  questions: FaqItem[];
+  questions?: FaqItem[];
+  docsUrl?: string;
   style?: React.CSSProperties;
   className?: string;
 }
 
+const defaultFaqQuestions: FaqItem[] = [
+  {
+    question: "How do I link bank and investment accounts?",
+    href: `${emailConfig.docsUrl}/faq#which-financial-assets-can-i-track-in-selvam`,
+  },
+  {
+    question: "How does Selvam protect my financial data?",
+    href: `${emailConfig.docsUrl}/faq#how-does-selvam-protect-my-financial-data`,
+  },
+  {
+    question: "How do I customize reminder frequency?",
+    href: `${emailConfig.docsUrl}/faq#how-do-i-customize-alert-frequency-or-delivery-channels`,
+  },
+];
+
 export function EmailFaqCard({
   title = "Your questions, answered",
-  questions,
+  questions = defaultFaqQuestions,
+  docsUrl = emailConfig.docsUrl,
   style,
   className = "",
 }: EmailFaqCardProps) {
@@ -42,22 +60,40 @@ export function EmailFaqCard({
       >
         {title}
       </Text>
-      {questions.map((item, idx) => (
-        <div key={idx} style={{ marginBottom: idx === questions.length - 1 ? 0 : "10px" }}>
-          <Link
-            href={item.href}
-            style={{
-              color: "#163300",
-              textDecoration: "underline",
-              fontWeight: 700,
-              fontSize: "14px",
-              fontFamily: "Inter, system-ui, sans-serif",
-            }}
-          >
-            {item.question}
-          </Link>
-        </div>
-      ))}
+      {questions.map((item, idx) => {
+        const targetUrl = item.href || `${docsUrl}/faq`;
+        return (
+          <div key={idx} style={{ marginBottom: "10px" }}>
+            <Link
+              href={targetUrl}
+              style={{
+                color: "#163300",
+                textDecoration: "underline",
+                fontWeight: 700,
+                fontSize: "14px",
+                fontFamily: "Inter, system-ui, sans-serif",
+              }}
+            >
+              {item.question}
+            </Link>
+          </div>
+        );
+      })}
+
+      <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid #E2E5E2" }}>
+        <Link
+          href={docsUrl}
+          style={{
+            color: "#4B5563",
+            textDecoration: "none",
+            fontSize: "12.5px",
+            fontWeight: 600,
+            fontFamily: "Inter, system-ui, sans-serif",
+          }}
+        >
+          Explore full documentation & guides →
+        </Link>
+      </div>
     </Section>
   );
 }

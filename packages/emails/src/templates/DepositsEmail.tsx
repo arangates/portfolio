@@ -216,16 +216,16 @@ export function DepositsEmail({
       <EmailFaqCard
         questions={[
           {
-            question: "How do I choose between auto-renewal and bank transfer?",
-            href: `${emailConfig.baseUrl}/faq#deposit-renewal-options`,
+            question: "Which financial assets and deposits can I track?",
+            href: `${emailConfig.docsUrl}/faq#which-financial-assets-can-i-track-in-selvam`,
           },
           {
-            question: "How is TDS on fixed deposit interest calculated?",
-            href: `${emailConfig.baseUrl}/faq#deposit-tds-tax`,
+            question: "How does the tax engine handle interest income & TDS?",
+            href: `${emailConfig.docsUrl}/faq#how-does-the-tax-engine-handle-cross-border-residency`,
           },
           {
-            question: "Can I track cumulative vs non-cumulative deposits?",
-            href: `${emailConfig.baseUrl}/faq#deposit-types`,
+            question: "How do I customize alert frequency or delivery channels?",
+            href: `${emailConfig.docsUrl}/faq#how-do-i-customize-alert-frequency-or-delivery-channels`,
           },
         ]}
       />

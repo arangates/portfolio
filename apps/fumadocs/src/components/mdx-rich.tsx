@@ -142,7 +142,7 @@ export function ShowcaseCard({
   href,
   icon,
   title,
-  tone = "violet",
+  tone = "emerald",
 }: {
   className?: string;
   description?: ReactNode;

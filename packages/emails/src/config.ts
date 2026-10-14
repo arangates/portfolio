@@ -11,6 +11,7 @@ export const emailConfig = {
   baseUrl: process.env.BETTER_AUTH_URL || "http://localhost:3001",
   appName: "Selvam",
   supportEmail: "support@selvam.app",
+  docsUrl: process.env.NEXT_PUBLIC_DOCS_URL || "https://docs-selvam.vercel.app/docs",
 
   // Default styles for emails matching Barebone minimalist tokens
   styles: {

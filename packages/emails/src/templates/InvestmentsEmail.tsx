@@ -215,16 +215,16 @@ export function InvestmentsEmail({
       <EmailFaqCard
         questions={[
           {
-            question: "How frequently are live stock and mutual fund prices updated?",
-            href: `${emailConfig.baseUrl}/faq#price-updates`,
+            question: "How are portfolio returns and XIRR calculated?",
+            href: `${emailConfig.docsUrl}/faq#how-are-portfolio-returns-and-xirr-calculated`,
           },
           {
-            question: "Can I connect Zerodha Kite, Groww, or Upstox directly?",
-            href: `${emailConfig.baseUrl}/faq#broker-integrations`,
+            question: "Which financial assets and equities can I track?",
+            href: `${emailConfig.docsUrl}/faq#which-financial-assets-can-i-track-in-selvam`,
           },
           {
-            question: "How is portfolio XIRR and annualized return calculated?",
-            href: `${emailConfig.baseUrl}/faq#xirr-calculations`,
+            question: "Can I import transactions from Zerodha or Excel?",
+            href: `${emailConfig.docsUrl}/faq#can-i-import-past-transactions-via-excel-or-csv`,
           },
         ]}
       />

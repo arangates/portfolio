@@ -207,16 +207,16 @@ export function ContractsEmail({
       <EmailFaqCard
         questions={[
           {
-            question: "How do I upload contract documents or renewal agreements?",
-            href: `${emailConfig.baseUrl}/faq#uploading-contracts`,
-          },
-          {
             question: "How do notice period reminders work?",
-            href: `${emailConfig.baseUrl}/faq#notice-periods`,
+            href: `${emailConfig.docsUrl}/faq#notifications--digests`,
           },
           {
-            question: "Can I track annual SaaS and gym memberships?",
-            href: `${emailConfig.baseUrl}/faq#supported-contract-types`,
+            question: "Can I import documents and past transactions?",
+            href: `${emailConfig.docsUrl}/faq#can-i-import-past-transactions-via-excel-or-csv`,
+          },
+          {
+            question: "How does Selvam protect my data and contracts?",
+            href: `${emailConfig.docsUrl}/faq#how-does-selvam-protect-my-financial-data`,
           },
         ]}
       />

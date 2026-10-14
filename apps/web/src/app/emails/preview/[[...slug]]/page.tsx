@@ -7,14 +7,48 @@ interface PageProps {
 }
 
 const templates = [
-  { id: "activation", name: "Activation", desc: "01-Barebone activation template" },
+  { id: "activation", name: "Activation", desc: "Account verification & sign-up link" },
   { id: "welcome", name: "Welcome", desc: "New user onboarding walkthrough" },
-  { id: "notification", name: "Reminders Digest", desc: "Financial reminders & calendar alerts" },
+  { id: "notification", name: "Reminders Digest", desc: "Consolidated reminders & alerts" },
   { id: "bills", name: "Bills", desc: "Due date & payment urgency alerts" },
   { id: "contracts", name: "Contracts", desc: "Renewal & notice period alerts" },
-  { id: "deposits", name: "Deposits", desc: "Deposit maturity & reinvestment tracking" },
-  { id: "investments", name: "Investments", desc: "Portfolio valuation & 24h gain/loss" },
-  { id: "test", name: "Test Email", desc: "Delivery configuration test" },
+  { id: "deposits", name: "Deposits", desc: "FD maturity & reinvestment tracking" },
+  { id: "investments", name: "Investments", desc: "Portfolio valuation & 24h movements" },
+  { id: "currency-alert", name: "Currency Alert", desc: "EUR/INR target exchange rate reached" },
+  {
+    id: "fire-milestone",
+    name: "FIRE Milestone",
+    desc: "Financial independence & runway benchmark",
+  },
+  { id: "salary-credit", name: "Salary Credit", desc: "Monthly payroll credit & SIP deployment" },
+  {
+    id: "bullion-valuation",
+    name: "Bullion Valuation",
+    desc: "Gold, silver & sovereign gold bonds",
+  },
+  {
+    id: "mortgage-update",
+    name: "Mortgage Amortisation",
+    desc: "Monthly home loan EMI & prepayment",
+  },
+  {
+    id: "tax-filing",
+    name: "Advance Tax Reminder",
+    desc: "Quarterly advance tax payment deadline",
+  },
+  {
+    id: "cashflow-digest",
+    name: "Monthly Cash Flow",
+    desc: "Inflows, outflows & savings velocity",
+  },
+  { id: "dividend-payout", name: "Dividend Payout", desc: "Stock & ETF dividend distributions" },
+  { id: "sip-execution", name: "SIP Execution", desc: "Mutual fund SIP NAV & unit allotment" },
+  {
+    id: "document-expiry",
+    name: "Document Expiry",
+    desc: "Passport, visa & policy renewal warning",
+  },
+  { id: "test", name: "Test Email", desc: "Delivery configuration & health test" },
 ];
 
 export default function EmailPreviewPage({ params }: PageProps) {

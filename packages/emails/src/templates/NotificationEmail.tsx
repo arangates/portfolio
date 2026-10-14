@@ -207,16 +207,16 @@ export function NotificationEmail({
       <EmailFaqCard
         questions={[
           {
-            question: "How do I mark an item as completed or paid?",
-            href: `${emailConfig.baseUrl}/faq#marking-paid`,
+            question: "What automated email digests does Selvam deliver?",
+            href: `${emailConfig.docsUrl}/faq#what-automated-email-digests-does-selvam-deliver`,
           },
           {
-            question: "Can I sync these alerts with Google Calendar or Apple iCal?",
-            href: `${emailConfig.baseUrl}/faq#calendar-sync`,
+            question: "How do I customize alert frequency or delivery channels?",
+            href: `${emailConfig.docsUrl}/faq#how-do-i-customize-alert-frequency-or-delivery-channels`,
           },
           {
-            question: "How do I customize notification frequency?",
-            href: `${emailConfig.baseUrl}/dashboard/settings`,
+            question: "How do I mark an alert as completed or paid?",
+            href: `${emailConfig.docsUrl}/faq#general--account`,
           },
         ]}
       />

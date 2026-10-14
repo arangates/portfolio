@@ -180,15 +180,15 @@ export const ActivationEmail = ({
         questions={[
           {
             question: "How long is this verification link valid?",
-            href: `${emailConfig.baseUrl}/faq#verification-expiry`,
+            href: `${emailConfig.docsUrl}/faq#how-do-i-activate-my-account`,
           },
           {
             question: "What financial assets can I track on Selvam?",
-            href: `${emailConfig.baseUrl}/faq#supported-assets`,
+            href: `${emailConfig.docsUrl}/faq#which-financial-assets-can-i-track-in-selvam`,
           },
           {
-            question: "How does Selvam protect my privacy?",
-            href: `${emailConfig.baseUrl}/privacy`,
+            question: "How does Selvam protect my privacy and financial data?",
+            href: `${emailConfig.docsUrl}/faq#how-does-selvam-protect-my-financial-data`,
           },
         ]}
       />

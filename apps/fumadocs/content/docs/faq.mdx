@@ -1,0 +1,114 @@
+---
+title: Frequently Asked Questions
+description: Common questions about Selvam accounts, portfolio synchronization, security, tax engines, and automated notification digests.
+icon: HelpCircle
+---
+
+## General & Account
+
+### How do I activate my account?
+
+When you register for Selvam, an activation email containing a secure one-time verification link is sent to your registered address. Clicking this link confirms your email address and grants access to your dashboard workspace. Verification links remain active for 24 hours.
+
+### Can I change my registered email address?
+
+Yes. Go to [Settings](/dashboard/settings) > **Account** to update your primary email address. A confirmation link will be delivered to both the old and new email addresses to prevent unauthorized changes.
+
+### How does Selvam protect my financial data?
+
+Selvam enforces bank-grade security standards:
+
+- **256-bit encryption** in transit (TLS 1.3) and at rest (AES-256).
+- **Read-only integrations**: Selvam never requests transaction or withdrawal permissions from your linked bank or brokerage accounts.
+- **Strict isolation**: Multi-tenant database architecture backed by Lakebase Postgres ensures complete isolation of user data.
+
+---
+
+## Portfolio Tracking & Asset Classes
+
+### Which financial assets can I track in Selvam?
+
+Selvam provides unified tracking across:
+
+- **Indian Equities & Stocks**: Live price sync via Kite and NSE/BSE feeds.
+- **Mutual Funds & ETFs**: Direct growth funds, NAV updates, and SIP schedules.
+- **Fixed & Term Deposits**: Bank deposits, interest rate comparisons, cumulative vs non-cumulative yields, and maturity payout reminders.
+- **Commodities & Bullion**: Physical gold (24K, 22K), sovereign gold bonds (SGB), and silver bars.
+- **Real Estate & Mortgages**: Property valuations, outstanding principal, and amortisation schedules.
+- **Multi-Currency Cash**: Bank accounts in INR, EUR, and USD with automated FX conversion.
+
+### Can I import past transactions via Excel or CSV?
+
+Yes. Navigate to [Imports](/dashboard/imports) to upload standard bank statement workbooks, Zerodha tradebooks, or household ledger spreadsheets. Selvam automatically categorizes transactions and reconciles your historical net worth.
+
+### How are portfolio returns and XIRR calculated?
+
+Selvam calculates Extended Internal Rate of Return (XIRR) across all cash inflows, SIP deductions, dividend credits, and real-time market valuations to provide your true annualized return, taking timing of capital deployment into account.
+
+---
+
+## Notifications & Digests
+
+### What automated email digests does Selvam deliver?
+
+Selvam delivers structured, responsive notifications for:
+
+- **Reminders Digest**: Consolidated overview of upcoming bills, FD maturities, and contract renewals.
+- **Bill Payment Alerts**: Advance notice before credit card, utility, and recurring subscription due dates.
+- **Fixed Deposit Maturities**: Payout schedules and prevailing bank interest rates for reinvestment.
+- **Investment Updates**: Market movements, top gainers/losers, and dividend credits.
+- **Contract Renewals**: Notice period warnings for leases, gym memberships, and insurance policies.
+- **Currency Triggers**: Target exchange rate alerts for EUR/INR remittances.
+- **FIRE Milestones**: Celebrations when your corpus crosses major financial independence benchmarks.
+
+### How do I customize alert frequency or delivery channels?
+
+Visit [Notification Preferences](/dashboard/settings) to customize:
+
+- Email digest frequency (Daily, Weekly on Mondays, or Monthly).
+- Thresholds for urgent bill alerts (e.g., 7 days, 3 days, or on due date).
+- Web Push notification toggle.
+
+### What should I do if Selvam emails land in Spam or Promotions?
+
+To ensure uninterrupted delivery of time-sensitive financial reminders:
+
+1. Add `notifications@selvam.app` to your email contact list or VIP senders.
+2. If using Gmail, drag the email from the **Promotions** tab to the **Primary** tab and click **Yes** when asked to deliver future messages to Primary.
+
+---
+
+## Cross-Border & Tax
+
+### How does multi-currency conversion work?
+
+Selvam continuously tracks live foreign exchange rates between EUR, INR, and USD. You can set target rate alerts (e.g. `1 EUR = 112.00 INR`) to be notified immediately when favorable remittance conditions are met.
+
+### How does the tax engine handle cross-border residency?
+
+Selvam includes specialized calculators for:
+
+- **India Income Tax**: Advance tax installment schedules (Q1 June 15, Q2 Sept 15, Q3 Dec 15, Q4 March 15), capital gains tax categorization (STCG/LTCG), and Section 80C deductions.
+- **Netherlands Box 3**: Wealth tax thresholds, deemed return percentages across savings vs investments, and 30% ruling impact modeling.
+
+### How does Selvam track physical gold, sovereign gold bonds (SGB), and bullion?
+
+Selvam fetches live 24-karat and 22-karat spot bullion prices and tracks Sovereign Gold Bonds (SGB) including bi-annual 2.5% coupon credits, capital appreciation, and tax-free capital gains upon RBI redemption.
+
+### How do mortgage amortisation and prepayment simulations work?
+
+Selvam computes monthly EMI deductions, tracks the exact split between interest and principal reduction, and lets you simulate how lump-sum prepayments or incremental EMI hikes shorten your loan tenure and save compound interest.
+
+### How are SIP executions and mutual fund NAVs reconciled?
+
+Selvam automatically matches automated bank debits with mutual fund unit allotments, recording purchase NAV, stamp duty, folio units accumulated, and rolling portfolio XIRR.
+
+### How does Selvam handle document and insurance expiry notifications?
+
+You can store renewal deadlines for passports, term life insurance policies, vehicle insurance, and OCI cards. Selvam delivers proactive alerts at 60-day, 30-day, and 7-day intervals to avoid lapses and penalties.
+
+---
+
+## Need More Help?
+
+If you have questions not covered here, reach out to our team at [support@selvam.app](mailto:support@selvam.app) or explore our [Documentation Index](/docs).

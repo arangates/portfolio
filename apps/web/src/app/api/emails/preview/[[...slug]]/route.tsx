@@ -2,10 +2,20 @@ import { type NextRequest, NextResponse } from "next/server";
 import {
   ActivationEmailPreview,
   BillsEmailPreview,
+  BullionValuationEmailPreview,
+  CashFlowDigestEmailPreview,
   ContractsEmailPreview,
+  CurrencyAlertEmailPreview,
   DepositsEmailPreview,
+  DividendPayoutEmailPreview,
+  DocumentExpiryEmailPreview,
+  FireMilestoneEmailPreview,
   InvestmentsEmailPreview,
+  MortgageUpdateEmailPreview,
   NotificationEmailPreview,
+  SalaryCreditEmailPreview,
+  SipExecutionEmailPreview,
+  TaxFilingReminderEmailPreview,
   TestEmailPreview,
   WelcomeEmailPreview,
   renderEmailToHTML,
@@ -41,6 +51,46 @@ const previewTemplates: Record<string, { name: string; component: React.ReactEle
   investments: {
     name: "Investments Email",
     component: <InvestmentsEmailPreview />,
+  },
+  "currency-alert": {
+    name: "Currency Alert",
+    component: <CurrencyAlertEmailPreview />,
+  },
+  "fire-milestone": {
+    name: "FIRE Milestone",
+    component: <FireMilestoneEmailPreview />,
+  },
+  "salary-credit": {
+    name: "Salary Credit",
+    component: <SalaryCreditEmailPreview />,
+  },
+  "bullion-valuation": {
+    name: "Bullion Valuation",
+    component: <BullionValuationEmailPreview />,
+  },
+  "mortgage-update": {
+    name: "Mortgage Amortisation",
+    component: <MortgageUpdateEmailPreview />,
+  },
+  "tax-filing": {
+    name: "Advance Tax Reminder",
+    component: <TaxFilingReminderEmailPreview />,
+  },
+  "cashflow-digest": {
+    name: "Monthly Cash Flow",
+    component: <CashFlowDigestEmailPreview />,
+  },
+  "dividend-payout": {
+    name: "Dividend Payout",
+    component: <DividendPayoutEmailPreview />,
+  },
+  "sip-execution": {
+    name: "SIP Execution",
+    component: <SipExecutionEmailPreview />,
+  },
+  "document-expiry": {
+    name: "Document Expiry Notice",
+    component: <DocumentExpiryEmailPreview />,
   },
   test: {
     name: "Test Email",
