@@ -26,43 +26,48 @@ Selvam uses [React Email](https://react.email) to deliver responsive, accessible
 
 ## Architecture & directory structure
 
-All email components, templates, utilities, and sending services reside in `apps/web/src/emails`:
+All email components, templates, utilities, and sending services reside in the dedicated workspace package `packages/emails` (`@portfolio/emails`):
 
 ```text
-apps/web/src/emails/
-├── components/              # Reusable layout and typography components
-│   ├── EmailButton.tsx      # Cross-client styled action buttons
-│   ├── EmailCard.tsx        # Responsive content card containers
-│   ├── EmailDivider.tsx     # Visual horizontal dividers
-│   ├── EmailLayout.tsx      # Base container with branded header and footer
-│   └── EmailText.tsx        # Typography primitives (H1–H3, Body, Caption)
-├── config.ts                # Brand colors, typography, and sender configuration
-├── index.ts                 # Public module exports
-├── preview/                 # In-app browser preview interface
-│   └── [[...slug]].tsx      # Dynamic preview route for all templates
-├── services/                # Email dispatch and Resend integration
-│   └── email-service.tsx    # Typed sending functions and legacy fallback
-├── templates/               # Production-ready email templates
-│   ├── BillsEmail.tsx       # Bill payment reminders and urgency alerts
-│   ├── ContractsEmail.tsx   # Contract expiration and renewal notices
-│   ├── DepositsEmail.tsx    # Term deposit maturity notifications
-│   ├── InvestmentsEmail.tsx # Portfolio valuation and movement summaries
-│   ├── NotificationEmail.tsx# General multi-event financial digest
-│   ├── TestEmail.tsx        # Delivery test and setup verification
-│   └── WelcomeEmail.tsx     # Onboarding feature walkthrough
-└── utils/                   # Server-side rendering helpers
-    └── render-email.tsx     # HTML and plaintext generation utilities
+packages/emails/
+├── package.json             # @portfolio/emails package definition
+├── tsconfig.json            # TypeScript configuration
+├── README.md                # Package documentation
+└── src/
+    ├── components/          # Reusable layout and typography components
+    │   ├── EmailButton.tsx  # Cross-client styled action buttons
+    │   ├── EmailCard.tsx    # Responsive content card containers
+    │   ├── EmailDivider.tsx # Visual horizontal dividers
+    │   ├── EmailLayout.tsx  # Base container with branded header and footer
+    │   └── EmailText.tsx    # Typography primitives (H1–H3, Body, Caption)
+    ├── config.ts            # Brand colors, typography, and sender configuration
+    ├── index.ts             # Public module exports
+    ├── services/            # Email dispatch and Resend integration
+    │   └── email-service.tsx# Typed sending functions and legacy fallback
+    ├── templates/           # Production-ready email templates
+    │   ├── ActivationEmail.tsx # User account activation and email verification
+    │   ├── BillsEmail.tsx   # Bill payment reminders and urgency alerts
+    │   ├── ContractsEmail.tsx # Contract expiration and renewal notices
+    │   ├── DepositsEmail.tsx# Term deposit maturity notifications
+    │   ├── InvestmentsEmail.tsx # Portfolio valuation and movement summaries
+    │   ├── NotificationEmail.tsx # General multi-event financial digest
+    │   ├── TestEmail.tsx    # Delivery test and setup verification
+    │   └── WelcomeEmail.tsx # Onboarding feature walkthrough
+    ├── theme.ts             # Barebones Tailwind styling configuration
+    ├── theme-fonts.tsx      # Cross-client Inter font definitions
+    └── utils/               # Server-side rendering helpers
+        └── render-email.tsx # HTML and plaintext generation utilities
 ```
 
 ## Core dependencies
 
 The email subsystem is powered by React Email libraries integrated into `apps/web`:
 
-| Package | Purpose |
-| --- | --- |
+| Package                   | Purpose                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `@react-email/components` | Standard HTML email primitives (`Html`, `Head`, `Body`, `Container`, `Section`, `Row`, `Column`, `Link`, `Preview`) |
-| `@react-email/render` | Server-side synchronous HTML and plain-text conversion |
-| `@react-email/tailwind` | Tailwind CSS compiler tailored for email client style inlining |
+| `@react-email/render`     | Server-side synchronous HTML and plain-text conversion                                                              |
+| `@react-email/tailwind`   | Tailwind CSS compiler tailored for email client style inlining                                                      |
 
 ## Base design system
 
@@ -71,6 +76,7 @@ Emails adhere to Selvam's design language, ensuring brand consistency between th
 ### Layout wrapper (`EmailLayout`)
 
 Every email is wrapped by `EmailLayout`:
+
 - **Fixed max-width**: 600px centered container optimized for mobile and desktop webmail clients.
 - **Header**: Branded Selvam mark and application title.
 - **Footer**: Support contact links, security notice, and unsubscription or notification preference guidelines.
@@ -81,25 +87,25 @@ Every email is wrapped by `EmailLayout`:
 
 The email design system defines specific scales in `config.ts`:
 
-| Token | Specification | Usage |
-| --- | --- | --- |
-| `H1` | 32px / bold / line-height 1.2 | Hero headings and congratulations |
-| `H2` | 24px / bold / line-height 1.3 | Section headers |
-| `H3` | 20px / semibold / line-height 1.4 | Card headers and event groupings |
-| `Body` | 16px / regular / line-height 1.5 | Primary message content |
-| `Caption` | 14px / regular / line-height 1.4 | Secondary notes and metadata |
-| `Small` | 12px / regular / line-height 1.4 | Disclaimers and footer copy |
+| Token     | Specification                     | Usage                             |
+| --------- | --------------------------------- | --------------------------------- |
+| `H1`      | 32px / bold / line-height 1.2     | Hero headings and congratulations |
+| `H2`      | 24px / bold / line-height 1.3     | Section headers                   |
+| `H3`      | 20px / semibold / line-height 1.4 | Card headers and event groupings  |
+| `Body`    | 16px / regular / line-height 1.5  | Primary message content           |
+| `Caption` | 14px / regular / line-height 1.4  | Secondary notes and metadata      |
+| `Small`   | 12px / regular / line-height 1.4  | Disclaimers and footer copy       |
 
 Category accent colors match the main application badges:
 
-| Category | Hex | Visual token |
-| --- | --- | --- |
-| Bills | `#ef4444` | Red (alert / due dates) |
-| Contracts | `#f97316` | Orange (expirations) |
-| Deposits | `#22c55e` | Green (maturity / yield) |
+| Category    | Hex       | Visual token                  |
+| ----------- | --------- | ----------------------------- |
+| Bills       | `#ef4444` | Red (alert / due dates)       |
+| Contracts   | `#f97316` | Orange (expirations)          |
+| Deposits    | `#22c55e` | Green (maturity / yield)      |
 | Investments | `#3b82f6` | Blue (allocations / holdings) |
-| Salary | `#8b5cf6` | Violet (payroll) |
-| Tax | `#6366f1` | Indigo (fiscal filings) |
+| Salary      | `#8b5cf6` | Violet (payroll)              |
+| Tax         | `#6366f1` | Indigo (fiscal filings)       |
 
 ## Available templates
 
@@ -107,25 +113,32 @@ Selvam includes seven production templates covering common user workflows:
 
 <Steps>
   <Step title="BillsEmail">
-    Reminds users of upcoming or overdue bills with total due amounts, urgency badges, due dates, and direct links to payment portals.
+    Reminds users of upcoming or overdue bills with total due amounts, urgency badges, due dates,
+    and direct links to payment portals.
   </Step>
   <Step title="ContractsEmail">
-    Alerts users to renewing or expiring contracts (insurance, lease, subscriptions) with renewal dates and policy terms.
+    Alerts users to renewing or expiring contracts (insurance, lease, subscriptions) with renewal
+    dates and policy terms.
   </Step>
   <Step title="DepositsEmail">
-    Notifies users when fixed or recurring deposits reach maturity, highlighting the principal, maturity value, and linked bank.
+    Notifies users when fixed or recurring deposits reach maturity, highlighting the principal,
+    maturity value, and linked bank.
   </Step>
   <Step title="InvestmentsEmail">
-    Delivers investment portfolio digests, displaying total portfolio valuation, daily percentage movement, and top asset changes.
+    Delivers investment portfolio digests, displaying total portfolio valuation, daily percentage
+    movement, and top asset changes.
   </Step>
   <Step title="NotificationEmail">
-    A flexible multi-event digest that bundles scheduled reminders across diverse categories into a single daily or weekly summary.
+    A flexible multi-event digest that bundles scheduled reminders across diverse categories into a
+    single daily or weekly summary.
   </Step>
   <Step title="WelcomeEmail">
-    Welcomes newly registered users, detailing key platform capabilities (FIRE calculations, net worth tracking, portfolio twin) and setup steps.
+    Welcomes newly registered users, detailing key platform capabilities (FIRE calculations, net
+    worth tracking, portfolio twin) and setup steps.
   </Step>
   <Step title="TestEmail">
-    Verifies user notification channel settings and SMTP/Resend API connectivity with interactive test links.
+    Verifies user notification channel settings and SMTP/Resend API connectivity with interactive
+    test links.
   </Step>
 </Steps>
 
@@ -216,15 +229,15 @@ pnpm --filter web emails:preview
 
 ### Template preview routes
 
-| Template | Preview URL |
-| --- | --- |
-| Digest | `/emails/preview/notification` |
-| Welcome | `/emails/preview/welcome` |
-| Bills | `/emails/preview/bills` |
-| Contracts | `/emails/preview/contracts` |
-| Deposits | `/emails/preview/deposits` |
-| Investments | `/emails/preview/investments` |
-| Configuration Test | `/emails/preview/test` |
+| Template           | Preview URL                    |
+| ------------------ | ------------------------------ |
+| Digest             | `/emails/preview/notification` |
+| Welcome            | `/emails/preview/welcome`      |
+| Bills              | `/emails/preview/bills`        |
+| Contracts          | `/emails/preview/contracts`    |
+| Deposits           | `/emails/preview/deposits`     |
+| Investments        | `/emails/preview/investments`  |
+| Configuration Test | `/emails/preview/test`         |
 
 ## Environment configuration
 
@@ -242,7 +255,9 @@ BETTER_AUTH_URL=https://myselvam.vercel.app
 ```
 
 <InfoPanel title="Verified sender address" icon="ShieldCheck" tone="info">
-  In development, if using a trial Resend account without a verified domain, emails can only be sent to the email address registered with your Resend account. For production deployment, verify SPF, DKIM, and DMARC DNS records in your domain registrar.
+  In development, if using a trial Resend account without a verified domain, emails can only be sent
+  to the email address registered with your Resend account. For production deployment, verify SPF,
+  DKIM, and DMARC DNS records in your domain registrar.
 </InfoPanel>
 
 ## Best practices & email client compatibility

@@ -26,6 +26,7 @@
     "@portfolio/api": "workspace:*",
     "@portfolio/auth": "workspace:*",
     "@portfolio/db": "workspace:*",
+    "@portfolio/emails": "workspace:*",
     "@portfolio/env": "workspace:*",
     "@portfolio/ui": "workspace:*",
     "@react-email/components": "^1.0.12",

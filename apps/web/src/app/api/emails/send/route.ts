@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@portfolio/auth";
 import { headers } from "next/headers";
-import { sendTestTemplatedEmail, sendWelcomeEmail } from "@/emails/services/email-service";
+import { sendTestTemplatedEmail, sendWelcomeEmail } from "@portfolio/emails";
 import { db } from "@portfolio/db";
 
 const sendTestEmailSchema = z

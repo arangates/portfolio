@@ -197,6 +197,9 @@ importers:
       '@portfolio/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@portfolio/emails':
+        specifier: workspace:*
+        version: link:../../packages/emails
       '@portfolio/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -477,6 +480,49 @@ importers:
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/emails:
+    dependencies:
+      '@portfolio/env':
+        specifier: workspace:*
+        version: link:../env
+      '@react-email/components':
+        specifier: ^1.0.12
+        version: 1.0.12(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@react-email/render':
+        specifier: ^2.1.0
+        version: 2.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@react-email/tailwind':
+        specifier: ^2.0.7
+        version: 2.0.7(@react-email/body@0.3.0(react@19.2.8))(@react-email/button@0.2.1(react@19.2.8))(@react-email/code-block@0.2.1(react@19.2.8))(@react-email/code-inline@0.0.6(react@19.2.8))(@react-email/container@0.0.16(react@19.2.8))(@react-email/heading@0.0.16(react@19.2.8))(@react-email/hr@0.0.12(react@19.2.8))(@react-email/img@0.0.12(react@19.2.8))(@react-email/link@0.0.13(react@19.2.8))(@react-email/preview@0.0.14(react@19.2.8))(@react-email/text@0.1.6(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      resend:
+        specifier: ^6.32.0
+        version: 6.32.0(@react-email/render@2.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 4.3.3
+    devDependencies:
+      '@portfolio/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.4(@types/react@19.2.18)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

@@ -18,7 +18,7 @@ import { notificationCategories } from "@/lib/notification-categories";
 import * as webPush from "web-push";
 
 // Import React Email template services
-import { sendTestTemplatedEmail, sendNotificationEmail } from "@/emails/services/email-service";
+import { sendTestTemplatedEmail, sendNotificationEmail } from "@portfolio/emails";
 
 type BrowserSubscription = {
   endpoint: string;

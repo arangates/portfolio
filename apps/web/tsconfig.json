@@ -21,7 +21,10 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@/emails/*": ["./src/emails/*"],
+      "@/emails": ["../../packages/emails/src/index.ts"],
+      "@/emails/*": ["../../packages/emails/src/*"],
+      "@portfolio/emails": ["../../packages/emails/src/index.ts"],
+      "@portfolio/emails/*": ["../../packages/emails/src/*"],
       "@portfolio/ai-chat-ui": ["../../packages/ai-chat-ui/src/index.tsx"],
       "@portfolio/ui/*": ["../../packages/ui/src/*"]
     }

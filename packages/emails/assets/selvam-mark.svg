@@ -1,0 +1,12 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="selvam-mark-green" x1="128" y1="44" x2="128" y2="224" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#238D38"/>
+      <stop offset="1" stop-color="#9AF45E"/>
+    </linearGradient>
+  </defs>
+  <rect x="49" y="146" width="43" height="68" rx="18" fill="url(#selvam-mark-green)"/>
+  <rect x="106" y="43" width="44" height="171" rx="19" fill="url(#selvam-mark-green)"/>
+  <rect x="164" y="87" width="43" height="127" rx="18" fill="url(#selvam-mark-green)"/>
+  <rect x="47" y="226" width="162" height="15" rx="7.5" fill="#9AF45E"/>
+</svg>

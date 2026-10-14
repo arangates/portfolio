@@ -62,14 +62,7 @@ The columns, the generated `tsvector`, and the `lakebase_ann` index all go in `s
 
 ```typescript
 // src/schema.ts
-import {
-  pgTable,
-  bigint,
-  text,
-  vector,
-  index,
-  customType,
-} from "drizzle-orm/pg-core";
+import { pgTable, bigint, text, vector, index, customType } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 const tsvector = customType<{ data: string }>({
@@ -81,21 +74,14 @@ const tsvector = customType<{ data: string }>({
 export const documents = pgTable(
   "documents",
   {
-    id: bigint("id", { mode: "number" })
-      .generatedByDefaultAsIdentity()
-      .primaryKey(),
+    id: bigint("id", { mode: "number" }).generatedByDefaultAsIdentity().primaryKey(),
     title: text("title").notNull(),
     body: text("body").notNull(),
     embedding: vector("embedding", { dimensions: 1024 }),
-    bodyTsv: tsvector("body_tsv").generatedAlwaysAs(
-      sql`to_tsvector('english', "body")`,
-    ),
+    bodyTsv: tsvector("body_tsv").generatedAlwaysAs(sql`to_tsvector('english', "body")`),
   },
   (table) => [
-    index("documents_embedding_ann").using(
-      "lakebase_ann",
-      table.embedding.op("vector_cosine_ops"),
-    ),
+    index("documents_embedding_ann").using("lakebase_ann", table.embedding.op("vector_cosine_ops")),
   ],
 );
 ```
@@ -168,8 +154,7 @@ for (let offset = 0; offset < nonBlankRows.length; offset += batchSize) {
   await db.insert(documents).values(
     batch.map((row, index) => {
       const embedding = vectors[index];
-      if (!embedding)
-        throw new Error(`Missing embedding for batch row ${index}`);
+      if (!embedding) throw new Error(`Missing embedding for batch row ${index}`);
       return { ...row, embedding };
     }),
   );
