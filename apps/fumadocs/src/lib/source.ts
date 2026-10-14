@@ -9,6 +9,7 @@ import { ChartLineIcon } from "@phosphor-icons/react/dist/ssr/ChartLine";
 import { ChartLineUpIcon } from "@phosphor-icons/react/dist/ssr/ChartLineUp";
 import { ChatsCircleIcon } from "@phosphor-icons/react/dist/ssr/ChatsCircle";
 import { DatabaseIcon } from "@phosphor-icons/react/dist/ssr/Database";
+import { EnvelopeIcon } from "@phosphor-icons/react/dist/ssr/Envelope";
 import { FireIcon } from "@phosphor-icons/react/dist/ssr/Fire";
 import { GraphIcon } from "@phosphor-icons/react/dist/ssr/Graph";
 import { KeyIcon } from "@phosphor-icons/react/dist/ssr/Key";
@@ -51,9 +52,11 @@ const solidIconMap: Record<string, PhosphorIcon> = {
   ChartNoAxesCombined: ChartLineUpIcon,
   ChartPie: ChartDonutIcon,
   Database: DatabaseIcon,
+  Envelope: EnvelopeIcon,
   Flame: FireIcon,
   KeyRound: KeyIcon,
   Layers: StackIcon,
+  Mail: EnvelopeIcon,
   MessagesSquare: ChatsCircleIcon,
   Network: GraphIcon,
   PanelsTopLeft: SquaresFourIcon,

@@ -315,6 +315,7 @@ Send plain text email (for backward compatibility)
 
 ## Resources
 
+- [Selvam Documentation: React Email](/docs/react-email) (`apps/fumadocs/content/docs/react-email.mdx`)
 - [React Email Documentation](https://react.email/docs)
 - [Resend Documentation](https://resend.com/docs)
 - [Email Client Support](https://react.email/docs/email-clients)

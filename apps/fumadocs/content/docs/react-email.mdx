@@ -1,0 +1,256 @@
+---
+title: React Email
+description: Responsive HTML email templates, Resend integration, preview tooling and notification delivery architecture.
+icon: Mail
+---
+
+Selvam uses [React Email](https://react.email) to deliver responsive, accessible, dark-mode compatible HTML emails. The system replaces plain-text notifications with branded templates rendered on the server and delivered via the Resend API.
+
+<IconCardGrid columns={3}>
+  <IconCard
+    icon="Mail"
+    title="Component-driven"
+    description="Reusable React components built with @react-email/components and Tailwind CSS styling."
+  />
+  <IconCard
+    icon="Eye"
+    title="Interactive preview"
+    description="Built-in browser preview at /emails/preview to inspect layouts across viewport sizes."
+  />
+  <IconCard
+    icon="ShieldCheck"
+    title="Delivery & idempotency"
+    description="Idempotent email dispatch via Resend prevents duplicate sends on retries."
+  />
+</IconCardGrid>
+
+## Architecture & directory structure
+
+All email components, templates, utilities, and sending services reside in `apps/web/src/emails`:
+
+```text
+apps/web/src/emails/
+├── components/              # Reusable layout and typography components
+│   ├── EmailButton.tsx      # Cross-client styled action buttons
+│   ├── EmailCard.tsx        # Responsive content card containers
+│   ├── EmailDivider.tsx     # Visual horizontal dividers
+│   ├── EmailLayout.tsx      # Base container with branded header and footer
+│   └── EmailText.tsx        # Typography primitives (H1–H3, Body, Caption)
+├── config.ts                # Brand colors, typography, and sender configuration
+├── index.ts                 # Public module exports
+├── preview/                 # In-app browser preview interface
+│   └── [[...slug]].tsx      # Dynamic preview route for all templates
+├── services/                # Email dispatch and Resend integration
+│   └── email-service.tsx    # Typed sending functions and legacy fallback
+├── templates/               # Production-ready email templates
+│   ├── BillsEmail.tsx       # Bill payment reminders and urgency alerts
+│   ├── ContractsEmail.tsx   # Contract expiration and renewal notices
+│   ├── DepositsEmail.tsx    # Term deposit maturity notifications
+│   ├── InvestmentsEmail.tsx # Portfolio valuation and movement summaries
+│   ├── NotificationEmail.tsx# General multi-event financial digest
+│   ├── TestEmail.tsx        # Delivery test and setup verification
+│   └── WelcomeEmail.tsx     # Onboarding feature walkthrough
+└── utils/                   # Server-side rendering helpers
+    └── render-email.tsx     # HTML and plaintext generation utilities
+```
+
+## Core dependencies
+
+The email subsystem is powered by React Email libraries integrated into `apps/web`:
+
+| Package | Purpose |
+| --- | --- |
+| `@react-email/components` | Standard HTML email primitives (`Html`, `Head`, `Body`, `Container`, `Section`, `Row`, `Column`, `Link`, `Preview`) |
+| `@react-email/render` | Server-side synchronous HTML and plain-text conversion |
+| `@react-email/tailwind` | Tailwind CSS compiler tailored for email client style inlining |
+
+## Base design system
+
+Emails adhere to Selvam's design language, ensuring brand consistency between the web dashboard and user inboxes.
+
+### Layout wrapper (`EmailLayout`)
+
+Every email is wrapped by `EmailLayout`:
+- **Fixed max-width**: 600px centered container optimized for mobile and desktop webmail clients.
+- **Header**: Branded Selvam mark and application title.
+- **Footer**: Support contact links, security notice, and unsubscription or notification preference guidelines.
+- **Dark mode**: Adaptive dark backgrounds on supported email clients (Apple Mail, Outlook on iOS/macOS).
+- **Hidden preheader**: `previewText` attribute populated to provide meaningful inbox list snippets.
+
+### Typography & colors
+
+The email design system defines specific scales in `config.ts`:
+
+| Token | Specification | Usage |
+| --- | --- | --- |
+| `H1` | 32px / bold / line-height 1.2 | Hero headings and congratulations |
+| `H2` | 24px / bold / line-height 1.3 | Section headers |
+| `H3` | 20px / semibold / line-height 1.4 | Card headers and event groupings |
+| `Body` | 16px / regular / line-height 1.5 | Primary message content |
+| `Caption` | 14px / regular / line-height 1.4 | Secondary notes and metadata |
+| `Small` | 12px / regular / line-height 1.4 | Disclaimers and footer copy |
+
+Category accent colors match the main application badges:
+
+| Category | Hex | Visual token |
+| --- | --- | --- |
+| Bills | `#ef4444` | Red (alert / due dates) |
+| Contracts | `#f97316` | Orange (expirations) |
+| Deposits | `#22c55e` | Green (maturity / yield) |
+| Investments | `#3b82f6` | Blue (allocations / holdings) |
+| Salary | `#8b5cf6` | Violet (payroll) |
+| Tax | `#6366f1` | Indigo (fiscal filings) |
+
+## Available templates
+
+Selvam includes seven production templates covering common user workflows:
+
+<Steps>
+  <Step title="BillsEmail">
+    Reminds users of upcoming or overdue bills with total due amounts, urgency badges, due dates, and direct links to payment portals.
+  </Step>
+  <Step title="ContractsEmail">
+    Alerts users to renewing or expiring contracts (insurance, lease, subscriptions) with renewal dates and policy terms.
+  </Step>
+  <Step title="DepositsEmail">
+    Notifies users when fixed or recurring deposits reach maturity, highlighting the principal, maturity value, and linked bank.
+  </Step>
+  <Step title="InvestmentsEmail">
+    Delivers investment portfolio digests, displaying total portfolio valuation, daily percentage movement, and top asset changes.
+  </Step>
+  <Step title="NotificationEmail">
+    A flexible multi-event digest that bundles scheduled reminders across diverse categories into a single daily or weekly summary.
+  </Step>
+  <Step title="WelcomeEmail">
+    Welcomes newly registered users, detailing key platform capabilities (FIRE calculations, net worth tracking, portfolio twin) and setup steps.
+  </Step>
+  <Step title="TestEmail">
+    Verifies user notification channel settings and SMTP/Resend API connectivity with interactive test links.
+  </Step>
+</Steps>
+
+## Email services & dispatch
+
+Email sending is centralized in `apps/web/src/emails/services/email-service.tsx`.
+
+### Core dispatch functions
+
+```typescript
+// Generic typed sender with idempotency support
+export async function sendTemplatedEmail(
+  to: string,
+  subject: string,
+  template: React.ReactElement,
+  idempotencyKey?: string,
+): Promise<{ success: boolean; data?: unknown; error?: unknown }>;
+
+// Domain-specific helper functions
+export async function sendBillsEmail(to: string, bills: BillItem[], ...);
+export async function sendContractsEmail(to: string, contracts: ContractItem[], ...);
+export async function sendDepositsEmail(to: string, deposits: DepositItem[], ...);
+export async function sendInvestmentsEmail(to: string, investments: InvestmentItem[], ...);
+export async function sendNotificationEmail(to: string, events: EventItem[], ...);
+export async function sendWelcomeEmail(to: string, userName: string, idempotencyKey?: string);
+export async function sendTestTemplatedEmail(to: string, userName?: string, idempotencyKey?: string);
+
+// Legacy plain-text fallback
+export async function sendLegacyTextEmail(to: string, subject: string, textBody: string, idempotencyKey?: string);
+```
+
+### Idempotency and delivery guarantees
+
+Financial alerts and reminders derive an idempotency key before dispatching:
+
+```typescript
+const idempotencyKey = `reminders-${userId}-${dateString}`;
+await sendNotificationEmail(user.email, events, events.length, 7, "Daily Digest", idempotencyKey);
+```
+
+Passing the key to Resend ensures that automated retries, cron job replays, or background worker timeouts do not generate duplicate messages to the user.
+
+### System integration
+
+The notification subsystem (`apps/web/src/lib/push-notifications.ts`) delegates to React Email:
+
+```typescript
+// Test email trigger
+export async function sendTestEmail(userId: string) {
+  const user = await getUser(userId);
+  return sendTestTemplatedEmail(user.email, user.name);
+}
+
+// Scheduled financial digests
+export async function sendScheduledReminders(userId: string, events: FinancialEvent[]) {
+  const user = await getUser(userId);
+  const eventItems = events.map(toEventItem);
+  return sendNotificationEmail(user.email, eventItems, eventItems.length, 7);
+}
+```
+
+## Preview and developer experience
+
+Developers can view and inspect rendered email templates in real time without dispatching actual emails:
+
+<IconCardGrid columns={2}>
+  <IconCard
+    icon="AppWindow"
+    title="Browser Preview"
+    description="Navigate to http://localhost:3001/emails/preview to interact with all templates and toggle mobile view."
+  />
+  <IconCard
+    icon="Terminal"
+    title="API Endpoint"
+    description="Inspect raw rendered HTML output via GET /api/emails/preview/[template] for external test tools."
+  />
+</IconCardGrid>
+
+### Development commands
+
+```bash
+# Start web app development server
+pnpm --filter web dev
+
+# Launch email preview interface directly
+pnpm --filter web emails:preview
+```
+
+### Template preview routes
+
+| Template | Preview URL |
+| --- | --- |
+| Digest | `/emails/preview/notification` |
+| Welcome | `/emails/preview/welcome` |
+| Bills | `/emails/preview/bills` |
+| Contracts | `/emails/preview/contracts` |
+| Deposits | `/emails/preview/deposits` |
+| Investments | `/emails/preview/investments` |
+| Configuration Test | `/emails/preview/test` |
+
+## Environment configuration
+
+To deliver emails in development or production, configure the following environment variables:
+
+```bash
+# Resend API key for outbound transactional emails
+RESEND_API_KEY=re_123456789...
+
+# Verified sender address matching your verified DNS domain
+EMAIL_FROM=Selvam <notifications@selvam.app>
+
+# Application URL used for generating CTA action links
+BETTER_AUTH_URL=https://myselvam.vercel.app
+```
+
+<InfoPanel title="Verified sender address" icon="ShieldCheck" tone="info">
+  In development, if using a trial Resend account without a verified domain, emails can only be sent to the email address registered with your Resend account. For production deployment, verify SPF, DKIM, and DMARC DNS records in your domain registrar.
+</InfoPanel>
+
+## Best practices & email client compatibility
+
+When creating new email templates, adhere to these guidelines:
+
+1. **Table-based structure**: Rely on `@react-email/components` (`Section`, `Row`, `Column`) rather than CSS flexbox or CSS grid, which are unsupported by Outlook for Windows.
+2. **Inline styles via Tailwind**: Use `@react-email/tailwind` with the shared config in `apps/web/src/emails/config.ts`. Avoid external stylesheets.
+3. **Escaped HTML entities**: Always escape angle brackets in JSX copy (use `&gt;` instead of `>` and `&lt;` instead of `<`) to avoid HTML parser ambiguities in older webmail clients.
+4. **Explicit image dimensions**: Specify absolute `width` and `height` attributes on any included images or logos to prevent layout shifts before assets load.
+5. **Plaintext fallback**: Ensure templates provide clean plaintext fallbacks rendered via `renderEmailToText()` for users on text-only or assistive devices.
