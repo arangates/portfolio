@@ -401,7 +401,7 @@ export async function getGlobalEquityPortfolio(userId: string) {
   const positions = new Map<string, Position>();
   const historyByMonth = new Map<
     string,
-    { date: string; investedValue: number; marketValue: number }
+    { date: string; investedValue: number; marketValue: number; unrealizedPnl: number }
   >();
 
   for (const row of rows) {
@@ -441,16 +441,19 @@ export async function getGlobalEquityPortfolio(userId: string) {
     positions.set(row.instrumentId, current);
 
     const date = row.occurredAt.toISOString().slice(0, 10);
+    const investedValue = [...positions.values()].reduce(
+      (sum, position) => sum + Math.max(position.costBasis, 0),
+      0,
+    );
+    const marketValue = [...positions.values()].reduce(
+      (sum, position) => sum + Math.max(position.quantity, 0) * position.latestPrice,
+      0,
+    );
     historyByMonth.set(date.slice(0, 7), {
       date,
-      investedValue: [...positions.values()].reduce(
-        (sum, position) => sum + Math.max(position.costBasis, 0),
-        0,
-      ),
-      marketValue: [...positions.values()].reduce(
-        (sum, position) => sum + Math.max(position.quantity, 0) * position.latestPrice,
-        0,
-      ),
+      investedValue,
+      marketValue,
+      unrealizedPnl: marketValue - investedValue,
     });
   }
 
@@ -1107,6 +1110,7 @@ async function getPortfolioOverviewUncached(
     cashAllocation,
     liquidAllocation,
     equityHistory,
+    globalEquityHistory: globalEquity.history,
     equityBreakdown:
       equity?.holdings.map((holding) => ({
         name: holding.name,

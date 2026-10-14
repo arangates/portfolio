@@ -1,5 +1,6 @@
 import { EmptyDataState } from "@/components/empty-data-state";
 import { EquityPerformanceCharts } from "@/components/equity-performance-charts";
+import { EquityProfitGrowthChart } from "@/components/equity-profit-growth-chart";
 import { HouseholdCharts } from "@/components/household-charts";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioFlowChart } from "@/components/portfolio-flow-chart";
@@ -84,6 +85,22 @@ async function WealthTab({ userId }: { userId: string }) {
           currency={baseCurrency}
         />
       </AnalyticsSection>
+      {overview.equityHistory.length > 0 || overview.globalEquityHistory.length > 0 ? (
+        <AnalyticsSection
+          id="equity-profit-growth-section"
+          title="Equity profit growth"
+          description="Historical growth of unrealized profit across Indian equity and Global equity, without the distorting scale of invested principal."
+        >
+          <div className="px-4 lg:px-6">
+            <EquityProfitGrowthChart
+              indianHistory={overview.equityHistory}
+              globalHistory={overview.globalEquityHistory}
+              rates={overview.rates}
+              baseCurrency={baseCurrency}
+            />
+          </div>
+        </AnalyticsSection>
+      ) : null}
       {overview.equityBreakdown.length > 0 ? (
         <AnalyticsSection
           id="equity-performance-section"

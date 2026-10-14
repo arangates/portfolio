@@ -349,6 +349,12 @@ export const dashboardChartNavigation = [
         icon: ChartNoAxesCombinedIcon,
         keywords: "liquid long-term assets available",
       },
+      {
+        title: "Equity profit growth",
+        url: "/dashboard/analytics#equity-profit-growth-section",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "equity profit growth unrealized pnl returns indian global",
+      },
     ],
   },
   {
@@ -383,6 +389,12 @@ export const dashboardChartNavigation = [
         icon: ChartNoAxesCombinedIcon,
         keywords: "global equity history cost basis value",
       },
+      {
+        title: "Global equity profit growth",
+        url: "/dashboard/global-equity#equity-profit-growth",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "global equity profit growth trajectory degiro pnl",
+      },
     ],
   },
   {
@@ -399,6 +411,12 @@ export const dashboardChartNavigation = [
         url: "/dashboard/analytics#indian-equity-trajectory",
         icon: ChartNoAxesCombinedIcon,
         keywords: "equity history market invested value",
+      },
+      {
+        title: "Indian equity profit growth",
+        url: "/dashboard/indian-equity#equity-profit-growth",
+        icon: ChartNoAxesCombinedIcon,
+        keywords: "indian equity profit growth trajectory pnl",
       },
     ],
   },

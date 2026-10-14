@@ -1,5 +1,6 @@
 import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
+import { EquityProfitGrowthChart } from "@/components/equity-profit-growth-chart";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioCharts } from "@/components/portfolio-charts";
 import { SectionCards } from "@/components/section-cards";
@@ -144,6 +145,17 @@ export default async function IndianEquityPage() {
         ]}
       />
       <PortfolioCharts allocation={allocation} equityHistory={history} currency="INR" />
+      {history.length > 0 ? (
+        <div className="px-4 lg:px-6">
+          <EquityProfitGrowthChart
+            indianHistory={history}
+            baseCurrency="INR"
+            title="Indian equity profit growth"
+            description="Historical growth of unrealized profit across imported Zerodha holdings snapshots."
+            defaultMode="indian"
+          />
+        </div>
+      ) : null}
       <div className="px-4 lg:px-6">
         <TableCard
           dataTable={false}

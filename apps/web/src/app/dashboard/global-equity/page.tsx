@@ -1,5 +1,6 @@
 import { getAmountFormatter } from "@/lib/amount-format-server";
 import { EmptyDataState } from "@/components/empty-data-state";
+import { EquityProfitGrowthChart } from "@/components/equity-profit-growth-chart";
 import { PageHeader } from "@/components/page-header";
 import { PortfolioCharts } from "@/components/portfolio-charts";
 import { RecordDetailsDrawer } from "@/components/record-details-drawer";
@@ -141,6 +142,17 @@ export default async function GlobalEquityPage() {
                 historyTitle="Global equity history"
                 historyDescription="Open cost basis and estimated value reconstructed from imported trades."
               />
+            ) : null}
+            {portfolio.history.length > 0 ? (
+              <div className="px-4 lg:px-6">
+                <EquityProfitGrowthChart
+                  globalHistory={portfolio.history}
+                  baseCurrency="EUR"
+                  title="Global equity profit growth"
+                  description="Historical growth of unrealized profit reconstructed from imported Degiro trades."
+                  defaultMode="global"
+                />
+              </div>
             ) : null}
             <div className="grid gap-4 px-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:px-6">
               <TableCard
