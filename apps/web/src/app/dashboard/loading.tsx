@@ -8,6 +8,7 @@ type LoadingKind =
   | "analytics"
   | "settings"
   | "calendar"
+  | "notes"
   | "activity"
   | "chat"
   | "cash-flow"
@@ -36,6 +37,7 @@ function kindForPath(pathname: string): LoadingKind {
   if (pathname.startsWith("/dashboard/chat")) return "chat";
   if (pathname.startsWith("/dashboard/settings")) return "settings";
   if (pathname.startsWith("/dashboard/calendar")) return "calendar";
+  if (pathname.startsWith("/dashboard/notes")) return "notes";
   if (pathname.startsWith("/dashboard/activity")) return "activity";
   if (pathname.startsWith("/dashboard/analytics")) return "analytics";
   if (pathname.startsWith("/dashboard/cash-flow")) return "cash-flow";
@@ -273,6 +275,46 @@ function CalendarSkeleton() {
         ))}
         <Skeleton className="h-3 w-96 max-w-full rounded" />
       </section>
+    </div>
+  );
+}
+
+function NotesSkeleton() {
+  return (
+    <div className="flex flex-col gap-5 py-6">
+      <PageHeading />
+      <div className="mx-4 flex h-[640px] overflow-hidden rounded-2xl border bg-card lg:mx-6">
+        <div className="hidden w-64 border-r p-4 sm:flex sm:flex-col gap-3">
+          <Skeleton className="h-6 w-24 rounded-md" />
+          <div className="space-y-2 pt-2">
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton key={i} className="h-8 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
+        <div className="w-80 border-r p-4 flex flex-col gap-3">
+          <Skeleton className="h-8 w-full rounded-lg" />
+          <div className="space-y-3 pt-2">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={i} className="space-y-1.5 p-2 rounded-xl border border-border/40">
+                <Skeleton className="h-4 w-3/4 rounded" />
+                <Skeleton className="h-3 w-full rounded" />
+                <Skeleton className="h-3 w-1/2 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 p-6 flex flex-col gap-4">
+          <Skeleton className="h-7 w-48 rounded-md" />
+          <Skeleton className="h-4 w-32 rounded" />
+          <div className="space-y-2 pt-4">
+            <Skeleton className="h-4 w-full rounded" />
+            <Skeleton className="h-4 w-5/6 rounded" />
+            <Skeleton className="h-4 w-4/5 rounded" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -582,6 +624,7 @@ const layouts: Record<LoadingKind, () => React.JSX.Element> = {
   analytics: AnalyticsSkeleton,
   settings: SettingsSkeleton,
   calendar: CalendarSkeleton,
+  notes: NotesSkeleton,
   activity: ActivitySkeleton,
   chat: ChatSkeleton,
   "cash-flow": CashFlowSkeleton,

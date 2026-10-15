@@ -41,6 +41,7 @@ import { cn } from "@portfolio/ui/lib/utils";
 import {
   ArrowsDownUpIcon,
   BanknoteIcon,
+  BookOpenIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -61,9 +62,12 @@ import {
   TrendingUpIcon,
 } from "@portfolio/ui/components/icons";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, type FC } from "react";
+import { toast } from "sonner";
 import { SelvamComposer, useSelvamChat } from "@/components/global-ai-chat";
 import { Checkbox } from "@portfolio/ui/components/checkbox";
+import { saveAssistantMessageToNotes } from "@/lib/save-chat-to-notes";
 
 // ============================================================================
 // Types and Constants
@@ -579,12 +583,45 @@ const AssistantMessage: FC = () => (
 
 const AssistantActionBar: FC = () => {
   const isCopied = useAuiState((s) => s.message.isCopied);
+  const router = useRouter();
+  const messageContent = useAuiState((s) => s.message.content);
+
+  const handleSaveToNotes = () => {
+    const parts = (messageContent || []) as Array<{ type: string; text?: string }>;
+    const text = parts
+      .filter((p) => p.type === "text" && p.text)
+      .map((p) => p.text)
+      .join("\n\n");
+    if (!text.trim()) return;
+
+    const note = saveAssistantMessageToNotes({
+      assistantContent: text,
+    });
+
+    toast.success(`Saved to Financial Notes`, {
+      action: {
+        label: "Open Notes",
+        onClick: () => router.push(`/dashboard/notes?noteId=${note.id}`),
+      },
+    });
+  };
+
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
       autohide="not-last"
       className="text-muted-foreground animate-in fade-in col-start-3 row-start-2 -ml-1 flex gap-1 duration-200"
     >
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label="Save to Notes"
+        title="Save response to Financial Notes"
+        onClick={handleSaveToNotes}
+        className="text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
+      >
+        <BookOpenIcon className="size-3.5" />
+      </Button>
       <ActionBarPrimitive.Copy asChild>
         <Button variant="ghost" size="icon-sm" aria-label="Copy">
           <IconSwap
@@ -617,6 +654,13 @@ const AssistantActionBar: FC = () => {
           sideOffset={6}
           className="bg-popover text-popover-foreground data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:animate-out data-[side=bottom]:slide-in-from-top-2 z-50 min-w-[8rem] overflow-hidden rounded-xl border p-1.5"
         >
+          <ActionBarMorePrimitive.Item
+            onClick={handleSaveToNotes}
+            className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none select-none hover:bg-accent hover:text-accent-foreground text-amber-600 dark:text-amber-400 font-medium"
+          >
+            <BookOpenIcon className="size-4" />
+            Save to Notes
+          </ActionBarMorePrimitive.Item>
           <ActionBarPrimitive.ExportMarkdown asChild>
             <ActionBarMorePrimitive.Item className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none select-none hover:bg-accent hover:text-accent-foreground">
               <DownloadIcon className="size-4" />
@@ -809,6 +853,7 @@ const Thread: FC = () => {
 
 export default function ChatPage() {
   const chat = useSelvamChat();
+  const router = useRouter();
   const privateMode = useFinancialPrivacy();
   const [historyOpen, setHistoryOpen] = useState(true);
   const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
@@ -1057,7 +1102,23 @@ export default function ChatPage() {
                   >
                     <MoreHorizontalIcon />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        const res = await chat.saveThreadToNotes(thread.id);
+                        if (res) {
+                          toast.success(`"${thread.title}" saved to Financial Notes`, {
+                            action: {
+                              label: "Open Notes",
+                              onClick: () => router.push(`/dashboard/notes?noteId=${res.noteId}`),
+                            },
+                          });
+                        }
+                      }}
+                      className="text-amber-600 dark:text-amber-400 font-medium"
+                    >
+                      <BookOpenIcon className="size-4 mr-2" /> Save to Notes
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => {
                         const title = window.prompt("Conversation title", thread.title)?.trim();
@@ -1116,6 +1177,17 @@ export default function ChatPage() {
             }
             onToggleHistory={() => setHistoryOpen(!historyOpen)}
             onOpenMobileHistory={() => setMobileHistoryOpen(true)}
+            onSaveToNotes={async () => {
+              const res = await chat.saveThreadToNotes();
+              if (res) {
+                toast.success(`"${res.noteTitle}" saved to Financial Notes`, {
+                  action: {
+                    label: "Open Notes",
+                    onClick: () => router.push(`/dashboard/notes?noteId=${res.noteId}`),
+                  },
+                });
+              }
+            }}
             onShare={() => void chat.shareTranscript()}
             onNewChat={chat.clear}
           />

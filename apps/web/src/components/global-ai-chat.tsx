@@ -29,6 +29,7 @@ import {
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { saveChatThreadToNotes } from "@/lib/save-chat-to-notes";
 
 type Provider = ChatProvider;
 type Status = Record<Provider, boolean>;
@@ -49,6 +50,7 @@ type ChatContextValue = {
   renameThread: (id: string, title: string) => Promise<void>;
   shareTranscript: () => Promise<void>;
   exportMarkdown: () => void;
+  saveThreadToNotes: (threadId?: string) => Promise<{ noteId: string; noteTitle: string } | null>;
   searchThreads: (query: string) => Promise<void>;
   sendPrompt: (text: string) => void;
   status: Status | null;
@@ -516,6 +518,42 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
     anchor.click();
     URL.revokeObjectURL(url);
   }
+
+  async function saveThreadToNotes(
+    targetThreadId?: string,
+  ): Promise<{ noteId: string; noteTitle: string } | null> {
+    const threadId = targetThreadId ?? activeThreadId;
+    const thread = threads.find((t) => t.id === threadId);
+    const title = thread?.title || "AI Financial Consultation";
+
+    let targetMessages = messages;
+
+    if (targetThreadId && targetThreadId !== activeThreadId) {
+      try {
+        const response = await fetch(`/api/ai/threads/${targetThreadId}`);
+        if (response.ok) {
+          const data = (await response.json()) as { thread?: { messages?: typeof messages } };
+          if (data.thread?.messages && data.thread.messages.length > 0) {
+            targetMessages = data.thread.messages;
+          }
+        }
+      } catch (e) {
+        console.error("Could not load thread for notes saving:", e);
+      }
+    }
+
+    if (!targetMessages || targetMessages.length === 0) {
+      setNotice("No messages in this conversation to save to Notes.");
+      return null;
+    }
+
+    const note = saveChatThreadToNotes({
+      title,
+      messages: targetMessages,
+    });
+
+    return { noteId: note.id, noteTitle: note.title };
+  }
   function sendPrompt(text: string) {
     if (statusLoading) return;
     if (!status?.[provider]) {
@@ -643,6 +681,7 @@ export function GlobalAIChat({ userId, children }: { userId: string; children: R
           renameThread,
           shareTranscript,
           exportMarkdown,
+          saveThreadToNotes,
           searchThreads,
           sendPrompt,
           status,

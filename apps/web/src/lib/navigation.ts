@@ -1,6 +1,7 @@
 import {
   Bank,
   BookOpen,
+  BookOpenText,
   Brain,
   Buildings,
   CalendarDots,
@@ -66,6 +67,12 @@ export const dashboardNavigation = [
         url: "/dashboard/calendar",
         icon: CalendarDots,
         keywords: "events bills maturity renewal salary tax goals calendar",
+      },
+      {
+        title: "Notes",
+        url: "/dashboard/notes",
+        icon: BookOpenText,
+        keywords: "notes memos investment thesis tax planning fire checklist drafts apple notes",
       },
       {
         title: "Activity",

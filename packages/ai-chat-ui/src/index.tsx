@@ -29,6 +29,7 @@ import {
 import {
   ArrowUpRightIcon,
   ArrowUpIcon,
+  BookOpenIcon,
   BrainCircuitIcon,
   MicIcon,
   MenuIcon,
@@ -63,6 +64,7 @@ export function ChatWorkspaceControls({
   onOpenMobileHistory,
   onShare,
   onNewChat,
+  onSaveToNotes,
 }: {
   title: string;
   historyOpen: boolean;
@@ -71,6 +73,7 @@ export function ChatWorkspaceControls({
   onOpenMobileHistory: () => void;
   onShare: () => void;
   onNewChat: () => void;
+  onSaveToNotes?: () => void;
 }) {
   return (
     <div className="relative z-10 flex min-h-14 shrink-0 items-center justify-between gap-2 border-b bg-background px-2 sm:px-4">
@@ -102,6 +105,18 @@ export function ChatWorkspaceControls({
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {settingsAction}
+        {onSaveToNotes && (
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            className="size-10 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 dark:text-amber-400"
+            onClick={onSaveToNotes}
+            aria-label="Save to Notes"
+            title="Save conversation to Financial Notes"
+          >
+            <BookOpenIcon />
+          </Button>
+        )}
         <Button
           size="icon-sm"
           variant="ghost"
