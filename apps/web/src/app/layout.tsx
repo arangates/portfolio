@@ -73,6 +73,13 @@ export default async function RootLayout({
     (await cookies()).get("selvam-amount-mode")?.value === "exact" ? "exact" : "compact";
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var p=localStorage.getItem("selvam-custom-pair");if(p){var pair=JSON.parse(p);if(pair&&pair.length===2){var root=document.documentElement;root.style.setProperty("--background",pair[0]);root.style.setProperty("--foreground",pair[1]);root.dataset.palette="generative";}}}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
           <AmountPreferences initialMode={amountMode}>{children}</AmountPreferences>

@@ -1036,7 +1036,7 @@ export function EChartsPieChart<TData extends Record<string, unknown>>({
     });
     themeObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ["class", "style"],
     });
 
     chart.on("click", (params) => {

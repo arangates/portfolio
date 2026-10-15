@@ -1223,7 +1223,7 @@ export function EChartsSankeyChart({
     });
     themeObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ["class", "style"],
     });
 
     // Clicking a node toggles its selection. Sankey click params carry

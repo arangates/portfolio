@@ -1769,7 +1769,7 @@ export function EChartsBarChart<TData extends Record<string, unknown>>({
     });
     themeObserver.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ["class", "style"],
     });
 
     // Expandable hover, driven by the pointer's COLUMN rather than the bar element.
