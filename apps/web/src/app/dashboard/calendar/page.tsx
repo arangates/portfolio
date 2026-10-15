@@ -14,11 +14,12 @@ export default async function CalendarPage({
   if (!session?.user) redirect("/login");
   const { month } = await searchParams;
   const data = await getFinancialCalendar(session.user.id, month);
+
   return (
-    <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5 py-6">
+    <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5 py-4 px-2 sm:px-4">
       <PageHeader
-        title="Financial calendar"
-        description="Bills, deposit maturities, recorded activity and planning milestones in one place."
+        title="Financial Calendar"
+        description="Bills, deposit maturities, recorded transactions, and planning milestones across Month, Week, Day, Year, and Agenda views."
       />
       <FinancialCalendar key={data.month} {...data} />
     </div>
