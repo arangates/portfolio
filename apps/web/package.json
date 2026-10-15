@@ -39,6 +39,7 @@
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "^11.18.0",
+    "@vercel/speed-insights": "^2.0.0",
     "ai": "^7.0.107",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "catalog:",
