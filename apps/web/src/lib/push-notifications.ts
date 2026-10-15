@@ -164,7 +164,7 @@ export async function sendTestEmail(userId: string) {
   if (!account?.email) throw new Error("Your account does not have an email address");
 
   // Use the new React Email template for test emails
-  await sendTestTemplatedEmail(account.email, account.name || undefined, `test-email-${userId}`);
+  await sendTestTemplatedEmail(account.email, account.name || undefined);
   return { sent: 1 };
 }
 

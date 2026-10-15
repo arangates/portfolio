@@ -45,13 +45,13 @@ export async function POST(request: Request) {
     const email = account.email;
     switch (input.type) {
       case "test":
-        await sendTestTemplatedEmail(email, undefined, `api-test-${user.id}-${Date.now()}`);
+        await sendTestTemplatedEmail(email);
         break;
       case "welcome":
         if (!account?.name) {
           return NextResponse.json({ error: "User name not found" }, { status: 400 });
         }
-        await sendWelcomeEmail(email, account.name, `welcome-${user.id}-${Date.now()}`);
+        await sendWelcomeEmail(email, account.name);
         break;
     }
 
