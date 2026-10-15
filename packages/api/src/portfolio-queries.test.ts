@@ -22,4 +22,15 @@ describe("buildGlobalEquityAssets", () => {
       ],
     );
   });
+
+  it("preserves null baseValue when currency conversion is unavailable", () => {
+    const assets = buildGlobalEquityAssets(
+      [{ marketValue: 120_000, costBasis: 90_000, unrealizedPnl: 30_000 }],
+      () => null,
+      null,
+    );
+
+    assert.equal(assets[0]?.baseValue, null);
+    assert.equal(assets[1]?.baseValue, null);
+  });
 });

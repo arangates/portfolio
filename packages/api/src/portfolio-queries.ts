@@ -27,6 +27,7 @@ import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { getCommodityInventoryDashboard } from "./commodity-inventory";
 import { convertCurrency } from "./currency-conversion";
 import { buildGlobalEquityAssets } from "./global-equity-breakdown";
+import { calculateGlobalEquityPortfolio } from "./global-equity-calculations";
 
 function latestBy<T>(rows: T[], key: (row: T) => string) {
   const latest = new Map<string, T>();
@@ -280,7 +281,7 @@ export async function getDegiroAnalytics(userId: string) {
     .select({
       rowCount: sql<number>`count(*)::int`,
       dividends: sql<string>`coalesce(sum(case when ${ledgerEntry.entryType} = 'dividend' then ${ledgerEntry.netAmount} else 0 end), 0)`,
-      fees: sql<string>`coalesce(sum(case when ${ledgerEntry.entryType} = 'fee' then ${ledgerEntry.netAmount} else ${ledgerEntry.fees} end), 0)`,
+      fees: sql<string>`coalesce(sum(case when ${ledgerEntry.entryType} = 'fee' then ${ledgerEntry.netAmount} else 0 end), 0)`,
       tradeCashFlow: sql<string>`coalesce(sum(case when ${ledgerEntry.entryType} in ('buy', 'sell') then ${ledgerEntry.netAmount} else 0 end), 0)`,
     })
     .from(ledgerEntry)
@@ -325,16 +326,8 @@ export async function getDegiroAnalytics(userId: string) {
         eq(importBatch.status, "completed"),
       ),
     )
-    .innerJoin(
-      importRow,
-      and(
-        eq(importRow.userId, userId),
-        eq(importRow.batchId, ledgerEntry.batchId),
-        eq(importRow.rowHash, ledgerEntry.rawRowHash),
-      ),
-    )
     .where(and(eq(ledgerEntry.userId, userId), sql`${ledgerEntry.balance} is not null`))
-    .orderBy(desc(ledgerEntry.occurredAt), asc(importRow.rowNumber));
+    .orderBy(desc(ledgerEntry.occurredAt), desc(ledgerEntry.id));
 
   return {
     rowCount: summary?.rowCount ?? 0,
@@ -385,94 +378,22 @@ export async function getGlobalEquityPortfolio(userId: string) {
       and(eq(ledgerEntry.instrumentId, instrument.id), eq(instrument.userId, userId)),
     )
     .where(and(eq(ledgerEntry.userId, userId), sql`${ledgerEntry.entryType} in ('buy', 'sell')`))
-    .orderBy(asc(ledgerEntry.occurredAt), asc(ledgerEntry.createdAt));
+    .orderBy(asc(ledgerEntry.occurredAt), desc(ledgerEntry.quantity), asc(ledgerEntry.id));
 
-  type Position = {
-    instrumentId: string;
-    name: string;
-    isin: string;
-    category: string;
-    quantity: number;
-    costBasis: number;
-    latestPrice: number;
-    realizedPnl: number;
-    lastTradeAt: Date;
-  };
-  const positions = new Map<string, Position>();
-  const historyByMonth = new Map<
-    string,
-    { date: string; investedValue: number; marketValue: number; unrealizedPnl: number }
-  >();
-
-  for (const row of rows) {
-    const quantity = Number(row.quantity ?? 0);
-    if (!Number.isFinite(quantity) || quantity === 0) continue;
-    const gross = Math.abs(Number(row.grossAmount ?? 0));
-    const net = Math.abs(Number(row.netAmount ?? 0));
-    const fees = Math.abs(Number(row.fees ?? 0));
-    const effectivePrice =
-      gross > 0 ? gross / Math.abs(quantity) : Math.abs(Number(row.price ?? 0));
-    const current = positions.get(row.instrumentId) ?? {
+  return calculateGlobalEquityPortfolio(
+    rows.map((row) => ({
       instrumentId: row.instrumentId,
       name: row.name,
       isin: row.isin,
       category: row.category,
-      quantity: 0,
-      costBasis: 0,
-      latestPrice: effectivePrice,
-      realizedPnl: 0,
-      lastTradeAt: row.occurredAt,
-    };
-
-    if (quantity > 0) {
-      current.quantity += quantity;
-      current.costBasis += net > 0 ? net : gross + fees;
-    } else {
-      const soldQuantity = Math.min(Math.abs(quantity), Math.max(current.quantity, 0));
-      const averageCost = current.quantity > 0 ? current.costBasis / current.quantity : 0;
-      const proceeds = net > 0 ? net : Math.max(gross - fees, 0);
-      current.realizedPnl += proceeds - averageCost * soldQuantity;
-      current.quantity += quantity;
-      current.costBasis = Math.max(current.costBasis - averageCost * soldQuantity, 0);
-      if (Math.abs(current.quantity) < 0.00000001) current.quantity = 0;
-    }
-    current.latestPrice = effectivePrice;
-    current.lastTradeAt = row.occurredAt;
-    positions.set(row.instrumentId, current);
-
-    const date = row.occurredAt.toISOString().slice(0, 10);
-    const investedValue = [...positions.values()].reduce(
-      (sum, position) => sum + Math.max(position.costBasis, 0),
-      0,
-    );
-    const marketValue = [...positions.values()].reduce(
-      (sum, position) => sum + Math.max(position.quantity, 0) * position.latestPrice,
-      0,
-    );
-    historyByMonth.set(date.slice(0, 7), {
-      date,
-      investedValue,
-      marketValue,
-      unrealizedPnl: marketValue - investedValue,
-    });
-  }
-
-  const holdings = [...positions.values()]
-    .filter((position) => position.quantity > 0.00000001)
-    .map((position) => ({
-      ...position,
-      averagePrice: position.quantity > 0 ? position.costBasis / position.quantity : 0,
-      marketValue: position.quantity * position.latestPrice,
-      unrealizedPnl: position.quantity * position.latestPrice - position.costBasis,
-    }))
-    .sort((left, right) => right.marketValue - left.marketValue);
-
-  return {
-    holdings,
-    history: [...historyByMonth.values()],
-    realizedPnl: [...positions.values()].reduce((sum, position) => sum + position.realizedPnl, 0),
-    lastTradeAt: rows.at(-1)?.occurredAt ?? null,
-  };
+      occurredAt: row.occurredAt,
+      quantity: Number(row.quantity ?? 0),
+      price: Number(row.price ?? 0),
+      grossAmount: Number(row.grossAmount ?? 0),
+      fees: Number(row.fees ?? 0),
+      netAmount: Number(row.netAmount ?? 0),
+    })),
+  );
 }
 
 export async function getBankAccounts(userId: string, currency?: string) {
@@ -870,7 +791,7 @@ export type PortfolioAsset = {
   asOf: Date | string | null;
 };
 
-async function getPortfolioOverviewUncached(
+export async function getPortfolioOverviewUncached(
   userId: string,
   rateMode: ExchangeRateMode = "valuation",
 ) {
@@ -1086,6 +1007,7 @@ async function getPortfolioOverviewUncached(
     .sort((left, right) => right.value - left.value);
 
   const liquidBucketFor = (asset: (typeof valuedAssets)[number]) => {
+    if (asset.key.startsWith("zerodha-equity")) return "Indian equity";
     if (asset.key.startsWith("degiro-equity")) return "Global equity";
     if (asset.category === "Commodities") return "Liquid commodities";
     if (asset.category === "Cash") return `Cash · ${asset.currency.toUpperCase()}`;
@@ -1094,11 +1016,11 @@ async function getPortfolioOverviewUncached(
   const liquidBuckets = new Map<string, number>();
   for (const asset of valuedAssets) {
     const value = liquidValueFor(asset);
-    if (value <= 0) continue;
     const bucket = liquidBucketFor(asset);
     liquidBuckets.set(bucket, (liquidBuckets.get(bucket) ?? 0) + value);
   }
   const liquidAllocation = [...liquidBuckets.entries()]
+    .filter(([, value]) => value > 0)
     .map(([category, value]) => ({ category, value }))
     .sort((left, right) => right.value - left.value);
 
@@ -1129,10 +1051,13 @@ async function getPortfolioOverviewUncached(
   };
 }
 
-export const getPortfolioOverview = unstable_cache(
-  async (userId: string, rateMode: ExchangeRateMode = "valuation") => {
-    return getPortfolioOverviewUncached(userId, rateMode);
-  },
-  ["portfolio-overview"],
-  { tags: ["portfolio"], revalidate: 3600 },
-);
+export const getPortfolioOverview =
+  process.env.NODE_ENV === "development"
+    ? getPortfolioOverviewUncached
+    : unstable_cache(
+        async (userId: string, rateMode: ExchangeRateMode = "valuation") => {
+          return getPortfolioOverviewUncached(userId, rateMode);
+        },
+        ["portfolio-overview-v2"],
+        { tags: ["portfolio"], revalidate: 3600 },
+      );

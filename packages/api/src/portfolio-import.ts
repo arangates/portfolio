@@ -9,9 +9,11 @@ import {
   portfolioSource,
   positionSnapshot,
 } from "@portfolio/db";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
 import ExcelJS from "exceljs";
 import Papa from "papaparse";
+
+import { consolidateDegiroTrades, type DegiroRawTrade } from "./global-equity-calculations";
 
 export type PortfolioImportKind = "zerodha_holdings" | "zerodha_tradebook" | "degiro";
 
@@ -750,41 +752,78 @@ async function importDegiro(userId: string, file: PortfolioImportFile) {
       const feesIndex = csvIndex(parsed.headers, "Transaction and/or third party fees EUR");
       const totalIndex = csvIndex(parsed.headers, "Total EUR");
       const orderIdIndex = csvIndex(parsed.headers, "Order ID");
+      const venueIndex = parsed.headers.indexOf("Venue");
 
+      const rawTrades: DegiroRawTrade[] = [];
       for (const row of rows) {
         const occurredAt = parseEuropeanDate(row.values[dateIndex], row.values[timeIndex]);
         const isin = stringValue(row.values[isinIndex]);
         const product = stringValue(row.values[productIndex]);
         if (!occurredAt || !isin || !product) continue;
-        const savedInstrument = await ensureInstrument({
-          userId,
+        const quantity = numberValue(row.values[quantityIndex]);
+        if (quantity === null || quantity === 0) continue;
+
+        rawTrades.push({
+          orderId: stringValue(row.values[orderIdIndex]) || null,
+          occurredAt,
           isin,
           name: product,
+          quantity,
+          price: numberValue(row.values[priceIndex]) ?? 0,
+          grossAmount:
+            numberValue(row.values[valueEurIndex]) ?? numberValue(row.values[localValueIndex]) ?? 0,
+          fees: numberValue(row.values[feesIndex]) ?? 0,
+          netAmount: numberValue(row.values[totalIndex]) ?? 0,
+          venue: venueIndex >= 0 ? stringValue(row.values[venueIndex]) : undefined,
+        });
+      }
+
+      const consolidated = consolidateDegiroTrades(rawTrades);
+      for (const trade of consolidated) {
+        const savedInstrument = await ensureInstrument({
+          userId,
+          isin: trade.isin,
+          name: trade.name,
           assetClass: "Global equity",
           currency: "EUR",
         });
-        const quantity = numberValue(row.values[quantityIndex]);
-        const fees = numberValue(row.values[feesIndex]);
+
         entries.push({
           userId,
           sourceId: source.id,
           batchId: batch.id,
           instrumentId: savedInstrument.id,
-          externalId: stringValue(row.values[orderIdIndex]) || null,
-          entryKey: `${kind}:${row.rowHash}`,
-          occurredAt,
-          entryType: quantity !== null && quantity < 0 ? "sell" : "buy",
-          description: product,
-          quantity: decimal(quantity),
-          price: decimal(numberValue(row.values[priceIndex])),
-          grossAmount: decimal(
-            numberValue(row.values[valueEurIndex]) ?? numberValue(row.values[localValueIndex]),
-          ),
-          fees: decimal(fees),
-          netAmount: decimal(numberValue(row.values[totalIndex])),
+          externalId: trade.orderId,
+          entryKey: `${kind}:${trade.orderId}`,
+          occurredAt: trade.occurredAt,
+          entryType: trade.entryType,
+          description: trade.name,
+          quantity: decimal(trade.quantity),
+          price: decimal(trade.price),
+          grossAmount: decimal(trade.grossAmount),
+          fees: decimal(trade.fees),
+          netAmount: decimal(trade.netAmount),
           currency: "EUR",
-          rawRowHash: row.rowHash,
+          rawRowHash: trade.orderId,
         });
+      }
+
+      // Self-healing cleanup: delete any obsolete duplicate entries for these order IDs that were created with legacy rowHash keys
+      const orderIds = entries
+        .map((entry) => entry.externalId)
+        .filter((id): id is string => Boolean(id));
+      const canonicalKeys = entries.map((entry) => entry.entryKey);
+      if (orderIds.length > 0) {
+        await db
+          .delete(ledgerEntry)
+          .where(
+            and(
+              eq(ledgerEntry.userId, userId),
+              eq(ledgerEntry.sourceId, source.id),
+              inArray(ledgerEntry.externalId, orderIds),
+              notInArray(ledgerEntry.entryKey, canonicalKeys),
+            ),
+          );
       }
     } else {
       const descriptionIndex = csvIndex(parsed.headers, "Description");
@@ -794,10 +833,29 @@ async function importDegiro(userId: string, file: PortfolioImportFile) {
       const balanceAmountIndex = balanceCurrencyIndex + 1;
       const orderIdIndex = csvIndex(parsed.headers, "Order Id");
 
+      const occurrenceCountByKey = new Map<string, number>();
       for (const row of rows) {
         const occurredAt = parseEuropeanDate(row.values[dateIndex], row.values[timeIndex]);
         if (!occurredAt) continue;
         const description = stringValue(row.values[descriptionIndex]);
+        const isin = stringValue(row.values[isinIndex]);
+        const changeAmount = decimal(numberValue(row.values[changeAmountIndex]));
+        const changeCurrency =
+          stringValue(row.values[changeCurrencyIndex]) ||
+          stringValue(row.values[balanceCurrencyIndex]) ||
+          "EUR";
+        const orderId = stringValue(row.values[orderIdIndex]) || "";
+        const dateText = stringValue(row.values[dateIndex]);
+        const timeText = stringValue(row.values[timeIndex]);
+
+        // Key excludes running balance so statements with different starting dates match identically
+        const businessKey = `${dateText}|${timeText}|${isin}|${description}|${changeCurrency}|${changeAmount}|${orderId}`;
+        const occurrence = (occurrenceCountByKey.get(businessKey) ?? 0) + 1;
+        occurrenceCountByKey.set(businessKey, occurrence);
+
+        const rowKey = `${businessKey}|#${occurrence}`;
+        const entryKey = `${kind}:${hash(rowKey)}`;
+
         const lowerDescription = description.toLowerCase();
         const entryType = lowerDescription.includes("dividend")
           ? "dividend"
@@ -806,21 +864,19 @@ async function importDegiro(userId: string, file: PortfolioImportFile) {
             : lowerDescription.includes("cash") || lowerDescription.includes("overboeking")
               ? "cash"
               : "account_activity";
+
         entries.push({
           userId,
           sourceId: source.id,
           batchId: batch.id,
-          externalId: stringValue(row.values[orderIdIndex]) || null,
-          entryKey: `${kind}:${row.rowHash}`,
+          externalId: orderId || null,
+          entryKey,
           occurredAt,
           entryType,
           description,
-          netAmount: decimal(numberValue(row.values[changeAmountIndex])),
+          netAmount: changeAmount,
           balance: decimal(numberValue(row.values[balanceAmountIndex])),
-          currency:
-            stringValue(row.values[changeCurrencyIndex]) ||
-            stringValue(row.values[balanceCurrencyIndex]) ||
-            "EUR",
+          currency: changeCurrency,
           rawRowHash: row.rowHash,
         });
       }
@@ -833,7 +889,25 @@ async function importDegiro(userId: string, file: PortfolioImportFile) {
       const inserted = await db
         .insert(ledgerEntry)
         .values(chunk)
-        .onConflictDoNothing()
+        .onConflictDoUpdate({
+          target: [ledgerEntry.userId, ledgerEntry.sourceId, ledgerEntry.entryKey],
+          set: {
+            batchId: sql`excluded.batch_id`,
+            instrumentId: sql`excluded.instrument_id`,
+            externalId: sql`excluded.external_id`,
+            occurredAt: sql`excluded.occurred_at`,
+            entryType: sql`excluded.entry_type`,
+            description: sql`excluded.description`,
+            quantity: sql`excluded.quantity`,
+            price: sql`excluded.price`,
+            grossAmount: sql`excluded.gross_amount`,
+            fees: sql`excluded.fees`,
+            netAmount: sql`excluded.net_amount`,
+            balance: sql`excluded.balance`,
+            currency: sql`excluded.currency`,
+            rawRowHash: sql`excluded.raw_row_hash`,
+          },
+        })
         .returning({ id: ledgerEntry.id });
       insertedRows += inserted.length;
     }
