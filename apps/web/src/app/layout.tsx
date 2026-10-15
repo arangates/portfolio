@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { AmountPreferences } from "@/components/amount-preferences";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "../index.css";
 import Providers from "@/components/providers";
@@ -76,6 +77,7 @@ export default async function RootLayout({
         <Providers>
           <AmountPreferences initialMode={amountMode}>{children}</AmountPreferences>
         </Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
