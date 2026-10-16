@@ -9,6 +9,7 @@ import {
   type ChartConfig,
   type SankeyData,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-sankey-chart";
+import { chartColors, UNIFIED_CATEGORICAL_PALETTE } from "@portfolio/ui/lib/chart-theme";
 
 type FlowAsset = {
   category: string;
@@ -17,18 +18,11 @@ type FlowAsset = {
   isLiquid: boolean;
 };
 
-const palette = [
-  { light: ["#7c3aed", "#a78bfa"], dark: ["#8b5cf6", "#c4b5fd"] },
-  { light: ["#d97706", "#f59e0b"], dark: ["#f59e0b", "#fcd34d"] },
-  { light: ["#2563eb", "#60a5fa"], dark: ["#3b82f6", "#93c5fd"] },
-  { light: ["#e11d48", "#fb7185"], dark: ["#f43f5e", "#fda4af"] },
-  { light: ["#0891b2", "#22d3ee"], dark: ["#06b6d4", "#67e8f9"] },
-  { light: ["#ea580c", "#fb923c"], dark: ["#f97316", "#fdba74"] },
-];
+const palette = UNIFIED_CATEGORICAL_PALETTE;
 
-const rootColors = { light: ["#0f766e", "#14b8a6"], dark: ["#14b8a6", "#5eead4"] };
-const liquidColors = { light: ["#047857", "#10b981"], dark: ["#10b981", "#6ee7b7"] };
-const longTermColors = { light: ["#a16207", "#eab308"], dark: ["#ca8a04", "#fde047"] };
+const rootColors = chartColors.teal;
+const liquidColors = chartColors.success;
+const longTermColors = chartColors.warning;
 
 function safeKey(value: string) {
   return value

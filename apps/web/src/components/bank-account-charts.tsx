@@ -12,20 +12,22 @@ import {
   type ChartConfig as BarChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-bar-chart";
 
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
 const balanceConfig = {
   balance: {
     label: "Current balance",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+    colors: chartColors.primary,
   },
 } satisfies BarChartConfig;
 const headroomConfig = {
-  balance: { label: "Current balance", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
-  minimum: { label: "Required minimum", colors: { light: ["#d97706"], dark: ["#fbbf24"] } },
+  balance: { label: "Current balance", colors: chartColors.primary },
+  minimum: { label: "Required minimum", colors: chartColors.warning },
 } satisfies BarChartConfig;
 const historyConfig = {
   value: {
     label: "Total INR cash",
-    colors: { light: ["#059669", "#2563eb"], dark: ["#34d399", "#60a5fa"] },
+    colors: chartColors.success,
   },
 } satisfies AreaChartConfig;
 

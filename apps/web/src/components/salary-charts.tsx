@@ -11,24 +11,11 @@ import {
   EChartsComposedChart,
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
+import { UNIFIED_CHART_CONFIGS } from "@portfolio/ui/lib/chart-theme";
 
-const earningsConfig = {
-  baseSalary: { label: "Base salary", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
-  supplementalGross: {
-    label: "Bonus & special",
-    colors: { light: ["#7c3aed"], dark: ["#a78bfa"] },
-  },
-  netPay: {
-    label: "Net pay",
-    colors: { light: ["#059669", "#10b981"], dark: ["#34d399", "#6ee7b7"] },
-  },
-} satisfies ComposedChartConfig;
+const earningsConfig = UNIFIED_CHART_CONFIGS.salaryEarnings satisfies ComposedChartConfig;
 
-const deductionsConfig = {
-  wageTax: { label: "Wage tax", colors: { light: ["#dc2626"], dark: ["#f87171"] } },
-  pensionContribution: { label: "Pension", colors: { light: ["#d97706"], dark: ["#fbbf24"] } },
-  socialInsurance: { label: "Insurance", colors: { light: ["#7c3aed"], dark: ["#a78bfa"] } },
-} satisfies AreaChartConfig;
+const deductionsConfig = UNIFIED_CHART_CONFIGS.salaryDeductions satisfies AreaChartConfig;
 
 type SalaryPoint = {
   month: string;

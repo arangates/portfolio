@@ -6,8 +6,12 @@ import {
   deriveThemeFromPair,
   evaluateContrast,
   generateRandomAccessiblePair,
+  THEME_PRESETS,
+  type ColorFormat,
+  type ContrastAlgorithm,
   type ContrastScore,
   type LiveColorItem,
+  type ThemePreset,
 } from "@portfolio/ui/lib/theme-engine";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 import * as React from "react";
@@ -28,11 +32,24 @@ export interface ThemeContextValue {
   palette: ColorPalette;
   setPalette: (palette: ColorPalette) => void;
   activePair: [string, string] | null;
+  activePresetId: string | null;
+  activePreset: ThemePreset | null;
   contrastScore: ContrastScore | null;
+  algorithm: ContrastAlgorithm;
+  setAlgorithm: (algo: ContrastAlgorithm) => void;
+  colorFormat: ColorFormat;
+  setColorFormat: (format: ColorFormat) => void;
+  threshold: number;
+  setThreshold: (thresh: number) => void;
   isCustom: boolean;
   rollRandomTheme: (options?: { mode?: "light" | "dark" | "any" }) => void;
   invertTheme: () => void;
-  applyCustomPair: (bg: string, fg: string) => void;
+  applyCustomPair: (
+    bg: string,
+    fg: string,
+    options?: { surfaceHex?: string; accentHex?: string; presetId?: string },
+  ) => void;
+  applyPreset: (preset: ThemePreset) => void;
   resetTheme: () => void;
   isLiveFeedActive: boolean;
   setLiveFeedActive: (active: boolean) => void;
@@ -55,13 +72,21 @@ export function useAppearance(): ThemeContextValue {
 
 const STORAGE_PALETTE = "selvam-color-palette";
 const STORAGE_PAIR = "selvam-custom-pair";
+const STORAGE_PRESET = "selvam-theme-preset";
 const STORAGE_FAVORITES = "selvam-theme-favorites";
+const STORAGE_ALGO = "selvam-contrast-algo";
+const STORAGE_FORMAT = "selvam-color-format";
+const STORAGE_THRESHOLD = "selvam-contrast-threshold";
 
 function ThemeStateProvider({ children }: { children: React.ReactNode }) {
   const { setTheme, theme: currentThemeMode } = useTheme();
   const [palette, setPaletteState] = React.useState<ColorPalette>("default");
   const [activePair, setActivePair] = React.useState<[string, string] | null>(null);
+  const [activePresetId, setActivePresetId] = React.useState<string | null>(null);
   const [contrastScore, setContrastScore] = React.useState<ContrastScore | null>(null);
+  const [algorithm, setAlgorithmState] = React.useState<ContrastAlgorithm>("APCA");
+  const [colorFormat, setColorFormatState] = React.useState<ColorFormat>("OKLCH");
+  const [threshold, setThresholdState] = React.useState<number>(75);
   const [favorites, setFavorites] = React.useState<LiveColorItem[]>([]);
 
   // Live feed states (randoma11y.com/live)
@@ -75,18 +100,74 @@ function ThemeStateProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     try {
       const savedPalette = window.localStorage.getItem(STORAGE_PALETTE) as ColorPalette | null;
+      const savedPresetId = window.localStorage.getItem(STORAGE_PRESET);
       const savedPairJson = window.localStorage.getItem(STORAGE_PAIR);
       const savedFavsJson = window.localStorage.getItem(STORAGE_FAVORITES);
+      const savedAlgo = window.localStorage.getItem(STORAGE_ALGO) as ContrastAlgorithm | null;
+      const savedFormat = window.localStorage.getItem(STORAGE_FORMAT) as ColorFormat | null;
+      const savedThreshold = window.localStorage.getItem(STORAGE_THRESHOLD);
+
+      const validAlgos: ContrastAlgorithm[] = [
+        "APCA",
+        "WCAG21",
+        "Michelson",
+        "Weber",
+        "L_star",
+        "DeltaPhi",
+      ];
+      const validFormats: ColorFormat[] = [
+        "OKLCH",
+        "HEX",
+        "Display-P3",
+        "RGB",
+        "HSL",
+        "LAB",
+        "OKLAB",
+        "REC.2020",
+        "LCH",
+      ];
+
+      const initialAlgo = savedAlgo && validAlgos.includes(savedAlgo) ? savedAlgo : "APCA";
+      setAlgorithmState(initialAlgo);
+
+      const initialFormat =
+        savedFormat && validFormats.includes(savedFormat) ? savedFormat : "OKLCH";
+      setColorFormatState(initialFormat);
+
+      if (savedThreshold) {
+        const parsedThresh = parseFloat(savedThreshold);
+        if (!isNaN(parsedThresh)) setThresholdState(parsedThresh);
+      } else {
+        setThresholdState(initialAlgo === "APCA" ? 75 : 7.0);
+      }
 
       if (savedFavsJson) {
         setFavorites(JSON.parse(savedFavsJson));
+      }
+
+      // Check if a 50-preset theme was active
+      if (savedPresetId) {
+        const found = THEME_PRESETS.find((p) => p.id === savedPresetId);
+        if (found) {
+          setActivePresetId(found.id);
+          setActivePair([found.bg.hex, found.text.hex]);
+          setContrastScore(evaluateContrast(found.text.hex, found.bg.hex, initialAlgo));
+          setPaletteState("generative");
+          document.documentElement.dataset.palette = "generative";
+          const tokens = deriveThemeFromPair(found.bg.hex, found.text.hex, {
+            surfaceHex: found.surface.hex,
+            accentHex: found.accent.hex,
+          });
+          applyThemeTokens(tokens);
+          return;
+        }
       }
 
       if (savedPairJson) {
         const pair = JSON.parse(savedPairJson) as [string, string];
         if (Array.isArray(pair) && pair.length === 2) {
           setActivePair(pair);
-          setContrastScore(evaluateContrast(pair[1], pair[0]));
+          setContrastScore(evaluateContrast(pair[1], pair[0], initialAlgo));
           setPaletteState("generative");
           document.documentElement.dataset.palette = "generative";
           const tokens = deriveThemeFromPair(pair[0], pair[1]);
@@ -153,17 +234,81 @@ function ThemeStateProvider({ children }: { children: React.ReactNode }) {
     return () => disconnect();
   }, [isLiveFeedActive]);
 
-  // Apply a custom accessible pair
+  // Set algorithm and update score dynamically
+  const setAlgorithm = React.useCallback(
+    (nextAlgo: ContrastAlgorithm) => {
+      setAlgorithmState(nextAlgo);
+      // Auto-adjust default threshold when switching algorithm
+      const defaultThresh =
+        nextAlgo === "APCA"
+          ? 75
+          : nextAlgo === "WCAG21"
+            ? 7.0
+            : nextAlgo === "Michelson"
+              ? 0.7
+              : nextAlgo === "Weber"
+                ? 3.5
+                : nextAlgo === "L_star"
+                  ? 60
+                  : 50;
+      setThresholdState(defaultThresh);
+      try {
+        window.localStorage.setItem(STORAGE_ALGO, nextAlgo);
+        window.localStorage.setItem(STORAGE_THRESHOLD, String(defaultThresh));
+      } catch {}
+
+      if (activePair) {
+        setContrastScore(evaluateContrast(activePair[1], activePair[0], nextAlgo));
+      }
+    },
+    [activePair],
+  );
+
+  const setColorFormat = React.useCallback((nextFormat: ColorFormat) => {
+    setColorFormatState(nextFormat);
+    try {
+      window.localStorage.setItem(STORAGE_FORMAT, nextFormat);
+    } catch {}
+  }, []);
+
+  const setThreshold = React.useCallback((nextThresh: number) => {
+    setThresholdState(nextThresh);
+    try {
+      window.localStorage.setItem(STORAGE_THRESHOLD, String(nextThresh));
+    } catch {}
+  }, []);
+
+  // Memoized active preset if currently matching one of the 50 presets
+  const activePreset = React.useMemo(() => {
+    if (activePresetId) {
+      return THEME_PRESETS.find((p) => p.id === activePresetId) ?? null;
+    }
+    if (!activePair) return null;
+    return (
+      THEME_PRESETS.find(
+        (p) =>
+          p.bg.hex.toLowerCase() === activePair[0].toLowerCase() &&
+          p.text.hex.toLowerCase() === activePair[1].toLowerCase(),
+      ) ?? null
+    );
+  }, [activePresetId, activePair]);
+
+  // Apply a custom accessible pair with optional surface, accent, and presetId
   const applyCustomPair = React.useCallback(
-    (bg: string, fg: string) => {
+    (
+      bg: string,
+      fg: string,
+      options?: { surfaceHex?: string; accentHex?: string; presetId?: string },
+    ) => {
       const pair: [string, string] = [bg, fg];
       setActivePair(pair);
-      const score = evaluateContrast(fg, bg);
+      setActivePresetId(options?.presetId ?? null);
+      const score = evaluateContrast(fg, bg, algorithm);
       setContrastScore(score);
       setPaletteState("generative");
       document.documentElement.dataset.palette = "generative";
 
-      const tokens = deriveThemeFromPair(bg, fg);
+      const tokens = deriveThemeFromPair(bg, fg, options);
       applyThemeTokens(tokens);
 
       // Harmonize dark/light class with background lightness
@@ -182,29 +327,50 @@ function ThemeStateProvider({ children }: { children: React.ReactNode }) {
       setTheme(isDark ? "dark" : "light");
 
       try {
+        if (options?.presetId) {
+          window.localStorage.setItem(STORAGE_PRESET, options.presetId);
+        } else {
+          window.localStorage.removeItem(STORAGE_PRESET);
+        }
         window.localStorage.setItem(STORAGE_PAIR, JSON.stringify(pair));
         window.localStorage.setItem(STORAGE_PALETTE, "generative");
       } catch {}
     },
-    [setTheme],
+    [algorithm, setTheme],
   );
 
-  // Roll a new accessible pair algorithmically
+  // Directly apply one of the 50 mathematically verified presets
+  const applyPreset = React.useCallback(
+    (preset: ThemePreset) => {
+      applyCustomPair(preset.bg.hex, preset.text.hex, {
+        surfaceHex: preset.surface.hex,
+        accentHex: preset.accent.hex,
+        presetId: preset.id,
+      });
+      setTheme(preset.mode);
+    },
+    [applyCustomPair, setTheme],
+  );
+
+  // Roll a new accessible pair algorithmically using active algorithm & threshold
   const rollRandomTheme = React.useCallback(
     (options?: { mode?: "light" | "dark" | "any" }) => {
       const mode =
         options?.mode ??
         (currentThemeMode === "dark" ? "dark" : currentThemeMode === "light" ? "light" : "any");
-      const pair = generateRandomAccessiblePair({ mode, minContrast: 7.0 });
+      const pair = generateRandomAccessiblePair({
+        mode,
+        minContrast: threshold,
+        algorithm,
+      });
       applyCustomPair(pair[0], pair[1]);
     },
-    [applyCustomPair, currentThemeMode],
+    [algorithm, applyCustomPair, currentThemeMode, threshold],
   );
 
   // Invert current background and foreground
   const invertTheme = React.useCallback(() => {
     if (!activePair) {
-      // If currently on classic theme, roll an inverted pair from current mode
       rollRandomTheme({ mode: currentThemeMode === "dark" ? "light" : "dark" });
       return;
     }
@@ -214,12 +380,14 @@ function ThemeStateProvider({ children }: { children: React.ReactNode }) {
   // Reset to default static theme
   const resetTheme = React.useCallback(() => {
     setActivePair(null);
+    setActivePresetId(null);
     setContrastScore(null);
     setPaletteState("default");
     document.documentElement.dataset.palette = "default";
     applyThemeTokens(null);
     try {
       window.localStorage.removeItem(STORAGE_PAIR);
+      window.localStorage.removeItem(STORAGE_PRESET);
       window.localStorage.setItem(STORAGE_PALETTE, "default");
     } catch {}
   }, []);
@@ -232,12 +400,14 @@ function ThemeStateProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       setActivePair(null);
+      setActivePresetId(null);
       setContrastScore(null);
       setPaletteState(next);
       document.documentElement.dataset.palette = next;
       applyThemeTokens(null);
       try {
         window.localStorage.removeItem(STORAGE_PAIR);
+        window.localStorage.removeItem(STORAGE_PRESET);
         window.localStorage.setItem(STORAGE_PALETTE, next);
       } catch {}
     },
@@ -277,11 +447,20 @@ function ThemeStateProvider({ children }: { children: React.ReactNode }) {
       palette,
       setPalette,
       activePair,
+      activePresetId,
+      activePreset,
       contrastScore,
+      algorithm,
+      setAlgorithm,
+      colorFormat,
+      setColorFormat,
+      threshold,
+      setThreshold,
       isCustom: Boolean(activePair),
       rollRandomTheme,
       invertTheme,
       applyCustomPair,
+      applyPreset,
       resetTheme,
       isLiveFeedActive,
       setLiveFeedActive,
@@ -297,10 +476,19 @@ function ThemeStateProvider({ children }: { children: React.ReactNode }) {
       palette,
       setPalette,
       activePair,
+      activePresetId,
+      activePreset,
       contrastScore,
+      algorithm,
+      setAlgorithm,
+      colorFormat,
+      setColorFormat,
+      threshold,
+      setThreshold,
       rollRandomTheme,
       invertTheme,
       applyCustomPair,
+      applyPreset,
       resetTheme,
       isLiveFeedActive,
       liveColors,

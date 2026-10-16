@@ -15,47 +15,49 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@portfolio/ui/components/tabs";
 import { useMemo, useState } from "react";
 
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
 const combinedConfig = {
   totalProfitBase: {
     label: "Total equity profit",
-    colors: { light: ["#059669", "#10b981"], dark: ["#10b981", "#6ee7b7"] },
+    colors: chartColors.success,
   },
   indianProfitBase: {
     label: "Indian equity profit",
-    colors: { light: ["#ea580c", "#f97316"], dark: ["#f97316", "#fdba74"] },
+    colors: chartColors.orange,
   },
   globalProfitBase: {
     label: "Global equity profit",
-    colors: { light: ["#0284c7", "#38bdf8"], dark: ["#38bdf8", "#bae6fd"] },
+    colors: chartColors.cyan,
   },
 } satisfies AreaChartConfig;
 
 const percentConfig = {
   totalReturnPercent: {
     label: "Combined return %",
-    colors: { light: ["#059669", "#10b981"], dark: ["#10b981", "#6ee7b7"] },
+    colors: chartColors.success,
   },
   indianReturnPercent: {
     label: "Indian return %",
-    colors: { light: ["#ea580c", "#f97316"], dark: ["#f97316", "#fdba74"] },
+    colors: chartColors.orange,
   },
   globalReturnPercent: {
     label: "Global return %",
-    colors: { light: ["#0284c7", "#38bdf8"], dark: ["#38bdf8", "#bae6fd"] },
+    colors: chartColors.cyan,
   },
 } satisfies AreaChartConfig;
 
 const indianConfig = {
   indianProfitInr: {
     label: "Indian equity profit",
-    colors: { light: ["#ea580c", "#f97316"], dark: ["#f97316", "#fdba74"] },
+    colors: chartColors.orange,
   },
 } satisfies AreaChartConfig;
 
 const globalConfig = {
   globalProfitEur: {
     label: "Global equity profit",
-    colors: { light: ["#0284c7", "#38bdf8"], dark: ["#38bdf8", "#bae6fd"] },
+    colors: chartColors.cyan,
   },
 } satisfies AreaChartConfig;
 

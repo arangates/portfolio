@@ -13,27 +13,22 @@ import {
   type ChartConfig as SankeyChartConfig,
   type SankeyData,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-sankey-chart";
+import { chartColors, UNIFIED_CATEGORICAL_PALETTE } from "@portfolio/ui/lib/chart-theme";
 
 const flowColors = {
-  income: { light: ["#0f766e", "#14b8a6"], dark: ["#14b8a6", "#5eead4"] },
-  expense: { light: ["#be123c", "#fb7185"], dark: ["#f43f5e", "#fda4af"] },
-  surplus: { light: ["#1d4ed8", "#60a5fa"], dark: ["#3b82f6", "#93c5fd"] },
-  retained: { light: ["#a16207", "#facc15"], dark: ["#eab308", "#fde047"] },
-  gap: { light: ["#9f1239", "#e11d48"], dark: ["#be123c", "#fb7185"] },
+  income: chartColors.teal,
+  expense: chartColors.danger,
+  surplus: chartColors.primary,
+  retained: chartColors.warning,
+  gap: chartColors.rose,
 };
 
-const allocationColors = [
-  { light: ["#6d28d9", "#a78bfa"], dark: ["#8b5cf6", "#c4b5fd"] },
-  { light: ["#0369a1", "#38bdf8"], dark: ["#0ea5e9", "#7dd3fc"] },
-  { light: ["#047857", "#34d399"], dark: ["#10b981", "#6ee7b7"] },
-  { light: ["#c2410c", "#fb923c"], dark: ["#f97316", "#fdba74"] },
-  { light: ["#a21caf", "#e879f9"], dark: ["#d946ef", "#f0abfc"] },
-];
+const allocationColors = UNIFIED_CATEGORICAL_PALETTE;
 
 const capacityConfig = {
   value: {
     label: "Monthly amount",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+    colors: chartColors.primary,
   },
 } satisfies BarChartConfig;
 

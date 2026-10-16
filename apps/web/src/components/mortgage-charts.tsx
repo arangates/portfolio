@@ -29,13 +29,14 @@ const monthTick = (value: string) =>
   );
 const yearTick = (value: string) => value.slice(0, 4);
 
-const color = (light: string, dark: string) => ({ light: [light], dark: [dark] });
-const BLUE = color("#2563eb", "#60a5fa");
-const ROSE = color("#e11d48", "#fb7185");
-const GREEN = color("#059669", "#34d399");
-const AMBER = color("#d97706", "#fbbf24");
-const VIOLET = color("#7c3aed", "#a78bfa");
-const SLATE = color("#64748b", "#94a3b8");
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
+const BLUE = chartColors.primary;
+const ROSE = chartColors.danger;
+const GREEN = chartColors.success;
+const AMBER = chartColors.warning;
+const VIOLET = chartColors.purple;
+const SLATE = chartColors.neutral;
 
 function useMoney() {
   const { formatCurrency } = useAmountFormat();

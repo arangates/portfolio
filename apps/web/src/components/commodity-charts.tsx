@@ -8,15 +8,17 @@ import {
   type ChartConfig as BarChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-bar-chart";
 
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
 const valueConfig = {
   value: {
     label: "Owned value",
-    colors: { light: ["#d97706", "#7c3aed"], dark: ["#fbbf24", "#a78bfa"] },
+    colors: chartColors.warning,
   },
 } satisfies BarChartConfig;
 const weightConfig = {
-  declared: { label: "Declared weight", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
-  itemized: { label: "Itemized weight", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  declared: { label: "Declared weight", colors: chartColors.primary },
+  itemized: { label: "Itemized weight", colors: chartColors.success },
 } satisfies BarChartConfig;
 
 function shortLabel(value: string) {

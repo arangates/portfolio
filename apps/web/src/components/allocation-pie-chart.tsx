@@ -7,6 +7,8 @@ import {
   type ChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
 
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
 export function AllocationPieChart({
   data,
   config,
@@ -56,7 +58,7 @@ export function AllocationPieChart({
           const configuredColors = config[item.id]?.colors;
           const colors = Array.isArray(configuredColors)
             ? configuredColors
-            : (configuredColors?.dark ?? configuredColors?.light ?? ["#71717a", "#a1a1aa"]);
+            : (configuredColors?.dark ?? configuredColors?.light ?? chartColors.neutral.dark);
           const label = config[item.id]?.label;
           return (
             <li

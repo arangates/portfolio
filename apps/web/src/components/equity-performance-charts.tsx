@@ -12,22 +12,15 @@ import {
   type ChartConfig as BarChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-bar-chart";
 
+import { chartColors, UNIFIED_CHART_CONFIGS } from "@portfolio/ui/lib/chart-theme";
+
 const pnlConfig = {
   value: {
     label: "Unrealized P&L",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+    colors: chartColors.primary,
   },
 } satisfies BarChartConfig;
-const historyConfig = {
-  marketValue: {
-    label: "Market value",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
-  },
-  investedValue: {
-    label: "Invested value",
-    colors: { light: ["#059669"], dark: ["#34d399"] },
-  },
-} satisfies AreaChartConfig;
+const historyConfig = UNIFIED_CHART_CONFIGS.portfolioHistory satisfies AreaChartConfig;
 
 function shortLabel(value: string) {
   return value.length > 22 ? `${value.slice(0, 21)}…` : value;

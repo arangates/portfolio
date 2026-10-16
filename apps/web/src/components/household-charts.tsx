@@ -13,35 +13,36 @@ import {
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
 import { type ChartConfig as PieChartConfig } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
 
 const categoryConfig = {
   amount: {
     label: "Monthly expense",
-    colors: { light: ["#0891b2", "#2563eb"], dark: ["#22d3ee", "#60a5fa"] },
+    colors: chartColors.cyan,
   },
 } satisfies BarChartConfig;
 const scenarioConfig = {
-  grossExpenses: { label: "Gross expenses", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
-  refunds: { label: "Refunds", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  grossExpenses: { label: "Gross expenses", colors: chartColors.primary },
+  refunds: { label: "Refunds", colors: chartColors.success },
   netMonthly: {
     label: "Net household cost",
-    colors: { light: ["#7c3aed", "#db2777"], dark: ["#a78bfa", "#f472b6"] },
+    colors: chartColors.purple,
   },
 } satisfies ComposedChartConfig;
 const mixConfig = {
   essential: {
     label: "Essential expenses",
-    colors: { light: ["#2563eb", "#0891b2"], dark: ["#60a5fa", "#22d3ee"] },
+    colors: chartColors.primary,
   },
   flexible: {
     label: "Flexible expenses",
-    colors: { light: ["#d97706", "#db2777"], dark: ["#fbbf24", "#f472b6"] },
+    colors: chartColors.warning,
   },
 } satisfies PieChartConfig;
 const perAdultConfig = {
   perAdult: {
     label: "Net cost per adult",
-    colors: { light: ["#7c3aed", "#db2777"], dark: ["#a78bfa", "#f472b6"] },
+    colors: chartColors.purple,
   },
 } satisfies BarChartConfig;
 

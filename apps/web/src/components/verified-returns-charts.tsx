@@ -12,29 +12,31 @@ import {
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
 
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
 const flowConfig = {
   contributions: {
     label: "Contributions",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+    colors: chartColors.primary,
   },
-  withdrawals: { label: "Withdrawals", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  withdrawals: { label: "Withdrawals", colors: chartColors.success },
   cumulativeNetContributions: {
     label: "Cumulative net contributions",
-    colors: { light: ["#ca8a04"], dark: ["#facc15"] },
+    colors: chartColors.warning,
   },
 } satisfies ComposedChartConfig;
 
 const returnConfig = {
   value: {
     label: "Annualized return",
-    colors: { light: ["#7c3aed", "#2563eb"], dark: ["#a78bfa", "#60a5fa"] },
+    colors: chartColors.purple,
   },
 } satisfies BarChartConfig;
 
 const intervalConfig = {
   value: {
     label: "Modified Dietz interval",
-    colors: { light: ["#0891b2", "#2563eb"], dark: ["#22d3ee", "#60a5fa"] },
+    colors: chartColors.cyan,
   },
 } satisfies BarChartConfig;
 

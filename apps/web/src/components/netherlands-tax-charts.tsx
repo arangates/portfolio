@@ -12,21 +12,23 @@ import {
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
 
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
 const incomeConfig = {
-  box1TaxableIncome: { label: "Box 1", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
-  box2TaxableIncome: { label: "Box 2", colors: { light: ["#7c3aed"], dark: ["#a78bfa"] } },
-  box3TaxableIncome: { label: "Box 3", colors: { light: ["#059669"], dark: ["#34d399"] } },
-  aggregateIncome: { label: "Aggregate income", colors: { light: ["#dc2626"], dark: ["#f87171"] } },
+  box1TaxableIncome: { label: "Box 1", colors: chartColors.primary },
+  box2TaxableIncome: { label: "Box 2", colors: chartColors.purple },
+  box3TaxableIncome: { label: "Box 3", colors: chartColors.success },
+  aggregateIncome: { label: "Aggregate income", colors: chartColors.danger },
 } satisfies ComposedChartConfig;
 
 const taxConfig = {
   finalTaxAndSocialInsurance: {
     label: "Final tax",
-    colors: { light: ["#dc2626"], dark: ["#f87171"] },
+    colors: chartColors.danger,
   },
-  payrollTaxWithheld: { label: "Payroll tax", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
-  totalTaxCredits: { label: "Tax credits", colors: { light: ["#d97706"], dark: ["#fbbf24"] } },
-  settlementAmount: { label: "Settlement", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  payrollTaxWithheld: { label: "Payroll tax", colors: chartColors.primary },
+  totalTaxCredits: { label: "Tax credits", colors: chartColors.warning },
+  settlementAmount: { label: "Settlement", colors: chartColors.success },
 } satisfies AreaChartConfig;
 
 export type NetherlandsTaxChartPoint = {

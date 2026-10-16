@@ -95,12 +95,25 @@ export function buildChartCss(id: string, config: ChartConfig): string {
     .join("\n");
 }
 
-// A single reusable 1×1 canvas normalizes ANY CSS color (hex, named, oklch, …)
+// A single reusable 1×1 canvas normalizes ANY CSS color (hex, named, oklch, CSS vars …)
 // to a concrete rgba string by painting it and reading the pixel back.
 let normalizerCtx: CanvasRenderingContext2D | null = null;
-export function normalizeColor(value: string): string {
-  const raw = value.trim();
+export function normalizeColor(value: string, container?: HTMLElement): string {
+  let raw = value.trim();
   if (!raw || typeof document === "undefined") return raw;
+
+  if (raw.includes("var(")) {
+    const parent = container || (typeof document !== "undefined" ? document.body : null);
+    if (parent) {
+      const probe = document.createElement("span");
+      probe.style.cssText =
+        "position:absolute;width:0;height:0;visibility:hidden;pointer-events:none;";
+      probe.style.color = raw;
+      parent.appendChild(probe);
+      raw = getComputedStyle(probe).color;
+      parent.removeChild(probe);
+    }
+  }
 
   if (!normalizerCtx) {
     const canvas = document.createElement("canvas");
@@ -155,7 +168,7 @@ export function resolveColors(
     const slots: string[] = [];
     for (let n = 0; n < count; n++) {
       const raw = computed.getPropertyValue(`--color-${key}-${n}`).trim();
-      slots.push(raw ? normalizeColor(raw) : "rgba(120, 120, 120, 1)");
+      slots.push(raw ? normalizeColor(raw, container) : "rgba(120, 120, 120, 1)");
     }
     series[key] = slots;
   }

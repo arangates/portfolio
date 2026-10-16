@@ -28,30 +28,11 @@ type ScenarioResult = {
   monteCarlo: Array<{ year: number; p10: number; median: number; p90: number }>;
 };
 
-const projectionConfig = {
-  p10: { label: "Conservative (P10)", colors: { light: ["#dc2626"], dark: ["#f87171"] } },
-  median: {
-    label: "Median outcome",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
-  },
-  p90: { label: "Optimistic (P90)", colors: { light: ["#059669"], dark: ["#34d399"] } },
-  deterministic: {
-    label: "Expected path",
-    colors: { light: ["#ca8a04"], dark: ["#facc15"] },
-  },
-} satisfies LineChartConfig;
+import { UNIFIED_CHART_CONFIGS } from "@portfolio/ui/lib/chart-theme";
 
-const cashFlowConfig = {
-  expenses: {
-    label: "Living expenses",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
-  },
-  oneTimeCosts: {
-    label: "One-time costs",
-    colors: { light: ["#dc2626"], dark: ["#f87171"] },
-  },
-  income: { label: "Other income", colors: { light: ["#059669"], dark: ["#34d399"] } },
-} satisfies ComposedChartConfig;
+const projectionConfig = UNIFIED_CHART_CONFIGS.fireProjection satisfies LineChartConfig;
+
+const cashFlowConfig = UNIFIED_CHART_CONFIGS.fireCashFlow satisfies ComposedChartConfig;
 
 export function FireCharts({ results, currency }: { results: ScenarioResult[]; currency: string }) {
   const { formatCurrency } = useAmountFormat();

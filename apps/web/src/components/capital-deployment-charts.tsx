@@ -11,32 +11,21 @@ import {
   EChartsComposedChart,
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
+import { UNIFIED_CHART_CONFIGS } from "@portfolio/ui/lib/chart-theme";
 
 const allocationConfig = {
-  current: {
-    label: "Current",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
-  },
-  target: { label: "Policy target", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  current: UNIFIED_CHART_CONFIGS.capitalDeployment.current,
+  target: UNIFIED_CHART_CONFIGS.capitalDeployment.target,
 } satisfies BarChartConfig;
 
 const flowConfig = {
-  purchases: {
-    label: "Purchases",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
-  },
-  redemptions: { label: "Redemptions", colors: { light: ["#059669"], dark: ["#34d399"] } },
-  netPurchases: {
-    label: "Net purchases",
-    colors: { light: ["#ca8a04"], dark: ["#facc15"] },
-  },
+  purchases: UNIFIED_CHART_CONFIGS.capitalDeployment.purchases,
+  redemptions: UNIFIED_CHART_CONFIGS.capitalDeployment.redemptions,
+  netPurchases: UNIFIED_CHART_CONFIGS.capitalDeployment.netPurchases,
 } satisfies ComposedChartConfig;
 
 const maturityConfig = {
-  value: {
-    label: "Scheduled proceeds",
-    colors: { light: ["#7c3aed", "#2563eb"], dark: ["#a78bfa", "#60a5fa"] },
-  },
+  value: UNIFIED_CHART_CONFIGS.capitalDeployment.maturity,
 } satisfies BarChartConfig;
 
 export function CapitalDeploymentCharts({

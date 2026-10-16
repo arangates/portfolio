@@ -9,19 +9,14 @@ import {
   type ChartConfig as AreaChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-area-chart";
 import { type ChartConfig as PieChartConfig } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
+import { chartColors, UNIFIED_CATEGORICAL_PALETTE } from "@portfolio/ui/lib/chart-theme";
 
-const ALLOCATION_COLORS: Array<{ light: string[]; dark: string[] }> = [
-  { light: ["#2563eb", "#60a5fa"], dark: ["#60a5fa", "#93c5fd"] },
-  { light: ["#7c3aed", "#a78bfa"], dark: ["#a78bfa", "#c4b5fd"] },
-  { light: ["#059669", "#34d399"], dark: ["#34d399", "#6ee7b7"] },
-  { light: ["#d97706", "#fbbf24"], dark: ["#fbbf24", "#fde68a"] },
-  { light: ["#dc2626", "#fb7185"], dark: ["#fb7185", "#fda4af"] },
-  { light: ["#0891b2", "#22d3ee"], dark: ["#22d3ee", "#67e8f9"] },
-];
+const ALLOCATION_COLORS = UNIFIED_CATEGORICAL_PALETTE;
+
 const historyConfig = {
   value: {
     label: "Attributable value",
-    colors: { light: ["#7c3aed", "#db2777"], dark: ["#a78bfa", "#f472b6"] },
+    colors: chartColors.purple,
   },
 } satisfies AreaChartConfig;
 

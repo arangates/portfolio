@@ -12,22 +12,24 @@ import {
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
 
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
 const cashFlowConfig = {
   buys: {
     label: "Purchases",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+    colors: chartColors.primary,
   },
-  sells: { label: "Redemptions", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  sells: { label: "Redemptions", colors: chartColors.success },
   netInvested: {
     label: "Net invested",
-    colors: { light: ["#ca8a04"], dark: ["#facc15"] },
+    colors: chartColors.warning,
   },
 } satisfies ComposedChartConfig;
 
 const fundConfig = {
   buyAmount: {
     label: "Purchases",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
+    colors: chartColors.primary,
   },
 } satisfies BarChartConfig;
 

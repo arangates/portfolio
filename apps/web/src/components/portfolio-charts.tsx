@@ -11,30 +11,11 @@ import {
   EChartsPieChart,
   type ChartConfig as PieChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-pie-chart";
+import { UNIFIED_CATEGORICAL_PALETTE, UNIFIED_CHART_CONFIGS } from "@portfolio/ui/lib/chart-theme";
 
-const palette = [
-  { light: ["#2563eb", "#60a5fa"], dark: ["#60a5fa", "#93c5fd"] },
-  { light: ["#7c3aed", "#a78bfa"], dark: ["#a78bfa", "#c4b5fd"] },
-  { light: ["#059669", "#34d399"], dark: ["#34d399", "#6ee7b7"] },
-  { light: ["#d97706", "#fbbf24"], dark: ["#fbbf24", "#fde68a"] },
-  { light: ["#dc2626", "#fb7185"], dark: ["#f87171", "#fda4af"] },
-  { light: ["#0891b2", "#22d3ee"], dark: ["#22d3ee", "#67e8f9"] },
-  { light: ["#db2777", "#f472b6"], dark: ["#f472b6", "#f9a8d4"] },
-  { light: ["#65a30d", "#a3e635"], dark: ["#a3e635", "#d9f99d"] },
-  { light: ["#4f46e5", "#818cf8"], dark: ["#818cf8", "#c7d2fe"] },
-  { light: ["#ea580c", "#fb923c"], dark: ["#fb923c", "#fed7aa"] },
-];
+const palette = UNIFIED_CATEGORICAL_PALETTE;
 
-const historyConfig = {
-  marketValue: {
-    label: "Market value",
-    colors: { light: ["#2563eb", "#7c3aed"], dark: ["#60a5fa", "#a78bfa"] },
-  },
-  investedValue: {
-    label: "Invested value",
-    colors: { light: ["#059669"], dark: ["#34d399"] },
-  },
-} satisfies AreaChartConfig;
+const historyConfig = UNIFIED_CHART_CONFIGS.portfolioHistory satisfies AreaChartConfig;
 
 function keyFor(category: string, index: number) {
   const key = category

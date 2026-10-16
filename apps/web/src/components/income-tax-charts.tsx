@@ -12,21 +12,23 @@ import {
   type ChartConfig as ComposedChartConfig,
 } from "@portfolio/ui/components/evilcharts/charts/echarts-composed-chart";
 
+import { chartColors } from "@portfolio/ui/lib/chart-theme";
+
 const incomeConfig = {
-  salaryIncome: { label: "Salary", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
-  businessIncome: { label: "Business", colors: { light: ["#7c3aed"], dark: ["#a78bfa"] } },
-  capitalGains: { label: "Capital gains", colors: { light: ["#059669"], dark: ["#34d399"] } },
-  otherSourcesIncome: { label: "Other sources", colors: { light: ["#d97706"], dark: ["#fbbf24"] } },
-  totalIncome: { label: "Taxable income", colors: { light: ["#dc2626"], dark: ["#f87171"] } },
+  salaryIncome: { label: "Salary", colors: chartColors.primary },
+  businessIncome: { label: "Business", colors: chartColors.purple },
+  capitalGains: { label: "Capital gains", colors: chartColors.success },
+  otherSourcesIncome: { label: "Other sources", colors: chartColors.warning },
+  totalIncome: { label: "Taxable income", colors: chartColors.danger },
 } satisfies ComposedChartConfig;
 
 const taxConfig = {
   aggregateTaxLiability: {
     label: "Tax liability",
-    colors: { light: ["#dc2626"], dark: ["#f87171"] },
+    colors: chartColors.danger,
   },
-  totalTaxesPaid: { label: "Taxes paid", colors: { light: ["#2563eb"], dark: ["#60a5fa"] } },
-  refundDue: { label: "Refund due", colors: { light: ["#059669"], dark: ["#34d399"] } },
+  totalTaxesPaid: { label: "Taxes paid", colors: chartColors.primary },
+  refundDue: { label: "Refund due", colors: chartColors.success },
 } satisfies AreaChartConfig;
 
 export type IncomeTaxChartPoint = {
