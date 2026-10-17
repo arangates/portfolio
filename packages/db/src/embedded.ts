@@ -15,7 +15,23 @@ let defaultEmbeddedClient: PGlite | null = null;
 let migrationPromise: Promise<void> | null = null;
 
 export function getMigrationsFolder(): string {
-  return fileURLToPath(new URL("./migrations", import.meta.url));
+  const currentDir =
+    typeof import.meta.url === "string" ? dirname(fileURLToPath(import.meta.url)) : "";
+  const candidates = [
+    resolve(process.cwd(), "packages/db/src/migrations"),
+    resolve(process.cwd(), "../../packages/db/src/migrations"),
+    ...(currentDir
+      ? [resolve(currentDir, "migrations"), resolve(currentDir, "../migrations")]
+      : []),
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return candidates[0]!;
 }
 
 export function createPGliteClient(options?: EmbeddedDbOptions): PGlite {
