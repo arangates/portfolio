@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      DATABASE_URL: postgresql://user:password@localhost:5432/selvam
-      DATABASE_URL_DIRECT: postgresql://user:password@localhost:5432/selvam
-      BETTER_AUTH_SECRET: ci-only-secret-with-more-than-32-characters
+      SOVEREIGN_MODE: "true"
+      DATABASE_URL: "pglite://local"
+      BETTER_AUTH_SECRET: "ci-only-secret-with-more-than-32-characters"
       BETTER_AUTH_URL: http://localhost:3001
       CORS_ORIGIN: http://localhost:3001
       SKIP_ENV_VALIDATION: "true"
@@ -35,4 +35,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check-types
       - run: pnpm exec oxlint apps/web/src packages/api/src packages/auth/src packages/db/src
+      - run: |
+          pnpm --filter @portfolio/calc test
+          pnpm --filter @portfolio/parsers test
+          pnpm --filter @portfolio/auth test
+          pnpm --filter @portfolio/db test
       - run: pnpm build
