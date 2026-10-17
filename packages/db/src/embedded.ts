@@ -35,27 +35,50 @@ export function createPGliteClient(options?: EmbeddedDbOptions): PGlite {
   return new PGlite(dataDir);
 }
 
+export const SOVEREIGN_DEFAULT_USER = {
+  id: "sovereign-user",
+  name: "Aranga",
+  email: "owner@selvam.local",
+  emailVerified: true,
+} as const;
+
+export function getDefaultEmbeddedClient(options?: EmbeddedDbOptions): PGlite {
+  if (!defaultEmbeddedClient) {
+    defaultEmbeddedClient = createPGliteClient(options);
+  }
+  return defaultEmbeddedClient;
+}
+
 export async function runEmbeddedMigrations(client: PGlite): Promise<void> {
   const migrationsFolder = getMigrationsFolder();
   const db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder });
+
+  // Provision sovereign default user if in sovereign mode
+  await client.exec(`
+    INSERT INTO "user" (id, name, email, email_verified, created_at, updated_at)
+    VALUES ('${SOVEREIGN_DEFAULT_USER.id}', '${SOVEREIGN_DEFAULT_USER.name}', '${SOVEREIGN_DEFAULT_USER.email}', true, NOW(), NOW())
+    ON CONFLICT (id) DO NOTHING;
+  `);
 }
 
 export function createEmbeddedDb(options?: EmbeddedDbOptions) {
-  const client = createPGliteClient(options);
+  const client = getDefaultEmbeddedClient(options);
   const db = drizzle(client, { schema });
   return { db, client };
 }
 
+export async function ensureSovereignReady(options?: EmbeddedDbOptions): Promise<void> {
+  await getOrInitEmbeddedDb(options);
+}
+
 export async function getOrInitEmbeddedDb(options?: EmbeddedDbOptions) {
-  if (!defaultEmbeddedClient) {
-    defaultEmbeddedClient = createPGliteClient(options);
-  }
+  const client = getDefaultEmbeddedClient(options);
 
   if (!migrationPromise) {
-    migrationPromise = runEmbeddedMigrations(defaultEmbeddedClient);
+    migrationPromise = runEmbeddedMigrations(client);
   }
   await migrationPromise;
 
-  return drizzle(defaultEmbeddedClient, { schema });
+  return drizzle(client, { schema });
 }

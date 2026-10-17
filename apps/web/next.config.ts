@@ -19,6 +19,7 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["@electric-sql/pglite"],
   typedRoutes: true,
   reactCompiler: true,
   poweredByHeader: false,

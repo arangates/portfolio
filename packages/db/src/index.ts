@@ -3,7 +3,7 @@ import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import { drizzle as drizzlePGlite } from "drizzle-orm/pglite";
 import { env } from "@portfolio/env/server";
 import * as schema from "./schema";
-import { createPGliteClient, type EmbeddedDbOptions } from "./embedded";
+import { getDefaultEmbeddedClient, type EmbeddedDbOptions } from "./embedded";
 
 export * from "./schema";
 export * from "./embedded";
@@ -20,7 +20,7 @@ export type AppDatabase = ReturnType<typeof drizzlePostgres<typeof schema>>;
 
 export function createDb(options?: { pgliteOptions?: EmbeddedDbOptions }): AppDatabase {
   if (isSovereignMode()) {
-    const client = createPGliteClient(options?.pgliteOptions);
+    const client = getDefaultEmbeddedClient(options?.pgliteOptions);
     return drizzlePGlite(client, { schema }) as unknown as AppDatabase;
   }
 

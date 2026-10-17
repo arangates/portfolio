@@ -8,9 +8,12 @@ export const env = createEnv({
     DATABASE_URL_DIRECT: z.string().min(1).optional(),
     SOVEREIGN_MODE: z.string().optional(),
     PGLITE_DATA_DIR: z.string().optional(),
-    BETTER_AUTH_SECRET: z.string().min(32),
-    BETTER_AUTH_URL: z.url(),
-    CORS_ORIGIN: z.url(),
+    BETTER_AUTH_SECRET: z
+      .string()
+      .min(32)
+      .default("selvam-sovereign-master-secret-key-32chars-min-zero-cloud"),
+    BETTER_AUTH_URL: z.url().default("http://localhost:3000"),
+    CORS_ORIGIN: z.url().default("http://localhost:3000"),
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),
     GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
     TWELVE_DATA_API_KEY: z.string().min(1).optional(),

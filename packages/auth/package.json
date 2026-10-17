@@ -10,7 +10,8 @@
     }
   },
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@portfolio/db": "workspace:*",
@@ -21,6 +22,9 @@
   },
   "devDependencies": {
     "@portfolio/config": "workspace:*",
+    "@types/node": "^22.20.1",
+    "tsx": "^4.23.12",
     "typescript": "catalog:"
   }
 }
+
