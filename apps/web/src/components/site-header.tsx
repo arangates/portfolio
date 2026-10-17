@@ -4,6 +4,7 @@ import { AppStatus } from "@/components/pwa-controls";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CommandSearch } from "@/components/command-search";
 import { NotificationBell } from "@/components/notification-bell";
+import { FinancialStoriesTrigger } from "@/components/financial-stories";
 import { Button } from "@portfolio/ui/components/button";
 import { SidebarTrigger } from "@portfolio/ui/components/sidebar";
 import { ChevronRightIcon, MessageCircleIcon } from "@portfolio/ui/components/icons";
@@ -65,6 +66,7 @@ export function SiteHeader() {
             <MessageCircleIcon />
             <span className="hidden sm:inline">Ask Selvam</span>
           </Button>
+          <FinancialStoriesTrigger />
           <AppStatus />
           <NotificationBell />
           <ModeToggle />

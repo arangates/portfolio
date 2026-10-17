@@ -1,9 +1,18 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
+import { existsSync, mkdirSync } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 import { auth, googleAuthEnabled } from "@portfolio/auth";
-import { account, db, documentArchive, documentArchiveSetting } from "@portfolio/db";
+import {
+  account,
+  db,
+  documentArchive,
+  documentArchiveSetting,
+  isSovereignMode,
+} from "@portfolio/db";
 import { and, count, desc, eq } from "drizzle-orm";
 
 import { GOOGLE_DRIVE_FILE_SCOPE } from "./drive-archive-shared";
@@ -295,6 +304,7 @@ async function saveArchiveRecord(
   values: {
     fileHash: string;
     status: "processing" | "stored" | "failed";
+    provider?: string;
     providerFileId?: string | null;
     providerFolderId?: string | null;
     errorMessage?: string | null;
@@ -311,6 +321,7 @@ async function saveArchiveRecord(
       fileHash: values.fileHash,
       mimeType: input.mimeType || "application/octet-stream",
       fileSize: input.bytes.byteLength,
+      provider: values.provider ?? "google_drive",
       providerFileId: values.providerFileId,
       providerFolderId: values.providerFolderId,
       status: values.status,
@@ -324,6 +335,7 @@ async function saveArchiveRecord(
         fileHash: values.fileHash,
         mimeType: input.mimeType || "application/octet-stream",
         fileSize: input.bytes.byteLength,
+        provider: values.provider ?? "google_drive",
         providerFileId: values.providerFileId,
         providerFolderId: values.providerFolderId,
         status: values.status,
@@ -337,13 +349,62 @@ async function saveArchiveRecord(
   return saved.id;
 }
 
+function getLocalVaultDir(sourceType: ArchiveSourceType) {
+  const baseDir = process.env.PGLITE_DATA_DIR
+    ? resolve(process.env.PGLITE_DATA_DIR, "vault", "documents")
+    : resolve(process.cwd(), "data", "vault", "documents");
+  return resolve(baseDir, sourceType);
+}
+
+async function archiveLocally(
+  input: ArchiveFileInput,
+  fileHash: string,
+): Promise<DriveArchiveResult> {
+  try {
+    const targetDir = getLocalVaultDir(input.sourceType);
+    if (!existsSync(targetDir)) {
+      mkdirSync(targetDir, { recursive: true });
+    }
+    const cleanName = safeFileName(input.fileName);
+    const targetPath = resolve(targetDir, `${fileHash.slice(0, 12)}_${cleanName}`);
+    await writeFile(targetPath, input.bytes);
+
+    const documentId = await saveArchiveRecord(input, {
+      fileHash,
+      status: "stored",
+      provider: "local_vault",
+      providerFileId: targetPath,
+      providerFolderId: targetDir,
+      uploadedAt: new Date(),
+      errorMessage: null,
+    });
+    return { status: "stored", documentId };
+  } catch (error) {
+    console.error(`[local-vault] save failed for ${input.sourceType}/${input.sourceId}:`, error);
+    const message = error instanceof Error ? error.message : "Failed to store file in local vault";
+    const documentId = await saveArchiveRecord(input, {
+      fileHash,
+      status: "failed",
+      provider: "local_vault",
+      errorMessage: message,
+    });
+    return { status: "failed", documentId, message };
+  }
+}
+
 export async function archiveImportedFile(input: ArchiveFileInput): Promise<DriveArchiveResult> {
-  const googleAccount = await googleAccountForUser(input.userId);
-  if (!googleAccount) return { status: "not_connected" };
   const setting = await ensureSetting(input.userId);
   if (!setting.enabled) return { status: "disabled" };
 
   const fileHash = hash(input.bytes);
+
+  // If in sovereign mode or Google OAuth is not configured, archive locally into the Sovereign Vault
+  if (isSovereignMode() || !googleAuthEnabled) {
+    return archiveLocally(input, fileHash);
+  }
+
+  const googleAccount = await googleAccountForUser(input.userId);
+  if (!googleAccount) return archiveLocally(input, fileHash);
   const [existingSource] = await db
     .select({ id: documentArchive.id, status: documentArchive.status })
     .from(documentArchive)
@@ -469,6 +530,20 @@ export async function getDriveArchiveState(userId: string) {
       .groupBy(documentArchive.status),
   ]);
   const counts = Object.fromEntries(statusCounts.map((row) => [row.status, row.count]));
+  if (isSovereignMode() || !googleAuthEnabled) {
+    return {
+      available: true,
+      connected: true,
+      refreshReady: true,
+      enabled: setting?.enabled ?? true,
+      rootFolderReady: true,
+      documentCount: statusCounts.reduce((total, row) => total + row.count, 0),
+      storedCount: counts.stored ?? 0,
+      failedCount: counts.failed ?? 0,
+      documents,
+    };
+  }
+
   return {
     available: googleAuthEnabled,
     connected: Boolean(googleAccount),
@@ -489,6 +564,7 @@ export async function getDriveDocument(userId: string, documentId: string) {
       fileName: documentArchive.fileName,
       mimeType: documentArchive.mimeType,
       fileSize: documentArchive.fileSize,
+      provider: documentArchive.provider,
       providerFileId: documentArchive.providerFileId,
       status: documentArchive.status,
     })
@@ -501,6 +577,9 @@ export async function getDriveDocument(userId: string, documentId: string) {
 export async function getDriveDocumentAccess(userId: string, documentId: string) {
   const document = await getDriveDocument(userId, documentId);
   if (!document || document.status !== "stored" || !document.providerFileId) return null;
+  if (document.provider === "local_vault" || existsSync(document.providerFileId)) {
+    return { document, accessToken: "local" };
+  }
   const googleAccount = await googleAccountForUser(userId);
   if (!googleAccount) throw new Error("Google Drive is not connected.");
   const accessToken = await accessTokenForUser(userId, googleAccount);
@@ -508,6 +587,17 @@ export async function getDriveDocumentAccess(userId: string, documentId: string)
 }
 
 export async function fetchDriveDocumentContent(userId: string, documentId: string) {
+  const document = await getDriveDocument(userId, documentId);
+  if (!document || document.status !== "stored" || !document.providerFileId) return null;
+
+  if (document.provider === "local_vault" || existsSync(document.providerFileId)) {
+    const fileBytes = await readFile(document.providerFileId);
+    return {
+      document,
+      response: new Response(fileBytes),
+    };
+  }
+
   const access = await getDriveDocumentAccess(userId, documentId);
   if (!access) return null;
   const response = await driveFetch(
