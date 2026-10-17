@@ -62,8 +62,13 @@ export async function runEmbeddedMigrations(client: PGlite): Promise<void> {
   `);
 }
 
+export function resetDefaultEmbeddedClient() {
+  defaultEmbeddedClient = null;
+  migrationPromise = null;
+}
+
 export function createEmbeddedDb(options?: EmbeddedDbOptions) {
-  const client = getDefaultEmbeddedClient(options);
+  const client = createPGliteClient(options);
   const db = drizzle(client, { schema });
   return { db, client };
 }
