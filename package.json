@@ -11,6 +11,7 @@
     "build": "turbo run build",
     "check-types": "turbo run check-types",
     "dev:web": "turbo run dev -F web",
+    "dev:sovereign": "SOVEREIGN_MODE=true turbo run dev -F web",
     "db:push": "turbo run db:push -F @portfolio/db",
     "db:studio": "turbo run db:studio -F @portfolio/db",
     "db:generate": "turbo run db:generate -F @portfolio/db",

@@ -9,7 +9,7 @@ export * from "./schema";
 export * from "./embedded";
 
 export function isSovereignMode(): boolean {
-  if (process.env.SOVEREIGN_MODE === "true") return true;
+  if (process.env.SOVEREIGN_MODE === "true" || env.SOVEREIGN_MODE === "true") return true;
   const url = process.env.DATABASE_URL || env.DATABASE_URL;
   return !url || url === "pglite" || url.startsWith("pglite://") || url.startsWith("memory://");
 }
