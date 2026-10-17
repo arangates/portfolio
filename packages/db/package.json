@@ -10,11 +10,13 @@
     }
   },
   "scripts": {
+    "test": "tsx --test src/embedded.test.ts",
     "check-types": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
     "db:migrate": "node ./scripts/migrate.mjs",
+    "db:migrate:embedded": "tsx scripts/migrate-embedded.ts",
     "db:reset-data": "node ./scripts/reset-application-data.mjs",
     "db:import-legacy-workbook": "node ./scripts/import-legacy-workbook.mjs",
     "db:import-fire-workbook": "node ./scripts/import-fire-workbook.mjs",
@@ -22,6 +24,7 @@
     "db:import-metals-inventory": "node ./scripts/import-metals-inventory.mjs"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "@neondatabase/serverless": "^1.1.0",
     "@portfolio/env": "workspace:*",
     "dotenv": "catalog:",
@@ -33,6 +36,7 @@
     "@portfolio/config": "workspace:*",
     "drizzle-kit": "^0.31.10",
     "exceljs": "^4.4.0",
+    "tsx": "^4.23.12",
     "typescript": "catalog:"
   }
 }

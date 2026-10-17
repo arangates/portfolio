@@ -26,6 +26,7 @@
     "test:insights": "tsx --test src/insight-calculations.test.ts src/calendar-calculations.test.ts ../../apps/web/src/lib/format.test.ts"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "@portfolio/auth": "workspace:*",
     "@portfolio/db": "workspace:*",
     "@portfolio/env": "workspace:*",

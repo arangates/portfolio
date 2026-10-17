@@ -21,6 +21,7 @@
     "@assistant-ui/react": "^0.15.21",
     "@assistant-ui/react-markdown": "^0.14.16",
     "@base-ui/react": "^1.7.0",
+    "@electric-sql/pglite": "^0.5.10",
     "@phosphor-icons/react": "^2.1.10",
     "@portfolio/ai-chat-ui": "workspace:*",
     "@portfolio/api": "workspace:*",

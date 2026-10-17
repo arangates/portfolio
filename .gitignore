@@ -58,7 +58,11 @@ temp
 # Private user statements & broker exports
 degiro exports/
 exports/
-private/
 *.csv
 *.xlsx
+
+# Local Embedded Database
+data/
+*.db
+*.db/
 

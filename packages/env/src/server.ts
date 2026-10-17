@@ -4,8 +4,10 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.string().min(1),
+    DATABASE_URL: z.string().min(1).default("pglite://local"),
     DATABASE_URL_DIRECT: z.string().min(1).optional(),
+    SOVEREIGN_MODE: z.string().optional(),
+    PGLITE_DATA_DIR: z.string().optional(),
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
     CORS_ORIGIN: z.url(),
