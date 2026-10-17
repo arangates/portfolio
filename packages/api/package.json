@@ -31,6 +31,7 @@
     "@portfolio/calc": "workspace:*",
     "@portfolio/db": "workspace:*",
     "@portfolio/env": "workspace:*",
+    "@portfolio/parsers": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "dotenv": "catalog:",

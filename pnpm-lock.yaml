@@ -394,6 +394,9 @@ importers:
       '@portfolio/env':
         specifier: workspace:*
         version: link:../env
+      '@portfolio/parsers':
+        specifier: workspace:*
+        version: link:../parsers
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.18.0(@trpc/server@11.18.0(typescript@6.0.3))(typescript@6.0.3)
@@ -593,6 +596,31 @@ importers:
       '@types/node':
         specifier: ^22.20.1
         version: 22.20.1
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/parsers:
+    dependencies:
+      papaparse:
+        specifier: ^5.5.4
+        version: 5.5.4
+      unpdf:
+        specifier: ^1.8.1
+        version: 1.8.1
+    devDependencies:
+      '@portfolio/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
+      '@types/papaparse':
+        specifier: ^5.5.2
+        version: 5.5.2
+      tsx:
+        specifier: ^4.23.12
+        version: 4.23.12
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
