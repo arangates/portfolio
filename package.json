@@ -21,7 +21,12 @@
     "db:import-household-workbook": "pnpm --filter @portfolio/db db:import-household-workbook",
     "db:import-metals-inventory": "pnpm --filter @portfolio/db db:import-metals-inventory",
     "check": "oxlint && oxfmt --write",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:local:up": "docker compose -f compose.yaml -f compose.local.yaml up -d",
+    "docker:local:build": "docker compose -f compose.yaml -f compose.local.yaml up -d --build",
+    "docker:local:down": "docker compose -f compose.yaml -f compose.local.yaml down",
+    "docker:local:logs": "docker compose -f compose.yaml -f compose.local.yaml logs -f",
+    "docker:db:up": "docker compose -f compose.local.yaml up -d db"
   },
   "dependencies": {
     "@portfolio/env": "workspace:*",
