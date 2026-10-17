@@ -28,6 +28,7 @@
   "dependencies": {
     "@electric-sql/pglite": "^0.5.10",
     "@portfolio/auth": "workspace:*",
+    "@portfolio/calc": "workspace:*",
     "@portfolio/db": "workspace:*",
     "@portfolio/env": "workspace:*",
     "@trpc/client": "catalog:",

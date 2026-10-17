@@ -385,6 +385,9 @@ importers:
       '@portfolio/auth':
         specifier: workspace:*
         version: link:../auth
+      '@portfolio/calc':
+        specifier: workspace:*
+        version: link:../calc
       '@portfolio/db':
         specifier: workspace:*
         version: link:../db
@@ -459,6 +462,27 @@ importers:
       '@portfolio/config':
         specifier: workspace:*
         version: link:../config
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/calc:
+    devDependencies:
+      '@portfolio/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
+      '@types/papaparse':
+        specifier: ^5.5.2
+        version: 5.5.2
+      papaparse:
+        specifier: ^5.5.4
+        version: 5.5.4
+      tsx:
+        specifier: ^4.23.12
+        version: 4.23.12
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

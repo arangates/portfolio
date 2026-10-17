@@ -1,0 +1,26 @@
+{
+  "name": "@portfolio/calc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
+  },
+  "devDependencies": {
+    "@portfolio/config": "workspace:*",
+    "@types/node": "^22.20.1",
+    "@types/papaparse": "^5.5.2",
+    "papaparse": "^5.5.4",
+    "tsx": "^4.23.12",
+    "typescript": "catalog:"
+  }
+}
