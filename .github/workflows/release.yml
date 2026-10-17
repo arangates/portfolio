@@ -20,8 +20,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-release:
-    name: Build & Package Cross-Platform Bundles
+  verify-and-package:
+    name: Verify & Package Standalone Bundles
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -73,7 +73,7 @@ jobs:
           echo "Packaging release for tag: $TAG"
           node scripts/package-release.mjs "$TAG"
 
-      - name: Create GitHub Release & Upload Platform Assets
+      - name: Create or Update GitHub Release with Standalone Bundles
         uses: softprops/action-gh-release@v2
         with:
           name: "Selvam Sovereign Financial OS ${{ github.event.inputs.tag_name || github.ref_name }}"
@@ -86,11 +86,70 @@ jobs:
             dist/releases/*.zip
             dist/releases/checksums.txt
 
+  build-native-desktop:
+    name: Build Native Desktop (${{ matrix.platform }})
+    needs: verify-and-package
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest"
+            target-name: "macOS (.dmg & .app)"
+            args: ""
+          - platform: "windows-latest"
+            target-name: "Windows (.exe & .msi)"
+            args: ""
+          - platform: "ubuntu-22.04"
+            target-name: "Linux (.deb & .AppImage)"
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Tauri Desktop Native Installers (.dmg / .exe / .deb)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.event.inputs.tag_name || github.ref_name }}
+          releaseName: "Selvam Sovereign Financial OS ${{ github.event.inputs.tag_name || github.ref_name }}"
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
+
   docker-image:
     name: Build & Publish Multi-Arch Container (GHCR)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: build-and-release
+    needs: verify-and-package
 
     steps:
       - name: Checkout repository
