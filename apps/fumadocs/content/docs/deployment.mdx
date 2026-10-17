@@ -1,163 +1,154 @@
 ---
-title: Deployment and operations
-description: Run Selvam on Vercel or Docker with Neon as the shared production database, or use a self-contained Docker Postgres database.
+title: Deployment & Native Release
+description: Run Selvam natively via Tauri 2.0 desktop/mobile apps, standalone sovereign mode, or multi-arch Docker containers.
 icon: Rocket
 ---
 
-Selvam can run on Vercel or as a Docker container. Both deployments use the same PostgreSQL schema and the same `DATABASE_URL` setting. For a simple Vercel-to-Docker failover, keep Neon as the production database and point both app deployments at the same Neon production branch. Docker can also run its own Postgres database when a fully self-contained installation is preferred.
+Selvam offers complete deployment flexibility: from a 100% sovereign native desktop application requiring zero external setup, to self-hosted Docker containers, to serverless cloud environments.
 
-## Choose a database layout
+<IconCardGrid columns={3}>
+  <IconCard
+    icon="AppWindow"
+    title="Native Desktop & Mobile"
+    description="Cross-platform native apps for macOS (.dmg), Windows (.exe), Linux (.AppImage/.deb), and Android (.apk)."
+  />
+  <IconCard
+    icon="Server"
+    title="Sovereign Embedded Mode"
+    description="Run on any machine with zero dependencies: embedded PGlite initializes in ~450ms to ./data/selvam.db."
+  />
+  <IconCard
+    icon="Boxes"
+    title="Automated Releases"
+    description="GitHub Actions multi-platform release matrix automatically building installers on tagged versions."
+  />
+</IconCardGrid>
 
-<Tabs label="Deployment pattern" defaultValue="Shared Neon">
-  <Tab value="Shared Neon" icon="Globe2">
-    Use one Neon production branch for both Vercel and Docker. You can move the app host during
-    failover without copying or synchronizing the database.
-  </Tab>
-  <Tab value="Self-contained Docker" icon="Server">
-    Run the app with its own Compose Postgres database when you want an independent installation. It
-    starts empty and does not synchronize with Neon or Vercel.
-  </Tab>
-</Tabs>
+## Native Desktop & Mobile (Tauri 2.0)
 
-| Environment           | App host                | Database                                      | Purpose                                                                |
-| --------------------- | ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
-| Production            | Vercel                  | Neon production branch                        | Normal live service.                                                   |
-| Failover              | Docker                  | The same Neon production branch               | Move the app host without moving or synchronizing the database.        |
-| Development           | Local Next.js or Docker | Separate Neon development branch              | Test schema and app changes without writing to production.             |
-| Self-contained Docker | Docker Compose          | Postgres container and `postgres_data` volume | Independent installation or recovery copy; data is separate from Neon. |
+Selvam includes a production-ready Tauri 2.0 Rust shell located in `src-tauri/`. It wraps the web interface in a lightweight, high-performance native OS window with direct filesystem and hardware vault capabilities.
 
-Neon branches have separate connection strings and isolate database changes. Because Selvam contains private financial information, use synthetic or schema-only data for development rather than copying personal production records. Never point local development or untrusted previews at the production branch.
+### Development
 
-## Vercel production
-
-Import the Git repository as a Vercel project with:
-
-| Setting                           | Value                                                |
-| --------------------------------- | ---------------------------------------------------- |
-| Framework preset                  | Next.js                                              |
-| Root directory                    | `apps/web`                                           |
-| Install command                   | Automatically detected                               |
-| Output directory                  | Next.js default                                      |
-| Manual build command, if required | `cd ../.. && pnpm exec turbo run build --filter=web` |
-
-Configure these Production variables:
-
-| Variable                                                 | Value                                                                             |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `DATABASE_URL`                                           | Neon pooled connection string; the hostname contains `-pooler`.                   |
-| `BETTER_AUTH_SECRET`                                     | Random secret of at least 32 characters; generate with `openssl rand -base64 32`. |
-| `BETTER_AUTH_URL`                                        | Exact HTTPS production origin with no trailing slash.                             |
-| `CORS_ORIGIN`                                            | The same exact production origin.                                                 |
-| `GOOGLE_CLIENT_ID`                                       | Optional Google Web OAuth client ID.                                              |
-| `GOOGLE_CLIENT_SECRET`                                   | Optional Google Web OAuth client secret.                                          |
-| `TWELVE_DATA_API_KEY`                                    | Optional server-only key for an indicative intraday EUR/INR quote.                |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Optional browser push-notification configuration.                                 |
-| `CRON_SECRET`                                            | Optional secret for protecting cron routes when not supplied by Vercel.           |
-
-Do not put `DATABASE_URL_DIRECT` in the Vercel web runtime. Run migrations from a trusted environment before deploying application code that requires them. The migration command prefers `DATABASE_URL_DIRECT` and falls back to `DATABASE_URL`.
-
-For the current Vercel domain, `BETTER_AUTH_URL` and `CORS_ORIGIN` are `https://myselvam.vercel.app`. If the domain changes, update both values and the Google OAuth authorized origin and callback URI (`<origin>/api/auth/callback/google`), then redeploy.
-
-## Docker failover sharing Neon
-
-The default `compose.yaml` starts three services: the application, Fumadocs, and Drizzle Studio. It expects the `.env` file to contain the Neon connection string for the database these services should use.
+To run the native desktop shell in development:
 
 ```bash
-cp .env.docker.example .env
+pnpm desktop:dev
 ```
 
-Set `DATABASE_URL` to the same Neon **production pooled URL** used by Vercel. Set `DATABASE_URL_DIRECT` to the direct connection URL if you want Docker startup migrations to use it. Set `BETTER_AUTH_SECRET` to the same secret used by Vercel, and set `BETTER_AUTH_URL` and `CORS_ORIGIN` to the public origin where the Docker-hosted app will be accessed. Keep `.env` private and out of Git. If the public origin changes during failover, update Google OAuth's authorized origin and callback URI as well; users may need to sign in again because browser cookies are scoped to the original host.
+This launches the Tauri window with hot reloading connected to the local web server.
 
-Build and start the Docker app:
+### Building native installers
+
+To build native release installers for your host platform:
 
 ```bash
+pnpm desktop:build
+```
+
+The build outputs native release packages into `src-tauri/target/release/bundle/`:
+
+| Platform    | Output Bundle            | Target Details                                                |
+| ----------- | ------------------------ | ------------------------------------------------------------- |
+| **macOS**   | `.dmg` and `.app`        | Universal binary (Apple Silicon `aarch64` and Intel `x86_64`) |
+| **Windows** | `.exe` (NSIS) and `.msi` | 64-bit installer with desktop shortcut                        |
+| **Linux**   | `.AppImage` and `.deb`   | Portable self-contained binary & Debian/Ubuntu package        |
+| **Android** | `.apk`                   | Signed or unsigned Android application package                |
+
+## Standalone Sovereign Mode (Local-First)
+
+You can run Selvam locally in your browser with zero Docker daemons, zero external databases, and zero cloud accounts:
+
+```bash
+# Clone the repository
+git clone https://github.com/arangates/portfolio.git
+cd portfolio
+
+# Install workspace dependencies
+pnpm install
+
+# Start the sovereign server
+SOVEREIGN_MODE=true pnpm dev:web
+```
+
+Open [http://localhost:3001](http://localhost:3001) in your browser.
+
+- **Embedded Database**: PGlite executes PostgreSQL directly inside the Node.js runtime using WebAssembly. It automatically runs all 70 schema migrations in ~450ms and persists to `./data/selvam.db`.
+- **Sovereign Session**: You are automatically logged in as the sovereign identity (`sovereign-user` / Aranga) without any login screen or password prompt.
+- **Air-Gapped Operation**: Everything runs offline.
+
+## Multi-Architecture GitHub Actions Pipeline
+
+The repository includes a comprehensive GitHub Actions release workflow (`.github/workflows/release.yml`) triggered on any version tag (e.g., `git tag v1.2.0 && git push origin v1.2.0`):
+
+```mermaid
+flowchart TD
+    TAG["Git Tag (e.g. v1.2.0)"] --> MATRIX["Cross-Platform Release Matrix"]
+
+    subgraph BuildJobs["GitHub Actions Matrix"]
+        MAC["macOS Runner (Tauri DMG & App)"]
+        WIN["Windows Runner (Tauri NSIS EXE & MSI)"]
+        LIN["Ubuntu Runner (Tauri AppImage & DEB)"]
+        DOCKER["Docker Multi-Arch (GHCR linux/amd64, arm64)"]
+        NODE["Node Standalone (.tar.gz & .zip)"]
+    end
+
+    MATRIX --> MAC
+    MATRIX --> WIN
+    MATRIX --> LIN
+    MATRIX --> DOCKER
+    MATRIX --> NODE
+
+    MAC --> RELEASE["GitHub Release Artifacts"]
+    WIN --> RELEASE
+    LIN --> RELEASE
+    DOCKER --> GHCR["GitHub Container Registry"]
+    NODE --> RELEASE
+```
+
+### Published release artifacts
+
+Every release generates:
+
+1. **macOS**: `Selvam_x.y.z_x64.dmg` / `Selvam_x.y.z_aarch64.dmg`
+2. **Windows**: `Selvam_x.y.z_x64-setup.exe`
+3. **Linux**: `selvam_x.y.z_amd64.AppImage`, `selvam_x.y.z_amd64.deb`
+4. **Standalone Archives**: `selvam-vX.Y.Z-standalone.tar.gz` and `selvam-vX.Y.Z-standalone.zip`
+5. **Docker Image**: `ghcr.io/arangates/selvam:vX.Y.Z` and `ghcr.io/arangates/selvam:latest`
+
+## Docker deployment
+
+### Pull from GitHub Container Registry
+
+```bash
+docker pull ghcr.io/arangates/selvam:latest
+docker run -d -p 3001:3001 \
+  -e SOVEREIGN_MODE=true \
+  -v selvam_data:/app/data \
+  --name selvam ghcr.io/arangates/selvam:latest
+```
+
+### Local Docker Compose
+
+For environments running Docker Compose:
+
+```bash
+# Build and run the entire stack
 docker compose up --build -d
 ```
 
-The application is available on port `3001`, Fumadocs on port `4000`, and Drizzle Studio on port `4983`. Set `APP_PORT`, `DOCS_PORT`, or `DRIZZLE_STUDIO_PORT` in `.env` to change the host ports. Drizzle Studio connects to the configured `DATABASE_URL` (or `DATABASE_URL_DIRECT`) and has no built-in authentication, so Compose binds it to `127.0.0.1` on the Docker host. For remote administration, use an SSH tunnel such as `ssh -L 4983:127.0.0.1:4983 user@your-host`, then open [http://localhost:4983](http://localhost:4983) on your computer.
+Services exposed:
 
-The app container applies pending tracked migrations at startup and then starts Next.js. To inspect output or stop the stack:
+- `3001`: Selvam Web Application
+- `4000`: Fumadocs Documentation Handbook
+- `4983`: Drizzle Studio (relational schema explorer bound to loopback `127.0.0.1`)
 
-```bash
-docker compose logs -f app docs drizzle-studio
-docker compose down
-```
+## Environment variables
 
-This mode keeps Vercel and Docker on the same production data. Stopping Vercel does not stop Neon. To move back to Vercel, deploy the app there with the same Neon production URL and the correct Vercel origin settings.
-
-## Fully self-contained Docker/Postgres
-
-To run both the app and a separate Postgres container, configure `POSTGRES_PASSWORD` in `.env` with a URL-safe value from `openssl rand -hex 24`, then use the local Compose override:
-
-```bash
-docker compose -f compose.yaml -f compose.local.yaml up --build -d
-```
-
-This mode ignores Neon `DATABASE_URL` values and points application queries, Drizzle Studio, and migrations at the Compose Postgres service. The database persists in the named `postgres_data` volume across restarts and image rebuilds. It starts empty, is independent of Vercel and Neon, and does not synchronize changes between databases. Back it up before moving hosts. `docker compose down` retains the volume; `docker compose -f compose.yaml -f compose.local.yaml down -v` deletes it and all its data.
-
-Moving existing production data into self-hosted Postgres requires a deliberate database backup and restore. Changing which URL the app uses does not copy data between databases.
-
-## Local development and previews
-
-For local development, use the normal Next.js dev server and a separate Neon development branch:
-
-```bash
-cp apps/web/.env.example apps/web/.env
-pnpm install
-pnpm db:migrate
-pnpm dev:web
-```
-
-Set `DATABASE_URL` to the development branch's pooled URL and `DATABASE_URL_DIRECT` to its direct URL. Keep `BETTER_AUTH_URL` and `CORS_ORIGIN` at `http://localhost:3001`.
-
-Vercel previews should use a non-production Neon branch and a separate authentication secret. The current auth configuration trusts the exact `CORS_ORIGIN`, so use a stable preview origin. Do not give general pull-request previews the production database URL.
-
-## Schema changes and releases
-
-Schema changes are tracked in `packages/db/src/migrations`.
-
-<Steps>
-  <Step title="Generate the migration">
-    From the repository root, run:
-
-    ```bash
-    pnpm db:generate
-    ```
-
-  </Step>
-  <Step title="Review and apply it to a safe branch">
-    Review the generated SQL and apply it to a development or preview branch first:
-
-    ```bash
-    pnpm db:migrate
-    ```
-
-  </Step>
-  <Step title="Update the target database before deployment">
-    Apply the reviewed migration to the target database before deploying application code that depends on it. The command is safe to repeat because it only runs unapplied tracked migrations.
-  </Step>
-</Steps>
-
-The Docker app runs migrations at startup. Vercel deployments do not, so apply them from a trusted environment before deployment.
-
-## Optional integrations
-
-The app can run without optional integrations. Configure provider credentials only when using the related feature:
-
-- Google OAuth: `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
-- Fresh indicative FX quote: `TWELVE_DATA_API_KEY`; official ECB daily and historical rates do not require it.
-- Browser push notifications: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT`.
-- Cron endpoint protection: `CRON_SECRET` where the hosting platform does not provide it automatically.
-- Labs navigation: set `NEXT_PUBLIC_ENABLE_LABS=true` at build time to show the Labs entry.
-
-Never put server credentials in variables prefixed with `NEXT_PUBLIC_`.
-
-## Release checks
-
-```bash
-pnpm check-types
-pnpm exec oxlint apps/web/src packages/api/src packages/auth/src packages/db/src
-pnpm --filter web build
-```
-
-For the documentation site, run `pnpm --filter fumadocs build`.
+| Variable             | Default            | Purpose                                                                                                           |
+| -------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `SOVEREIGN_MODE`     | `true`             | Enables zero-cloud sovereign mode with instant session auto-provisioning.                                         |
+| `PGLITE_DATA_DIR`    | `./data/selvam.db` | Local directory for embedded WASM PostgreSQL data files.                                                          |
+| `DATABASE_URL`       | None               | Optional connection string to an external PostgreSQL instance (e.g. Neon). When omitted, embedded PGlite is used. |
+| `BETTER_AUTH_SECRET` | Auto-generated     | 32+ character master key used by the AES-256-GCM hardware vault and session signer.                               |
+| `PORT`               | `3001`             | HTTP port for the web application server.                                                                         |

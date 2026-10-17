@@ -1,16 +1,16 @@
 ---
 title: System architecture
-description: Runtime components, the primary import path, trust boundaries and repository evidence.
+description: Runtime components, the sovereign import path, Clean Architecture boundaries and repository evidence.
 full: true
 icon: Network
 ---
 
-Selvam is a server-backed financial application. The browser presents account-scoped data, while authentication, imports, calculations and database access remain inside the application boundary.
+Selvam is a 100% sovereign, local-first financial application. The interface runs natively inside a Tauri 2.0 shell (macOS, Windows, Linux, Android) or as a local Progressive Web App (PWA). All authentication, document parsing, financial calculations and database storage execute entirely on-device without any mandatory third-party or cloud dependencies.
 
 <div className="not-prose my-6 overflow-hidden rounded-xl border bg-fd-card shadow-sm">
   <iframe
     src="/architecture/selvam-system-architecture.html"
-    title="Interactive Selvam runtime architecture"
+    title="Interactive Selvam Sovereign Clean Architecture"
     className="h-[760px] w-full bg-fd-background"
     loading="lazy"
   />
@@ -20,45 +20,63 @@ Selvam is a server-backed financial application. The browser presents account-sc
 
 ## Primary request and data path
 
-The emphasized path is the normal financial import flow:
+The emphasized path represents the sovereign financial import and computation flow:
 
 <Steps>
-  <Step title="Select an export">
-    The signed-in user chooses an XLSX, CSV or PDF file in the browser.
+  <Step title="Select local financial statements">
+    The user selects broker exports (Zerodha, Degiro), bank statements, or salary payslips (XLSX,
+    CSV, PDF) directly on their local device.
   </Step>
-  <Step title="Verify the session">
-    A Next.js route handler verifies the Better Auth server session before processing the upload.
+  <Step title="Verify the sovereign session">
+    Next.js route handlers verify the local Better Auth session. In sovereign mode
+    (`SOVEREIGN_MODE=true`), authentication automatically binds to the local sovereign identity
+    (`sovereign-user`).
   </Step>
-  <Step title="Pass owner-scoped input">
-    The handler sends file bytes and the session-derived `userId` to `@portfolio/api`.
+  <Step title="Universal parsing via @portfolio/parsers">
+    The zero-dependency universal parser engine parses the raw file bytes into normalized ledger
+    entries, audit fingerprints, and dated snapshots without side effects.
   </Step>
-  <Step title="Normalize provider data">
-    A provider-specific adapter parses the file into normalized records.
+  <Step title="Encrypted document vault archiving">
+    Original statements are archived into the local disk vault (`./data/vault/documents/`) with
+    SHA-256 integrity fingerprints and optional AES-256-GCM encryption.
   </Step>
-  <Step title="Persist with provenance">
-    Drizzle writes owner-scoped rows, snapshots and import evidence to PostgreSQL.
+  <Step title="Embedded PGlite persistence">
+    Drizzle ORM persists owner-scoped rows, snapshots, and ledger events directly into the embedded
+    WASM PostgreSQL database (`./data/selvam.db`) in ~450ms without Docker daemons.
+  </Step>
+  <Step title="Pure calculations via @portfolio/calc">
+    Pure mathematical calculations for FIRE projections, XIRR returns, net worth summaries, and
+    currency conversions execute deterministically with zero database or network dependencies.
   </Step>
 </Steps>
 
-Reads take the reverse server-side route. Analytics and FIRE calculations operate on account-scoped database records, disclose missing FX conversions and return derived series for tables and ECharts visualizations.
+Reads follow the reverse local path: server-only API services query account-scoped records from the embedded PGlite instance, fetch zero-key ECB daily reference rates when needed, and pipe derived series to interactive ECharts and the ephemeral 6-second Financial Stories pulse.
 
 ## Trust and ownership boundaries
 
-| Boundary                     | Responsibility                                                                                                            |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| External providers and files | Google supplies identity; broker and payroll exports remain user-controlled until explicitly selected.                    |
-| Application runtime          | Next.js owns request routing, protected layouts and authenticated API endpoints. It can run on Vercel or in Docker.       |
-| Authenticated account        | Better Auth establishes the session. Clients do not submit or choose the financial-data owner.                            |
-| Database                     | Neon is the recommended managed source of truth shared by Vercel and Docker. A local Docker Postgres mode is independent. |
+| Boundary                              | Responsibility                                                                                                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Device Shells & Local Files**       | Tauri 2.0 native shell (macOS, Windows, Linux, Android) or local browser. Financial statements and identity keys remain user-controlled on the local filesystem.                            |
+| **Sovereign Application Boundary**    | Next.js 16 host running locally on loopback (`127.0.0.1:3001`). Protected routes, Server Actions, and API handlers never leak data externally.                                              |
+| **Authenticated Vault & Domain Core** | AES-256-GCM Hardware Vault with PBKDF2-SHA512 key derivation. Domain interactors in `@portfolio/api`, universal parsers in `@portfolio/parsers`, and calculation math in `@portfolio/calc`. |
+| **Sovereign Embedded Storage**        | Embedded WASM PGlite database engine persisting 70 relational tables to `./data/selvam.db`, alongside the encrypted local document vault under `./data/vault/documents/`.                   |
 
-The web runtime receives a `DATABASE_URL` and application secrets. The recommended production setup points both Vercel and the Docker failover app at the same Neon production branch. Local development uses a separate Neon development branch. In fully self-contained Docker mode, `compose.local.yaml` instead points the app and migration command at its local Postgres service. The direct URL is optional and should be used only by trusted migration execution.
+The entire application runs completely air-gapped without external network access. For multi-currency portfolios, official European Central Bank (ECB) daily reference rates are fetched directly from ECB XML endpoints without intermediary API aggregators or API keys.
 
 ## Historical integrity
 
-Imports are additive and auditable rather than destructive. SHA-256 file and row hashes make repeat uploads idempotent, while import batches, normalized ledger entries and dated snapshots preserve provenance and history. New original source files can be retained in the user's optional private Google Drive archive; Postgres keeps the owner-scoped checksum, Drive metadata and import link rather than a second raw copy.
+Imports are additive, idempotent, and auditable rather than destructive. SHA-256 file and row hashes prevent duplicate uploads from altering portfolio history. Original source documents are securely stored in the local disk vault (`./data/vault/documents/`) with cryptographic fingerprints, ensuring complete auditability without reliance on external cloud storage.
 
 ## Repository evidence
 
-The diagram is generated from a typed Archify specification pinned to repository revision `43238d2e90ee30632724c0a213a3995748539ca2`. Each component exposes its supporting source references inside the interactive viewer. The evidence covers the web routes, Better Auth configuration, server-only API services, import parsers, Drizzle schema, PostgreSQL access and FIRE/analytics engines.
+The interactive architecture diagram is generated from a typed Archify specification pinned to repository revision `30c828c3b48819df5a11a34bc7711249b0be7daf`. Each component exposes its supporting source code references inside the interactive viewer:
 
-For technology choices and trade-offs, see [Technical architecture](./architecture). For deployment secrets and database operations, see [Deployment and operations](./deployment).
+- **Tauri 2.0 Native Shell**: `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`
+- **Sovereign Hardware Vault**: `packages/auth/src/vault.ts` and `packages/auth/src/index.ts`
+- **Universal Parsers**: `packages/parsers/src/index.ts` and `packages/parsers/src/salary-parser.ts`
+- **Pure Calculation Engine**: `packages/calc/src/index.ts` and `packages/calc/src/fire-engine.ts`
+- **Embedded PGlite Engine**: `packages/db/src/embedded.ts` and `packages/db/src/index.ts`
+- **Relational Schema & Migrations**: `packages/db/src/schema/portfolio.ts`
+- **Financial Stories Pulse**: `apps/web/src/components/financial-stories.tsx` and `apps/web/src/app/api/stories/pulse/route.ts`
+
+For architectural trade-offs and package boundaries, see [Technical architecture](./architecture). For standalone and native build instructions, see [Deployment and operations](./deployment).

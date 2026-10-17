@@ -38,6 +38,30 @@ icon: PanelsTopLeft
 
 The dashboard consolidates current assets into the user's base currency and shows net worth, liquidity, allocation, valuation coverage and Indian-equity performance. It surfaces missing FX rates instead of presenting incomplete totals as complete.
 
+## Financial Stories Pulse
+
+Selvam introduces an interactive, mobile-optimized **Financial Stories** feed inspired by Instagram and WhatsApp Stories. Located directly atop the dashboard, it delivers quick, visual financial insights with auto-advancing 6-second progress bars:
+
+<IconCardGrid columns={3}>
+  <IconCard
+    icon="Sparkles"
+    title="Ephemeral Pulse"
+    description="Auto-advancing 6-second story cards highlighting daily changes, net worth milestones, and liquidity ratio."
+  />
+  <IconCard
+    icon="SlidersHorizontal"
+    title="Touch & Click Navigation"
+    description="Tap right or left to skip or go back, hold down to pause, with animated gradient progress bars."
+  />
+  <IconCard
+    icon="Code2"
+    title="On-Demand Generation"
+    description="Generated locally via /api/stories/pulse using @portfolio/calc pure metrics with zero cloud API dependencies."
+  />
+</IconCardGrid>
+
+Users can view categorized pulse updates across **Net Worth Growth**, **Asset Allocation**, **FIRE Target Trajectory**, **Upcoming Bills & Contracts**, and **Liquid Cash Reserves**.
+
 ## Ask Selvam
 
 The authenticated assistant has a dedicated chat page and a floating panel available across the dashboard. Both use one active conversation runtime during route changes. Conversations are saved to account-scoped database threads and can be resumed across sessions and devices. The full-page interface has a collapsible history sidebar, new/switch/rename/delete controls, response streaming, starter prompts, model selection, and a copy-transcript sharing action. Public share links are intentionally not created for private financial conversations. The full-page interface uses assistant-ui headless thread and composer primitives styled with Selvam's design system; Vercel AI SDK handles streaming and per-request provider selection.

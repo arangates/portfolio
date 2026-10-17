@@ -1,71 +1,102 @@
 ---
 title: Technical architecture
-description: The technology choices and the reasons behind them.
+description: Sovereign Clean Architecture, technology choices, package boundaries and deliberate trade-offs.
 icon: Layers
 ---
 
 <IconCardGrid columns={3}>
   <IconCard
     icon="AppWindow"
-    title="Application"
-    description="Next.js App Router keeps protected pages and authenticated request handling together."
+    title="Native & PWA Shell"
+    description="Tauri 2.0 native binaries for macOS, Windows, Linux, and Android, alongside local Next.js 16 PWA."
   />
   <IconCard
     icon="Database"
-    title="PostgreSQL"
-    description="Neon is the shared production source of truth; local Docker Postgres is an independent option."
+    title="Embedded PGlite"
+    description="WASM-powered embedded PostgreSQL storing directly to ./data/selvam.db with zero cloud dependencies."
   />
   <IconCard
     icon="ShieldCheck"
-    title="Account boundaries"
-    description="Better Auth sessions and database ownership relationships protect private records."
+    title="Hardware Vault"
+    description="AES-256-GCM authenticated encryption with PBKDF2-SHA512 key derivation and zero-cloud sovereign auth."
   />
 </IconCardGrid>
 
 ## Application stack
 
-| Concern         | Decision                                                        | Why it matters                                                                                                                                                              |
-| --------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Web application | Next.js 16 App Router and React 19                              | Server Components keep financial queries on the server while authenticated route handlers provide explicit mutation and import boundaries.                                  |
-| Interface       | Tailwind CSS, shadcn/ui New York styling and EvilCharts/ECharts | A consistent dashboard-01 visual system with responsive, interactive financial visualizations.                                                                              |
-| Database        | PostgreSQL; Neon is the recommended managed service             | The same schema can back Vercel and Docker. Neon keeps one managed production database available when switching app hosts; Docker Postgres is an optional independent mode. |
-| Data access     | Drizzle ORM, postgres.js and tracked SQL migrations             | A standard PostgreSQL client supports Neon and self-hosted Postgres, with reviewable migrations and database-enforced ownership relationships.                              |
-| Authentication  | Better Auth                                                     | Google OAuth, email/password authentication, rolling database sessions, secure production cookies and database-backed rate limiting.                                        |
-| Source archive  | User-owned Google Drive                                         | Optional exact-file retention without placing sensitive documents or storage cost in the application database.                                                              |
-| Repository      | pnpm workspaces and Turborepo                                   | Keeps the web app, API logic, authentication, database, environment validation, UI and documentation in independently checkable packages.                                   |
-| Documentation   | Fumadocs                                                        | Versioned product and engineering documentation stored beside the implementation.                                                                                           |
+| Concern                    | Decision                                           | Why it matters                                                                                                                                                                                          |
+| -------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Native Application**     | Tauri 2.0 (Rust)                                   | Compiles to native desktop and mobile binaries (`.dmg`, `.exe`, `.AppImage`, `.deb`, `.apk`) with a tiny memory footprint and direct OS hardware access.                                                |
+| **Web Runtime**            | Next.js 16 App Router and React 19                 | Server Components keep financial computations on the local host; route handlers provide strictly typed mutation boundaries.                                                                             |
+| **Interface**              | Tailwind CSS, shadcn/ui New York, and ECharts      | Consistent dashboard visual system with responsive, interactive financial charts and 6-second ephemeral financial stories pulse.                                                                        |
+| **Pure Calculations**      | `@portfolio/calc`                                  | Zero-dependency, pure deterministic calculation engine for FIRE simulations, XIRR returns, net worth aggregation, and currency conversions (66 tests passing).                                          |
+| **Universal Parsers**      | `@portfolio/parsers`                               | Pure statement parsers for multi-broker tradebooks (Zerodha, Degiro), bank statements, and payslips without database or filesystem side effects (17 tests passing).                                     |
+| **Database Engine**        | Embedded PGlite (WASM PostgreSQL)                  | Complete PostgreSQL database running in-process via WebAssembly, saving to `./data/selvam.db`. All 70 relational tables migrate in ~450ms without Docker. Optional external Postgres support preserved. |
+| **Data Access**            | Drizzle ORM and tracked SQL migrations             | Type-safe schema, relational queries, and reviewable migrations enforcing account ownership constraints.                                                                                                |
+| **Authentication & Vault** | Sovereign Vault & Better Auth                      | Authenticated AES-256-GCM hardware vault (`SELV` header, 100,000 PBKDF2-SHA512 iterations) with automatic session provisioning for sovereign local operation.                                           |
+| **Document Vault**         | Local Filesystem Vault (`./data/vault/documents/`) | High-speed encrypted local file retention with SHA-256 checksums, replacing mandatory cloud storage dependencies.                                                                                       |
+| **FX Conversion**          | Direct European Central Bank (ECB) Reference Rates | Direct daily reference XML feed from the ECB with zero third-party aggregators and zero API keys required.                                                                                              |
+| **Monorepo**               | pnpm workspaces and Turborepo                      | Independent caching and compilation for native desktop, web application, domain engines, database, and documentation.                                                                                   |
 
 ## Package boundaries
 
 ```text
-apps/web        Authenticated Next.js product
-apps/fumadocs   Product and engineering handbook
-packages/api    Server-only queries, imports and mutations
-packages/auth   Better Auth configuration
-packages/db     Drizzle schema and SQL migrations
-packages/env    Runtime environment validation
-packages/ui     Shared shadcn/ui components and tokens
+src-tauri         Native desktop & mobile shell (Tauri 2.0 Rust)
+apps/web          Sovereign Next.js product & local PWA
+apps/fumadocs     Product and engineering handbook
+packages/calc     Zero-dependency pure financial calculation engine
+packages/parsers  Universal statement, tradebook & payslip parser engine
+packages/api      Server-only queries, mutations, and domain use cases
+packages/auth     Hardware vault (AES-256-GCM) & Better Auth configuration
+packages/db       Embedded PGlite factory, Drizzle schema & migrations
+packages/env      Runtime environment validation
+packages/ui       Shared shadcn/ui components and design tokens
 ```
 
-The portfolio query and mutation modules import `server-only`, preventing accidental use in client bundles. Browser components submit to authenticated route handlers, and those handlers derive the owner from the server session rather than accepting a user ID from the request.
+### Clean Architecture layering
 
-The application can be published as source code. Personal workbooks, broker exports, environment files and portfolio values are intentionally excluded from the repository. For a production failover, keep Neon as the shared source of truth for both Vercel and Docker; a Docker-hosted Postgres database is a separate data store and requires an explicit backup and restore to move existing data.
+Selvam strictly follows Uncle Bob's Clean Architecture principles across four concentric layers:
+
+```mermaid
+flowchart TD
+    subgraph EnterpriseCore["1. Enterprise Business Rules (Core)"]
+        CALC["@portfolio/calc (FIRE, XIRR, Math)"]
+        PARSERS["@portfolio/parsers (Universal Parsers)"]
+    end
+
+    subgraph ApplicationUseCases["2. Application Business Rules"]
+        API["@portfolio/api (Domain Queries & Mutations)"]
+        AUTH["@portfolio/auth (Hardware Vault & Session)"]
+    end
+
+    subgraph InterfaceAdapters["3. Interface Adapters"]
+        DB["@portfolio/db (Drizzle ORM & Migrations)"]
+    end
+
+    subgraph FrameworksDrivers["4. Frameworks & Drivers (Outer)"]
+        PGLITE["Embedded PGlite (WASM / ./data/selvam.db)"]
+        WEB["apps/web (Next.js 16 Localhost)"]
+        TAURI["src-tauri (Tauri 2.0 Native Shell)"]
+        DOCS["apps/fumadocs (Handbook)"]
+    end
+
+    FrameworksDrivers --> InterfaceAdapters
+    InterfaceAdapters --> ApplicationUseCases
+    ApplicationUseCases --> EnterpriseCore
+```
+
+1. **Enterprise Core (`@portfolio/calc`, `@portfolio/parsers`)**: Completely pure, zero-dependency domain engines. They have no knowledge of databases, networks, frameworks, or file systems.
+2. **Application Business Rules (`@portfolio/api`, `@portfolio/auth`)**: Orchestrates financial workflows, enforces sovereign authorization, verifies cryptographic vault hashes, and coordinates imports.
+3. **Interface Adapters (`@portfolio/db`)**: Converts relational entities to typed domain models using Drizzle ORM and tracks SQL schema migrations.
+4. **Frameworks & Drivers (`src-tauri`, `apps/web`, PGlite)**: External delivery mechanisms. The native Tauri shell, Next.js App Router, and embedded WASM database engine plug in at the periphery.
 
 ## Deliberate trade-offs
 
-- Postgres is the source of truth; no portfolio defaults or hardcoded user data are used as fallbacks.
-- Financial history is normalized into identities, dated snapshots, import batches and ledger entries. This costs more storage than overwriting values but preserves auditability.
-- Real estate has a dedicated model because its area, ownership and legal attributes do not fit a generic asset record cleanly.
-- Commodity valuation and physical inventory use separate linked models: the holding owns the declared total, while item snapshots preserve provenance and reconciliation detail without duplicating portfolio value.
-- Household planning has a dedicated model because recurring costs, refunds, contract terms and one-time purchases have different history and calculation rules.
-- Broker imports are provider-specific at the parsing boundary and normalized after parsing. Adding another broker should introduce a parser, not a second portfolio model.
-- Broker-ledger queries are provider-scoped. Zerodha tradebook entries cannot enter Degiro holdings or analytics even though both use the shared normalized ledger.
-- Payslip parsing is adapter-based and currently verifies the supplied euHReka layout. Unsupported layouts fail explicitly instead of guessing financial values.
-- FIRE calculations are implemented as a pure, deterministic engine. Database queries normalize every included amount into the user's base currency before calling it, and missing FX rates are disclosed rather than replaced with guessed values.
-- Capital deployment guidance is recomputed from current account-owned records and a user-owned policy. Observed, reconciled, derived and inferred values remain distinct, and operational bank cash is excluded unless the user explicitly opts in.
-- Return calculations are pure and deterministic. Provider-scoped queries assemble account-owned evidence, the XIRR solver detects ambiguous roots, and the interface withholds cross-currency or true time-weighted results when the required historical valuations do not exist.
-- The expected annual path and Monte Carlo range are deliberately separate. Reproducible seeded simulations make results testable while still communicating sequence-of-returns and inflation risk.
-- Analytics are aggregated from account-scoped Postgres queries and rendered with ECharts in the browser. DuckDB-Wasm is intentionally deferred: current datasets are small enough that another browser database, worker and duplicated data transfer would add more complexity than speed. It becomes relevant only for large, local, ad-hoc statement analysis.
-- MFAPI scheme and NAV rows are public reference data and are cached once across accounts. The mapping from a user-owned instrument to a scheme, together with every sync audit, remains account-scoped and database constrained. Exact ISIN matching is required; a fund name alone can never silently create a link.
-- Vercel migrations are applied from a trusted release environment before deploying code that requires the schema. Docker applies pending migrations at container startup; supply a direct URL there only when the container is trusted to migrate the database.
-- Source-file persistence is a secondary side effect after a successful import. Drive failures are recorded and disclosed but cannot roll back normalized financial records; owner-scoped metadata is sufficient to retry and retrieve the original later.
+- **Embedded PGlite by default**: Selvam defaults to embedded PGlite for 100% sovereign operation. A user can run `SOVEREIGN_MODE=true pnpm dev:web` or launch the native Tauri desktop app and have a full PostgreSQL database running locally in `./data/selvam.db` in seconds without running Docker or configuring Neon.
+- **Pure calculations without database locks**: `@portfolio/calc` has zero dependencies on databases or network APIs. Calculations can be tested, benchmarked, and executed completely in isolation.
+- **Universal parsing without side effects**: `@portfolio/parsers` accepts file buffers and returns strongly-typed transactions and summaries. It does not write to disk or database during parsing.
+- **Hardware AES-256-GCM vault**: The vault implementation uses standard authenticated encryption (`AES-256-GCM`) with a 16-byte salt, 12-byte IV, and 16-byte authentication tag derived via 100,000 PBKDF2-SHA512 iterations.
+- **Local document retention**: Uploaded statement files are archived under `./data/vault/documents/` rather than sent to Google Drive or AWS S3.
+- **Direct central bank exchange rates**: Currency conversions fetch official ECB daily reference rates directly from the European Central Bank XML feed with zero API keys or rate limits.
+- **Air-gapped operation**: With local embedded PGlite and cached reference rates, the entire portfolio suite operates without internet access.
+- **Additive, auditable history**: Ledger entries and dated snapshots preserve full provenance rather than overwriting existing records.

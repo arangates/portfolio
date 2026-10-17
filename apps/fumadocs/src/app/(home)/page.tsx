@@ -42,10 +42,10 @@ const assetGroups = [
 ] as const;
 
 const architecture = [
-  ["Next.js 16", "Server-rendered product"],
-  ["Neon Postgres", "Durable financial history"],
-  ["Better Auth", "Account-owned data"],
-  ["Drizzle", "Typed schema and migrations"],
+  ["Tauri 2.0 & Next.js", "Native cross-platform shell"],
+  ["Embedded PGlite", "100% on-device WASM Postgres"],
+  ["Hardware Vault", "AES-256-GCM sovereign security"],
+  ["@portfolio/calc", "Pure decoupled financial math"],
 ] as const;
 
 export default function HomePage() {
@@ -59,7 +59,7 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center px-5 pt-20 text-center md:pt-28">
           <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-fd-background/65 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur-xl">
             <SparklesIcon className="size-3.5 text-emerald-500" />
-            Public source. Private portfolio.
+            100% Sovereign · Zero Cloud Dependencies · Native Multi-Platform
           </div>
           <h1 className="max-w-4xl text-balance text-5xl leading-[0.98] font-medium tracking-[-0.055em] sm:text-6xl lg:text-8xl">
             Know what you own.

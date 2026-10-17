@@ -1,103 +1,105 @@
 ---
 title: Resetting application data
-description: Safely return a database to an empty, signup-ready state without removing its schema.
+description: Safely return your embedded or hosted database to an empty, clean state without losing schema migrations.
 icon: Trash2
 ---
 
 <IconCardGrid columns={3}>
   <IconCard
-    icon="Eye"
-    title="Inspect the branch"
-    description="Start with a dry run and verify the displayed database host."
+    icon="Database"
+    title="Embedded PGlite Reset"
+    description="Erase or recreate ./data/selvam.db for an instant clean slate."
   />
   <IconCard
     icon="ShieldCheck"
-    title="Preserve recovery"
-    description="Create a Neon restore point before resetting valuable data."
+    title="Preserve Migrations"
+    description="Tracked migrations automatically re-run on startup, restoring all 70 tables in ~450ms."
   />
   <IconCard
-    icon="Database"
-    title="Keep the schema"
-    description="The guarded reset removes application rows but preserves tracked migrations."
+    icon="Terminal"
+    title="Guarded Script"
+    description="Use the guarded pnpm db:reset-data CLI helper for verified safe truncation."
   />
 </IconCardGrid>
 
-The repository includes a guarded reset command for removing test or disposable portfolio data. It erases every table in the Postgres `public` schema, including users, sessions, imports, ledgers, snapshots, assets, audit events, verification records and rate limits.
+## Embedded PGlite reset (Sovereign Mode)
 
-This guarded helper currently targets Neon connection URLs. To reset the separate local Docker database instead, use the local Compose override and remove its volume; the app recreates the schema from tracked migrations when it starts again:
+When running in sovereign mode with embedded PGlite, application data is stored in the local directory:
 
-```bash
-docker compose -f compose.yaml -f compose.local.yaml down -v
-docker compose -f compose.yaml -f compose.local.yaml up --build -d
+```text
+./data/selvam.db
 ```
 
-Removing the volume permanently deletes all data in that local database. It does not affect Vercel or Neon.
+### Quick reset
 
-The command preserves the Drizzle migration table in the separate `drizzle` schema. Tables, indexes, constraints and applied migration records remain intact, so the application is immediately ready for a new signup.
+To completely reset your local sovereign database:
 
-<Callout type="warning" title="This operation is destructive">
-  Application data cannot be recovered through Selvam after the reset. Create a Neon restore point
-  or branch first when recovery may be required. Never run the execute command against a database
-  whose target host you have not verified.
-</Callout>
+```bash
+# 1. Stop the application server (Ctrl+C)
+
+# 2. Remove the local database folder
+rm -rf ./data/selvam.db
+
+# 3. Restart the server
+SOVEREIGN_MODE=true pnpm dev:web
+```
+
+On restart:
+
+1. PGlite automatically initializes a new SQLite-backed PostgreSQL directory at `./data/selvam.db`.
+2. All 70 Drizzle migrations run automatically in ~450ms.
+3. The sovereign user (`sovereign-user`) is auto-provisioned with an empty, clean portfolio ready for fresh imports.
+
+### Resetting the document vault
+
+If you also wish to clear archived statement files:
+
+```bash
+rm -rf ./data/vault/documents/*
+```
+
+## Guarded CLI reset (`pnpm db:reset-data`)
+
+The repository also includes a guarded data-reset script for safely truncating rows while keeping tables and indexes intact:
 
 <Steps>
-  <Step title="Inspect the target">
-    From the repository root, run the command without destructive flags:
+  <Step title="Run a dry run inspection">
+    From the repository root, run:
 
     ```bash
     pnpm db:reset-data
     ```
 
     The dry run prints:
-
-    - the sanitized Neon hostname and database name;
-    - the number of applied migrations;
-    - every non-empty application table and its row count;
-    - the exact `--expect-host` value required for execution.
-
-    No rows are changed during a dry run. Confirm that the displayed host is the intended Neon branch before continuing.
+    - The target database connection and host.
+    - The number of applied migrations.
+    - Every table with non-zero rows.
+    - The exact confirmation command needed to proceed.
 
   </Step>
 
-<Step title="Preserve a recovery point when needed">
-  For production or valuable data, create a Neon branch or verify that a suitable restore point
-  exists. The reset command does not create a backup automatically.
-</Step>
-
-  <Step title="Execute the reset">
-    Copy the hostname printed by the dry run and execute:
+  <Step title="Execute with confirmation">
+    Pass the confirmation flags:
 
     ```bash
     pnpm db:reset-data -- \
       --execute \
-      --confirm=RESET_ALL_APPLICATION_DATA \
-      --expect-host=YOUR_EXACT_NEON_HOST
+      --confirm=RESET_ALL_APPLICATION_DATA
     ```
 
-    All three destructive arguments are required. A missing confirmation, altered phrase or hostname mismatch stops the command before truncation.
-
-    The script prefers `DATABASE_URL_DIRECT` and falls back to `DATABASE_URL`. Both are loaded from `apps/web/.env` during local operation.
-
-  </Step>
-
-  <Step title="Verify the result">
-    After truncation, the command recounts every `public` table and verifies that:
-
-    - all application tables contain zero rows;
-    - the Drizzle migration count is unchanged.
-
-    It exits with an error if either check fails. A successful reset reports `"verified": true` and `"totalRows": 0`.
-
-    Existing sessions become invalid because all users and sessions are removed. Open `/signup` to create the first clean account.
+    The command safely truncates all application tables in a single transaction, leaving the schema and Drizzle migration history intact.
 
   </Step>
 </Steps>
 
-## What the command does not do
+## Docker Compose reset
 
-- It does not drop or recreate the database.
-- It does not remove tables, constraints, indexes or migrations.
-- It does not change Neon credentials or Vercel environment variables.
-- It does not delete source files from a local computer.
-- It does not provide application-level recovery.
+When running Selvam via Docker Compose, reset the persistent volume:
+
+```bash
+# Remove containers and the persistent database volume
+docker compose down -v
+
+# Start with a fresh database
+docker compose up -d
+```

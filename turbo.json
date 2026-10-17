@@ -1,11 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalPassThroughEnv": [
-    "SOVEREIGN_MODE",
-    "PGLITE_DATA_DIR",
-    "NODE_ENV"
-  ],
+  "globalPassThroughEnv": ["SOVEREIGN_MODE", "PGLITE_DATA_DIR", "NODE_ENV"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

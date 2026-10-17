@@ -2,13 +2,13 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "Selvam runtime architecture",
+    "title": "Selvam Sovereign Clean Architecture",
     "locale": "en",
     "output": "public/architecture/selvam-system-architecture.html",
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/arangates/portfolio",
-      "revision": "43238d2e90ee30632724c0a213a3995748539ca2"
+      "revision": "30c828c3b48819df5a11a34bc7711249b0be7daf"
     },
     "viewBox": [1380, 650]
   },
@@ -23,12 +23,47 @@
   },
   "components": [
     {
-      "id": "broker_files",
-      "type": "external",
-      "label": "Financial exports",
-      "sublabel": "XLSX · CSV · PDF",
+      "id": "tauri_desktop",
+      "type": "frontend",
+      "label": "Tauri 2.0 Native",
+      "sublabel": "macOS · Win · Linux",
       "row": 0,
       "col": 0,
+      "sources": [
+        {
+          "path": "src-tauri/tauri.conf.json",
+          "line": 1,
+          "label": "Native desktop config"
+        },
+        {
+          "path": "src-tauri/Cargo.toml",
+          "line": 1,
+          "label": "Tauri Rust manifest"
+        }
+      ]
+    },
+    {
+      "id": "sovereign_vault",
+      "type": "security",
+      "label": "Hardware Vault",
+      "sublabel": "AES-256 keys",
+      "row": 0,
+      "col": 2,
+      "sources": [
+        {
+          "path": "packages/auth/src/vault.ts",
+          "line": 14,
+          "label": "Vault header format"
+        }
+      ]
+    },
+    {
+      "id": "broker_files",
+      "type": "external",
+      "label": "Local statements",
+      "sublabel": "XLSX · CSV · PDF",
+      "row": 0,
+      "col": 4,
       "sources": [
         {
           "path": "apps/web/src/app/api/portfolio/imports/route.ts",
@@ -43,44 +78,29 @@
       ]
     },
     {
-      "id": "docs_site",
-      "type": "frontend",
-      "label": "Fumadocs handbook",
-      "sublabel": "Engineering docs",
-      "row": 4,
-      "col": 1,
+      "id": "ecb_direct_fx",
+      "type": "external",
+      "label": "Direct ECB FX",
+      "sublabel": "Daily rates XML",
+      "row": 0,
+      "col": 5,
       "sources": [
         {
-          "path": "apps/fumadocs/content/docs/meta.json",
+          "path": "packages/parsers/src/exchange-rate-parser.ts",
           "line": 1,
-          "label": "Docs navigation"
+          "label": "ECB XML reference parser"
         },
         {
-          "path": "apps/fumadocs/src/app/docs/[[...slug]]/page.tsx",
-          "line": 14,
-          "label": "Docs route"
-        }
-      ]
-    },
-    {
-      "id": "google_oauth",
-      "type": "external",
-      "label": "Google OAuth",
-      "sublabel": "Identity provider",
-      "row": 0,
-      "col": 2,
-      "sources": [
-        {
-          "path": "packages/auth/src/index.ts",
-          "line": 42,
-          "label": "Social provider"
+          "path": "packages/calc/src/currency-conversion.ts",
+          "line": 1,
+          "label": "Currency conversion"
         }
       ]
     },
     {
       "id": "user_browser",
       "type": "frontend",
-      "label": "User browser",
+      "label": "Sovereign UI",
       "sublabel": "Dashboard + charts",
       "row": 2,
       "col": 0,
@@ -89,15 +109,20 @@
           "path": "apps/web/src/app/dashboard/page.tsx",
           "line": 21,
           "label": "Portfolio dashboard"
+        },
+        {
+          "path": "apps/web/src/components/financial-stories.tsx",
+          "line": 1,
+          "label": "Financial stories pulse"
         }
       ]
     },
     {
       "id": "next_app",
       "type": "cloud",
-      "label": "Vercel / Next.js 16",
+      "label": "Next.js 16 Host",
       "sublabel": "App Router + APIs",
-      "tag": "HTTPS",
+      "tag": "Localhost",
       "row": 2,
       "col": 1,
       "sources": [
@@ -116,21 +141,16 @@
     {
       "id": "better_auth",
       "type": "security",
-      "label": "Better Auth",
-      "sublabel": "Sessions + limits",
+      "label": "Sovereign Auth",
+      "sublabel": "Local sessions",
       "tag": "server session",
       "row": 2,
       "col": 2,
       "sources": [
         {
           "path": "packages/auth/src/index.ts",
-          "line": 10,
-          "label": "Auth configuration"
-        },
-        {
-          "path": "apps/web/src/app/api/auth/[...all]/route.ts",
           "line": 1,
-          "label": "Auth endpoint"
+          "label": "Auth configuration"
         }
       ]
     },
@@ -157,27 +177,27 @@
     {
       "id": "import_adapters",
       "type": "backend",
-      "label": "Import adapters",
+      "label": "@portfolio/parsers",
       "sublabel": "Broker parsers",
       "row": 2,
       "col": 4,
       "sources": [
         {
-          "path": "packages/api/src/portfolio-import.ts",
-          "line": 828,
-          "label": "Broker dispatcher"
+          "path": "packages/parsers/src/index.ts",
+          "line": 1,
+          "label": "Universal parser entry"
         },
         {
-          "path": "packages/api/src/salary-parser.ts",
+          "path": "packages/parsers/src/salary-parser.ts",
           "line": 1,
-          "label": "Payslip parser"
+          "label": "Salary parser engine"
         }
       ]
     },
     {
       "id": "drizzle_access",
       "type": "backend",
-      "label": "Drizzle data access",
+      "label": "Drizzle Access",
       "sublabel": "Typed owner scope",
       "row": 2,
       "col": 5,
@@ -188,27 +208,6 @@
           "label": "Database client"
         },
         {
-          "path": "packages/api/src/portfolio-queries.ts",
-          "line": 28,
-          "label": "Scoped query"
-        }
-      ]
-    },
-    {
-      "id": "neon_postgres",
-      "type": "database",
-      "label": "Neon Postgres",
-      "sublabel": "History + audit",
-      "tag": "source of truth",
-      "row": 2,
-      "col": 6,
-      "sources": [
-        {
-          "path": "packages/db/src/index.ts",
-          "line": 8,
-          "label": "Neon HTTP driver"
-        },
-        {
           "path": "packages/db/src/schema/portfolio.ts",
           "line": 19,
           "label": "History schema"
@@ -216,22 +215,95 @@
       ]
     },
     {
-      "id": "analytics_engines",
+      "id": "pglite_embedded",
+      "type": "database",
+      "label": "Embedded PGlite",
+      "sublabel": "WASM Postgres",
+      "tag": "100% On-Device",
+      "row": 2,
+      "col": 6,
+      "sources": [
+        {
+          "path": "packages/db/src/embedded.ts",
+          "line": 1,
+          "label": "PGlite embedded engine"
+        },
+        {
+          "path": "packages/db/src/index.ts",
+          "line": 1,
+          "label": "Embedded DB factory"
+        }
+      ]
+    },
+    {
+      "id": "docs_site",
+      "type": "frontend",
+      "label": "Fumadocs handbook",
+      "sublabel": "Engineering docs",
+      "row": 4,
+      "col": 1,
+      "sources": [
+        {
+          "path": "apps/fumadocs/content/docs/meta.json",
+          "line": 1,
+          "label": "Docs navigation"
+        },
+        {
+          "path": "apps/fumadocs/src/app/docs/[[...slug]]/page.tsx",
+          "line": 14,
+          "label": "Docs route"
+        }
+      ]
+    },
+    {
+      "id": "document_vault",
+      "type": "database",
+      "label": "Document Vault",
+      "sublabel": "Local disk archive",
+      "tag": "Encrypted",
+      "row": 4,
+      "col": 2,
+      "sources": [
+        {
+          "path": "packages/auth/src/vault.ts",
+          "line": 14,
+          "label": "Vault header format"
+        }
+      ]
+    },
+    {
+      "id": "calc_engine",
       "type": "backend",
-      "label": "Analytics & FIRE",
-      "sublabel": "FX + simulations",
+      "label": "@portfolio/calc",
+      "sublabel": "Pure math engine",
       "row": 4,
       "col": 4,
       "sources": [
         {
-          "path": "packages/api/src/fire-engine.ts",
-          "line": 439,
-          "label": "FIRE calculation"
+          "path": "packages/calc/src/index.ts",
+          "line": 1,
+          "label": "Calc exports"
         },
         {
-          "path": "packages/api/src/zerodha-tradebook-queries.ts",
+          "path": "packages/calc/src/fire-engine.ts",
           "line": 1,
-          "label": "Tradebook analytics"
+          "label": "FIRE calculations"
+        }
+      ]
+    },
+    {
+      "id": "sqlite_data",
+      "type": "database",
+      "label": "Local Disk DB",
+      "sublabel": "Disk storage",
+      "tag": "selvam.db",
+      "row": 4,
+      "col": 6,
+      "sources": [
+        {
+          "path": "packages/db/src/embedded.ts",
+          "line": 10,
+          "label": "Database disk path"
         }
       ]
     }
@@ -239,64 +311,96 @@
   "boundaries": [
     {
       "kind": "region",
-      "label": "External providers / user-controlled files",
-      "wraps": ["broker_files", "google_oauth"],
+      "label": "Device Shells & Local Files",
+      "wraps": ["tauri_desktop", "sovereign_vault", "broker_files", "ecb_direct_fx"],
       "pad": 24
     },
     {
       "kind": "region",
-      "label": "Vercel application trust boundary",
+      "label": "Sovereign Application Boundary",
       "wraps": [
         "docs_site",
         "next_app",
         "better_auth",
         "domain_services",
         "import_adapters",
-        "drizzle_access",
-        "analytics_engines"
+        "calc_engine",
+        "drizzle_access"
       ],
       "pad": 28
     },
     {
       "kind": "security-group",
-      "label": "Authenticated account boundary",
+      "label": "Authenticated Vault & Domain Core",
       "wraps": [
         "better_auth",
         "domain_services",
         "import_adapters",
-        "drizzle_access",
-        "analytics_engines"
+        "calc_engine",
+        "drizzle_access"
       ],
       "pad": 16
     },
     {
       "kind": "region",
-      "label": "Managed data boundary",
-      "wraps": ["neon_postgres"],
+      "label": "Sovereign Storage Boundary",
+      "wraps": ["document_vault", "pglite_embedded", "sqlite_data"],
       "pad": 26
     }
   ],
   "connections": [
     {
-      "id": "files_to_browser",
-      "from": "broker_files",
+      "id": "tauri_to_browser",
+      "from": "tauri_desktop",
       "to": "user_browser",
-      "label": "selected locally",
-      "variant": "dashed",
+      "label": "native shell",
+      "variant": "emphasis",
       "labelAt": [100, 194]
+    },
+    {
+      "id": "sovereign_to_auth",
+      "from": "sovereign_vault",
+      "to": "better_auth",
+      "label": "PBKDF2 key",
+      "variant": "security",
+      "labelAt": [480, 194]
+    },
+    {
+      "id": "auth_to_vault_disk",
+      "from": "better_auth",
+      "to": "document_vault",
+      "label": "AES-256 archive",
+      "variant": "security",
+      "labelAt": [480, 394]
+    },
+    {
+      "id": "files_to_imports",
+      "from": "broker_files",
+      "to": "import_adapters",
+      "label": "local files",
+      "variant": "dashed",
+      "labelAt": [860, 194]
+    },
+    {
+      "id": "ecb_to_drizzle",
+      "from": "ecb_direct_fx",
+      "to": "drizzle_access",
+      "label": "ECB rates",
+      "variant": "dashed",
+      "labelAt": [1050, 194]
     },
     {
       "id": "browser_to_docs",
       "from": "user_browser",
       "to": "docs_site",
-      "label": "docs",
+      "label": "handbook",
       "variant": "dashed"
     },
     {
       "id": "browser_to_next",
       "from": "user_browser",
       "to": "next_app",
-      "label": "HTTPS",
+      "label": "HTTP",
       "variant": "emphasis"
     },
     {
@@ -305,14 +409,6 @@
       "to": "better_auth",
       "label": "session",
       "variant": "security"
-    },
-    {
-      "id": "google_to_auth",
-      "from": "google_oauth",
-      "to": "better_auth",
-      "label": "OAuth",
-      "variant": "security",
-      "labelAt": [480, 194]
     },
     {
       "id": "auth_to_domain",
@@ -336,56 +432,64 @@
       "variant": "emphasis"
     },
     {
-      "id": "drizzle_to_neon",
+      "id": "drizzle_to_pglite",
       "from": "drizzle_access",
-      "to": "neon_postgres",
-      "label": "SQL",
+      "to": "pglite_embedded",
+      "label": "WASM SQL",
       "variant": "emphasis"
     },
     {
-      "id": "domain_to_analytics",
+      "id": "domain_to_calc",
       "from": "domain_services",
-      "to": "analytics_engines",
+      "to": "calc_engine",
       "label": "read inputs"
     },
     {
-      "id": "analytics_to_drizzle",
-      "from": "analytics_engines",
+      "id": "calc_to_drizzle",
+      "from": "calc_engine",
       "to": "drizzle_access",
       "label": "owned reads"
+    },
+    {
+      "id": "pglite_to_sqlite",
+      "from": "pglite_embedded",
+      "to": "sqlite_data",
+      "label": "disk persist",
+      "variant": "emphasis",
+      "labelAt": [1240, 394]
     }
   ],
   "cards": [
     {
       "dot": "rose",
-      "title": "Trust and ownership",
+      "title": "Trust and sovereign identity",
       "items": [
-        "Route handlers derive userId from the Better Auth server session; clients never choose an owner.",
-        "Financial rows carry user_id, and composite foreign keys keep child history with the same owner."
+        "Sovereign mode derives session and hardware encryption from AES-256-GCM + PBKDF2 local keys.",
+        "Financial rows carry user_id, and foreign keys strictly isolate history to the local identity."
       ]
     },
     {
       "dot": "cyan",
-      "title": "Historical ingestion",
+      "title": "Clean architecture engine",
       "items": [
-        "SHA-256 file and row hashes make repeated broker uploads idempotent.",
-        "Raw imports, normalized ledger entries, and dated snapshots preserve provenance instead of overwriting history."
+        "@portfolio/calc provides zero-dependency pure calculations (FIRE, XIRR, Net Worth, FX conversions).",
+        "@portfolio/parsers normalizes multi-broker exports and payslips into clean typed ledger events."
       ]
     },
     {
       "dot": "emerald",
-      "title": "Calculation and presentation",
+      "title": "Embedded on-device data engine",
       "items": [
-        "Server-only services aggregate account-scoped Postgres data and disclose missing FX conversions.",
-        "Pure FIRE and analytics logic produces derived series; the browser renders tables and ECharts visualizations."
+        "Embedded WASM PGlite executes PostgreSQL directly on device, storing data in ./data/selvam.db.",
+        "Local document vault stores original statements under ./data/vault/documents/ with SHA-256 hashes."
       ]
     },
     {
       "dot": "violet",
-      "title": "Operational boundary",
+      "title": "Native multi-platform shell",
       "items": [
-        "The Vercel runtime receives only the pooled DATABASE_URL and application secrets.",
-        "Direct database credentials stay outside the deployed application and are reserved for trusted migrations."
+        "Tauri 2.0 Rust shell wraps the app into native desktop and mobile installers (DMG, EXE, AppImage).",
+        "Air-gapped operation ensures financial analytics and pulse stories run completely offline."
       ]
     }
   ]

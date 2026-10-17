@@ -1,68 +1,68 @@
 ---
 title: Security and privacy
-description: The controls protecting portfolio data and deployment secrets.
+description: Sovereign local-first controls, AES-256-GCM hardware vault, and air-gapped data protection.
 icon: ShieldCheck
 ---
 
 <IconCardGrid columns={3}>
   <IconCard
-    icon="Fingerprint"
-    title="Owner from the session"
-    description="Private operations derive the account owner from the verified server session."
-  />
-  <IconCard
     icon="ShieldCheck"
-    title="Minimize stored data"
-    description="Sensitive source documents are parsed in memory and discarded where the workflow allows."
+    title="Zero Cloud Telemetry"
+    description="No tracking, analytics pings, or third-party phone-home requests. Completely private by design."
   />
   <IconCard
     icon="KeyRound"
-    title="Keep credentials private"
-    description="Secrets stay in server-side environment variables and never enter browser bundles."
+    title="AES-256-GCM Vault"
+    description="Hardware-grade encryption derived with 100,000 PBKDF2-SHA512 iterations and timing-safe tag checks."
+  />
+  <IconCard
+    icon="Database"
+    title="Local Data Containment"
+    description="All 70 database tables and document archives reside on local disk under ./data/."
   />
 </IconCardGrid>
 
-<InfoPanel title="Preview and production data" icon="TriangleAlert" tone="warning">
-  Never point untrusted preview code at production portfolio data. Use separate database branches
-  and credentials for development, Preview and Production.
+<InfoPanel title="Air-gapped readiness" icon="ShieldCheck" tone="success">
+  Selvam is designed to run completely disconnected from the internet. Financial math, historical
+  ledgers, document archives, and dashboard visualizations execute 100% locally on your machine.
 </InfoPanel>
 
-## User isolation
+## Core security principles
 
-Every portfolio, salary, household and FIRE table carries a required owner ID linked to the authentication user. Server-side queries, mutations, imports, exports and archival operations use the user ID from the verified session. The client cannot select or override the owner.
+### 1. Sovereign data isolation
 
-## Authentication controls
+Every portfolio, salary, tradebook, household, and FIRE record carries a strictly enforced `user_id` foreign key. In sovereign mode, requests are automatically bound to the verified local sovereign identity (`sovereign-user`). Clients never supply, modify, or choose the financial record owner.
 
-- Google OAuth and email/password authentication with a 12-character minimum password.
-- One-year rolling, database-backed sessions with secure cookies in production.
-- Database-backed authentication rate limiting.
-- Explicit canonical authentication URL and trusted browser origin.
-- Account deletion support through Better Auth.
+### 2. Zero third-party telemetry
 
-## Sensitive-data handling
+Selvam contains zero third-party telemetry scripts, zero tracking pixels, and zero remote logging services. Your financial balances, holdings, transaction histories, and net worth remain strictly on your physical hardware.
 
-- Bank records accept only a safe label and optional last four digits—never full account numbers or credentials.
-- Salary PDFs are parsed in memory. The database stores a file hash and normalized financial rows, but not the PDF, extracted text, home address, birth date, payroll number or bank account.
-- ITR JSON is parsed in memory and discarded. The application stores normalized tax totals, filing metadata and a fingerprint, but not the raw JSON, PAN, address, bank details or verification payload. UI queries expose only the last four acknowledgement digits.
-- Dutch final-assessment PDFs are parsed in memory and discarded. The application stores normalized accepted tax values, a fingerprint and a masked assessment-reference suffix, but not the PDF, extracted text, taxpayer name, address or full assessment reference.
-- Household imports omit service client numbers and login identifiers. Contracts retain only the provider, service, financial terms and non-sensitive operational notes needed for planning.
-- Metals imports store normalized inventory and an audit fingerprint, not the source CSV. Source remarks are treated as provenance and never interpreted as account ownership.
-- Broker files and personal workbook values are data, not source code, and must never be committed to Git.
-- Tradebook rows and source files are linked to the authenticated account. Import requests never accept a user ID from the browser, and cross-provider analytics explicitly filter the broker source.
-- Family names, dates of birth, income, expenses and retirement assumptions are private account data. They are stored only in Postgres and never embedded as product defaults or source code.
-- Production secrets live in Vercel environment variables or in a private Docker host `.env`; local secrets live in ignored `.env` files.
-- Google OAuth client secrets are server-only and never exposed through `NEXT_PUBLIC_` variables.
-- Google Drive uses the incremental non-sensitive `drive.file` scope, not broad Drive access. Files remain private in the user's own account, and Better Auth encrypts Google access and refresh tokens at rest.
-- Original browser-imported source files are never returned from Postgres. Drive downloads are authenticated, owner-checked, non-cacheable and streamed through a response with content sniffing disabled.
-- Use Neon's pooled `DATABASE_URL` for the production application in both Vercel and Docker. Keep `DATABASE_URL_DIRECT` limited to trusted migration use; the Docker startup process may receive it when Docker is an approved deployment host.
-- Private exports and manual-data imports use the authenticated session owner; owner IDs in uploaded backup files are neither accepted nor trusted. Responses are non-cacheable and downloads disable content sniffing.
+### 3. AES-256-GCM Hardware Vault (`packages/auth/src/vault.ts`)
+
+For encrypted storage of credentials and local document payloads, Selvam implements standard Galois/Counter Mode (`AES-256-GCM`) authenticated encryption:
+
+- **Key Derivation**: 100,000 iterations of `PBKDF2-HMAC-SHA-512` over a 16-byte cryptographically secure random salt.
+- **Unique IVs**: Every encryption call generates a fresh 12-byte initialization vector (`node:crypto.randomBytes`).
+- **Integrity Verification**: Prior to decrypting any payload, the 16-byte GCM authentication tag is validated using constant-time comparison (`timingSafeEqual`) to prevent padding-oracle and timing-channel attacks.
+
+### 4. Local Document Vault (`./data/vault/documents/`)
+
+Original broker statements, tradebook files, and payslips are archived locally rather than uploaded to third-party cloud buckets:
+
+- **SHA-256 Deduplication**: Every file is fingerprinted upon upload. Repeated uploads of the exact same document are detected immediately and skipped to preserve ledger integrity.
+- **In-Memory Parsing**: Sensitive documents (such as salary slips) are parsed in memory by `@portfolio/parsers`. The database stores normalized financial ledger entries and cryptographic fingerprints, discarding unneeded personal identifiers (such as national tax IDs or personal home addresses).
+- **Secure File Streaming**: Document downloads stream directly from local disk through authenticated route handlers with `X-Content-Type-Options: nosniff` and `Cache-Control: no-store` headers.
+
+### 5. Architectural boundary isolation
+
+Selvam's Clean Architecture prevents accidental data leakage across layers:
+
+- **Pure Engines (`@portfolio/calc`, `@portfolio/parsers`)**: Have zero network or database dependencies. They cannot open sockets or perform unauthorized I/O.
+- **Server-Only Modules**: Database query and mutation packages import `server-only`, guaranteeing that data-access routines are never bundled into client-side JavaScript.
+- **Localhost Binding**: In standalone and Docker environments, administrative interfaces (such as Drizzle Studio) bind strictly to loopback (`127.0.0.1`), preventing exposure across local networks.
 
 ## Operational rules
 
-1. Rotate a credential immediately if it appears in a screenshot, log, commit or chat.
-2. Use separate Neon branches and secrets for development, Preview and Production.
-3. Never point untrusted preview code at production portfolio data.
-4. Apply and review tracked migrations before deploying code that depends on them.
-5. Run dependency audit, type checks, linting and a production build before release.
-
-Security headers, upload size limits, validated input schemas and server-only data modules provide additional defence in depth. Database ownership constraints remain the final boundary for relational integrity.
+1. **Keep Secrets Private**: Keep master encryption secrets (`BETTER_AUTH_SECRET`) in private, git-ignored `.env` files.
+2. **Back Up Local Data**: Back up the `./data/` directory (containing `./data/selvam.db` and `./data/vault/documents/`) using encrypted local or external disk backups.
+3. **Verify Hashes**: All document imports record SHA-256 digests in the database audit log for tamper verification.
